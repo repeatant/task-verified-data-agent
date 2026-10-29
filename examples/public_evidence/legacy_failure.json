@@ -1,0 +1,93 @@
+{
+  "case_id": "d10",
+  "track": "controlled",
+  "feedback_policy": "legacy_v1",
+  "native_loop": "DataScientistAgent.generate_reply (inherited)",
+  "upstream_commit": "06a46eea2d248a0f2b3e9096035424df4f2dc2eb",
+  "publication": {
+    "task_id": "p02",
+    "status": "unverified",
+    "rows": null,
+    "verified_sql": null,
+    "error_code": "UNSUPPORTED_EXPRESSION",
+    "scope": "registered necessary properties only; complete correctness independently evaluated"
+  },
+  "grade": {
+    "accepted": false,
+    "task_preserved": true,
+    "operational_failure": false,
+    "correct_task": false,
+    "source_correct": false,
+    "boundary_correct": false,
+    "publication_matches_sql": false,
+    "wrong_release": false,
+    "unscorable": false,
+    "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof"
+  },
+  "actions": [
+    {
+      "sql": "SELECT o.order_id, COALESCE(SUM(l.amount), 0) AS revenue FROM orders o LEFT JOIN order_lines l ON o.order_id = l.order_id WHERE l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at < '2026-10-01T00:00:00' GROUP BY o.order_id",
+      "feedback": {
+        "task_id": "p02",
+        "status": "unverified",
+        "verification_status": "rejected",
+        "execution_status": "not_accepted",
+        "error_code": "ZERO_ORDER_WHERE_FILTER",
+        "feedback": "WHERE filtering may remove required zero orders",
+        "rows": null,
+        "scope": "registered task properties and bounded tests; not a complete semantic proof",
+        "diagnostic_evidence": "{\"task_id\":\"p02\",\"confirmed_property\":\"preserve_zero_orders\",\"property_violation\":\"PROPERTY_PRESERVE_ZERO_ORDERS\",\"data\":{\"property_id\":\"preserve_zero_orders\",\"base\":{\"orders\":[[1,1,\"其他\"]],\"lines\":[[1,1,1,\"settled\",\"2026-09-16T00:00:00\"]]},\"added_orders\":[[4,1,\"web\"]],\"added_lines\":[[4,4,1,\"pending\",\"2026-09-16T00:00:00\"]],\"record_count\":4},\"before\":[[1,1]],\"after\":[[1,1]],\"instruction\":\"修正候选实现以满足已确认性质，并保留原任务其他要求；此处不提供正确SQL。\"}"
+      },
+      "source_output_check": null,
+      "regression_checks": [
+        {
+          "status": "violation",
+          "property_id": "preserve_zero_orders",
+          "failure_type": "PROPERTY_PRESERVE_ZERO_ORDERS",
+          "before": [
+            [
+              1,
+              1
+            ]
+          ],
+          "after": [
+            [
+              1,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "sql": "SELECT o.order_id, COALESCE(SUM(CASE WHEN l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at < '2026-10-01T00:00:00' THEN l.amount ELSE 0 END), 0) AS revenue FROM orders o LEFT JOIN order_lines l ON o.order_id = l.order_id GROUP BY o.order_id",
+      "feedback": {
+        "task_id": "p02",
+        "status": "unverified",
+        "verification_status": "rejected",
+        "execution_status": "not_accepted",
+        "error_code": "UNSUPPORTED_EXPRESSION",
+        "feedback": "Expected a direct registered column",
+        "rows": null,
+        "scope": "registered task properties and bounded tests; not a complete semantic proof"
+      },
+      "source_output_check": null,
+      "regression_checks": [
+        {
+          "status": "execution_error",
+          "property_id": "preserve_zero_orders",
+          "code": "UNSUPPORTED_EXPRESSION"
+        }
+      ]
+    }
+  ],
+  "http_attempts": 1,
+  "usage": [
+    {
+      "prompt_tokens": 1657,
+      "completion_tokens": 892,
+      "total_tokens": 2549
+    }
+  ],
+  "redaction": "Projected public evidence; private raw audit retained locally. No provider identifiers or account routes included."
+}

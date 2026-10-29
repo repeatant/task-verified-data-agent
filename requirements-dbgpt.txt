@@ -1,0 +1,30 @@
+# Dedicated minimal integration runtime, Python 3.12 on Windows.
+# Source imports from pinned .upstream/DB-GPT; this is NOT full DB-GPT extras.
+# aiohttp differs from upstream's old 3.8.4 pin (no Python 3.12 wheel).
+pydantic==2.14.1
+aiohttp==3.14.5
+cachetools==7.2.6
+typeguard==4.6.0
+snowflake-id==1.0.2
+typing-inspect==0.9.0
+tomli==2.5.0
+APScheduler==3.11.3
+SQLAlchemy==2.0.28
+sqlparse==0.4.4
+termcolor==3.3.0
+shortuuid==1.0.13
+prettytable==3.18.0
+Pympler==1.1
+schedule==1.2.2
+colorama==0.4.6
+rich==15.0.0
+sqlglot==30.25.0
+Jinja2==3.1.6
+cloudpickle==3.1.2
+msgpack==1.2.4
+numpy==1.26.4
+pandas==2.2.3
+requests==2.34.2
+mcp==1.30.0
+pytest==9.1.1
+httpx==0.28.1

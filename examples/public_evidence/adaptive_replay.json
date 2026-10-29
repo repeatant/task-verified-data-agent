@@ -1,0 +1,166 @@
+{
+  "real_model_used": false,
+  "origin": "Deterministic offline three-turn integration script.",
+  "http_attempts": 0,
+  "publication": {
+    "task_id": "p01",
+    "status": "verified",
+    "rows": [
+      [
+        35000
+      ]
+    ],
+    "verified_sql": "SELECT COALESCE(SUM(l.amount), 0) AS revenue FROM order_lines l WHERE l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at < '2026-10-01T00:00:00'",
+    "error_code": null,
+    "scope": "registered necessary properties only; complete correctness independently evaluated"
+  },
+  "actions": [
+    {
+      "sql": "SELECT COALESCE(SUM(l.amount), 0) AS revenue FROM order_lines l WHERE l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at <= '2026-10-01T00:00:00'",
+      "feedback": {
+        "task_id": "p01",
+        "status": "unverified",
+        "verification_status": "rejected",
+        "execution_status": "not_accepted",
+        "error_code": "TIME_BOUNDARY_MISMATCH",
+        "feedback": "Task requires start-inclusive, end-exclusive bounds",
+        "rows": null,
+        "scope": "registered task properties and bounded tests; not a complete semantic proof",
+        "diagnostic_evidence": "{\"task_id\":\"p01\",\"confirmed_property\":\"exclude_end\",\"property_violation\":\"PROPERTY_EXCLUDE_END\",\"data\":{\"property_id\":\"exclude_end\",\"base\":{\"orders\":[[1,1,\"其他\"]],\"lines\":[[1,1,1,\"settled\",\"2026-09-16T00:00:00\"]]},\"added_orders\":[[4,1,\"web\"]],\"added_lines\":[[4,4,1,\"settled\",\"2026-10-01T00:00:00\"]],\"record_count\":4},\"before\":[[1]],\"after\":[[2]],\"instruction\":\"修正候选实现以满足已确认性质，并保留原任务其他要求；此处不提供正确SQL。\"}",
+        "feedback_strategy": {
+          "selected_mode": "compact",
+          "escalation_reason": null,
+          "evidence_available": true
+        }
+      },
+      "regression_checks": [
+        {
+          "status": "violation",
+          "property_id": "exclude_end",
+          "failure_type": "PROPERTY_EXCLUDE_END",
+          "before": [
+            [
+              1
+            ]
+          ],
+          "after": [
+            [
+              2
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "sql": "SELECT COALESCE(SUM(l.amount), 0) AS revenue FROM order_lines l WHERE l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at <= '2026-10-01T00:00:00'",
+      "feedback": {
+        "task_id": "p01",
+        "status": "unverified",
+        "verification_status": "rejected",
+        "execution_status": "not_accepted",
+        "error_code": "TIME_BOUNDARY_MISMATCH",
+        "feedback": "Task requires start-inclusive, end-exclusive bounds",
+        "rows": null,
+        "scope": "registered task properties and bounded tests; not a complete semantic proof",
+        "diagnostic_evidence": "{\"task_id\":\"p01\",\"confirmed_property\":\"exclude_end\",\"property_violation\":\"PROPERTY_EXCLUDE_END\",\"data\":{\"property_id\":\"exclude_end\",\"base\":{\"orders\":[[1,1,\"其他\"],[2,1,\"web\"],[3,1,\"web\"]],\"lines\":[[1,1,1,\"settled\",\"2026-09-16T00:00:00\"],[2,2,1,\"settled\",\"2026-09-16T00:00:00\"],[3,3,1,\"settled\",\"2026-09-16T00:00:00\"]]},\"added_orders\":[[4,1,\"web\"]],\"added_lines\":[[4,4,1,\"settled\",\"2026-10-01T00:00:00\"]],\"record_count\":8},\"before\":[[3]],\"after\":[[4]],\"instruction\":\"修正候选实现以满足已确认性质，并保留原任务其他要求；此处不提供正确SQL。\"}",
+        "feedback_strategy": {
+          "selected_mode": "full",
+          "escalation_reason": "repeated_failed_candidate",
+          "evidence_available": true
+        }
+      },
+      "regression_checks": [
+        {
+          "status": "violation",
+          "property_id": "exclude_end",
+          "failure_type": "PROPERTY_EXCLUDE_END",
+          "before": [
+            [
+              1
+            ]
+          ],
+          "after": [
+            [
+              2
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "sql": "SELECT COALESCE(SUM(l.amount), 0) AS revenue FROM order_lines l WHERE l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at < '2026-10-01T00:00:00'",
+      "feedback": {
+        "task_id": "p01",
+        "status": "verified",
+        "verification_status": "verified",
+        "execution_status": "executed",
+        "error_code": null,
+        "feedback": "Registered checks passed on source and stored counterexamples.",
+        "rows": [
+          [
+            35000
+          ]
+        ],
+        "scope": "registered task properties and bounded tests; not a complete semantic proof",
+        "feedback_strategy": {
+          "selected_mode": "full",
+          "escalation_reason": "repeated_failed_candidate",
+          "evidence_available": false
+        }
+      },
+      "regression_checks": [
+        {
+          "status": "passed",
+          "property_id": "exclude_end",
+          "failure_type": null,
+          "before": [
+            [
+              1
+            ]
+          ],
+          "after": [
+            [
+              1
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "feedback_selections": [
+    {
+      "selected_mode": "compact",
+      "escalation_reason": null,
+      "evidence_available": true,
+      "after_action_index": 0,
+      "new_escalation_transition": false,
+      "failed_full_feedback": false,
+      "full_evidence_emitted": false,
+      "sent_in_later_native_request": true,
+      "sent_in_later_http_attempt": false
+    },
+    {
+      "selected_mode": "full",
+      "escalation_reason": "repeated_failed_candidate",
+      "evidence_available": true,
+      "after_action_index": 1,
+      "new_escalation_transition": true,
+      "failed_full_feedback": true,
+      "full_evidence_emitted": true,
+      "sent_in_later_native_request": true,
+      "sent_in_later_http_attempt": false
+    },
+    {
+      "selected_mode": "full",
+      "escalation_reason": "repeated_failed_candidate",
+      "evidence_available": false,
+      "after_action_index": 2,
+      "new_escalation_transition": false,
+      "failed_full_feedback": false,
+      "full_evidence_emitted": false,
+      "sent_in_later_native_request": false,
+      "sent_in_later_http_attempt": false
+    }
+  ],
+  "scope": "Demonstrates wiring and replay only; not model repair effectiveness."
+}

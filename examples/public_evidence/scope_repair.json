@@ -1,0 +1,113 @@
+{
+  "case_id": "h13",
+  "track": "controlled",
+  "feedback_policy": "capability_v2",
+  "native_loop": "DataScientistAgent.generate_reply (inherited)",
+  "upstream_commit": "06a46eea2d248a0f2b3e9096035424df4f2dc2eb",
+  "publication": {
+    "task_id": "h13",
+    "status": "verified",
+    "rows": [
+      [
+        "Other",
+        15
+      ],
+      [
+        "web",
+        7
+      ]
+    ],
+    "verified_sql": "SELECT COALESCE(orders.channel, 'Other') AS channel, SUM(order_lines.amount) AS net_amount\nFROM orders INNER JOIN order_lines ON orders.order_id = order_lines.order_id\nWHERE order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-07-13T00:00:00'\n AND order_lines.settled_at < '2026-07-14T00:00:00'\nGROUP BY COALESCE(orders.channel, 'Other')",
+    "error_code": null,
+    "scope": "registered necessary properties only; complete correctness independently evaluated"
+  },
+  "grade": {
+    "accepted": true,
+    "task_preserved": true,
+    "operational_failure": false,
+    "correct_task": true,
+    "source_correct": true,
+    "boundary_correct": true,
+    "publication_matches_sql": true,
+    "wrong_release": false,
+    "unscorable": false,
+    "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+    "source_grade": {
+      "correct": true,
+      "code": "MATCH"
+    },
+    "boundary_grade": {
+      "correct": true,
+      "code": "MATCH"
+    }
+  },
+  "actions": [
+    {
+      "sql": "SELECT COALESCE(orders.channel, 'Other'), SUM(order_lines.amount)\nFROM orders INNER JOIN order_lines ON orders.order_id = order_lines.order_id\nWHERE order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-07-13T00:00:00'\n AND order_lines.settled_at < '2026-07-14T00:00:00'\n AND orders.channel IS NULL\nGROUP BY COALESCE(orders.channel, 'Other')",
+      "feedback": {
+        "task_id": "h13",
+        "status": "unverified",
+        "verification_status": "rejected",
+        "execution_status": "not_accepted",
+        "error_code": "UNDECLARED_SCOPE_FILTER",
+        "feedback": "An eligibility filter was not confirmed by the caller; preserve the full task population",
+        "rows": null,
+        "scope": "registered task properties and bounded tests; not a complete semantic proof",
+        "repair_guidance": {
+          "classification": "task_scope",
+          "capability_version": "probe-sql-v1",
+          "allowed_alternatives": [
+            "Remove eligibility restrictions on fields that are absent from the confirmed task. A channel display/normalization rule does not request channel filtering.",
+            "Keep the confirmed status, time range and legitimate negative/zero amounts; do not replace an unconfirmed filter with another narrowing condition."
+          ],
+          "preserve_requirements": [
+            "Confirmed task_id=h13",
+            "Measure remains order_lines.amount; include legal negative amounts.",
+            "Confirmed status=settled; time range [2026-07-13T00:00:00, 2026-07-14T00:00:00).",
+            "Keep output_kind=channels and every caller-confirmed property: merge_other_channels"
+          ],
+          "retryable": true
+        }
+      },
+      "source_output_check": null,
+      "regression_checks": []
+    },
+    {
+      "sql": "SELECT COALESCE(orders.channel, 'Other') AS channel, SUM(order_lines.amount) AS net_amount\nFROM orders INNER JOIN order_lines ON orders.order_id = order_lines.order_id\nWHERE order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-07-13T00:00:00'\n AND order_lines.settled_at < '2026-07-14T00:00:00'\nGROUP BY COALESCE(orders.channel, 'Other')",
+      "feedback": {
+        "task_id": "h13",
+        "status": "verified",
+        "verification_status": "verified",
+        "execution_status": "executed",
+        "error_code": null,
+        "feedback": "Registered checks passed on source and stored counterexamples.",
+        "rows": [
+          [
+            "Other",
+            15
+          ],
+          [
+            "web",
+            7
+          ]
+        ],
+        "scope": "registered task properties and bounded tests; not a complete semantic proof"
+      },
+      "source_output_check": {
+        "valid": true,
+        "code": null,
+        "scope": "Numeric result shape and unique typed keys only; not an answer oracle."
+      },
+      "regression_checks": []
+    }
+  ],
+  "http_attempts": 1,
+  "usage": [
+    {
+      "prompt_tokens": 2164,
+      "completion_tokens": 251,
+      "total_tokens": 2415
+    }
+  ],
+  "redaction": "Projected public evidence; private raw audit retained locally. No provider identifiers or account routes included."
+}

@@ -1,0 +1,15 @@
+{
+  "files": {
+    "dataverify/probe_runtime.py": "27a20f041d0ccf6799ca0169e2ee86aaa9bfa2b1a269f1b0b41c06094a8b9eca",
+    "dataverify/probe_testing.py": "f91a792f3c503939c6cde8bcaf4ce570faf2b72fff38359af1af893a40bc5ebb",
+    "dataverify/probe_capabilities.py": "86499faf4f298a01ae6766a10bc92cf943e564cb2a04ff12ab6d75b07e162f3b",
+    "dataverify/probe_guard.py": "e7f88edc64269a45775c6c4529e31880746e1f32afa7c7fdbeeb922a0bc207e8",
+    "dataverify/probe_agent_bridge.py": "6bf5020cc07e7ca9bc410cb671acafee1671b9cc5d379a4be7f269d7a899824e",
+    "dataverify/dbgpt_qwen.py": "7016f72050a0c57d40533cd5a091ce89ff1e40c94876b32b11475e420481a443",
+    "dataverify/probe_cost_budget.py": "67d216f359aa5be35d8e0cad7699f1fb1aa94308e4b8793d2bcaef733f8cc6d9",
+    "dataverify/probe_live_benchmark.py": "a12c4c89e0ec3c528d48acaaac71f937a414dd405950aed20ef3c82b4e4037ef",
+    "dataverify/probe_cases.py": "423c963cca953acc5fea335e9c64bd375ab949160fe25127a463d448528ccc49",
+    "docs/research/dbgpt_pin.json": "1f78f7021ca2be647096ed5d7dec15530cdf737bafd6a2d00b33904550aacdc0"
+  },
+  "scope": "Original pre-fix verifier source."
+}

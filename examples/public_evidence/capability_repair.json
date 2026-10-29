@@ -1,0 +1,154 @@
+{
+  "case_id": "d10",
+  "track": "controlled",
+  "feedback_policy": "capability_v2",
+  "native_loop": "DataScientistAgent.generate_reply (inherited)",
+  "upstream_commit": "06a46eea2d248a0f2b3e9096035424df4f2dc2eb",
+  "publication": {
+    "task_id": "p02",
+    "status": "verified",
+    "rows": [
+      [
+        1,
+        20000
+      ],
+      [
+        2,
+        15000
+      ]
+    ],
+    "verified_sql": "SELECT o.order_id, COALESCE(SUM(l.amount), 0) AS revenue FROM orders o LEFT JOIN order_lines l ON o.order_id = l.order_id AND l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at < '2026-10-01T00:00:00' GROUP BY o.order_id",
+    "error_code": null,
+    "scope": "registered necessary properties only; complete correctness independently evaluated"
+  },
+  "grade": {
+    "accepted": true,
+    "task_preserved": true,
+    "operational_failure": false,
+    "correct_task": true,
+    "source_correct": true,
+    "boundary_correct": true,
+    "publication_matches_sql": true,
+    "wrong_release": false,
+    "unscorable": false,
+    "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+    "source_grade": {
+      "correct": true,
+      "code": "MATCH"
+    },
+    "boundary_grade": {
+      "correct": true,
+      "code": "MATCH"
+    }
+  },
+  "actions": [
+    {
+      "sql": "SELECT o.order_id, COALESCE(SUM(l.amount), 0) AS revenue FROM orders o LEFT JOIN order_lines l ON o.order_id = l.order_id WHERE l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at < '2026-10-01T00:00:00' GROUP BY o.order_id",
+      "feedback": {
+        "task_id": "p02",
+        "status": "unverified",
+        "verification_status": "rejected",
+        "execution_status": "not_accepted",
+        "error_code": "ZERO_ORDER_WHERE_FILTER",
+        "feedback": "WHERE filtering may remove required zero orders",
+        "rows": null,
+        "scope": "registered task properties and bounded tests; not a complete semantic proof",
+        "diagnostic_evidence": "{\"task_id\":\"p02\",\"confirmed_property\":\"preserve_zero_orders\",\"property_violation\":\"PROPERTY_PRESERVE_ZERO_ORDERS\",\"data\":{\"property_id\":\"preserve_zero_orders\",\"base\":{\"orders\":[[1,1,\"其他\"]],\"lines\":[[1,1,1,\"settled\",\"2026-09-16T00:00:00\"]]},\"added_orders\":[[4,1,\"web\"]],\"added_lines\":[[4,4,1,\"pending\",\"2026-09-16T00:00:00\"]],\"record_count\":4},\"before\":[[1,1]],\"after\":[[1,1]],\"instruction\":\"修正候选实现以满足已确认性质，并保留原任务其他要求；此处不提供正确SQL。\"}",
+        "repair_guidance": {
+          "classification": "task_requirement",
+          "capability_version": "probe-sql-v1",
+          "allowed_alternatives": [
+            "For LEFT JOIN tasks that retain unmatched orders, use JOIN_ON for right-table eligibility filters; WHERE on right-table columns can remove those orders.",
+            "Aggregate the direct registered amount column and use the supported zero wrapper for empty matches. CASE aggregation is outside the execution grammar."
+          ],
+          "preserve_requirements": [
+            "Confirmed task_id=p02",
+            "Measure remains order_lines.amount; include legal negative amounts.",
+            "Confirmed status=settled; time range [2026-09-01T00:00:00, 2026-10-01T00:00:00).",
+            "Keep output_kind=orders and every caller-confirmed property: preserve_zero_orders"
+          ],
+          "retryable": true
+        }
+      },
+      "source_output_check": null,
+      "regression_checks": [
+        {
+          "status": "violation",
+          "property_id": "preserve_zero_orders",
+          "failure_type": "PROPERTY_PRESERVE_ZERO_ORDERS",
+          "before": [
+            [
+              1,
+              1
+            ]
+          ],
+          "after": [
+            [
+              1,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "sql": "SELECT o.order_id, COALESCE(SUM(l.amount), 0) AS revenue FROM orders o LEFT JOIN order_lines l ON o.order_id = l.order_id AND l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at < '2026-10-01T00:00:00' GROUP BY o.order_id",
+      "feedback": {
+        "task_id": "p02",
+        "status": "verified",
+        "verification_status": "verified",
+        "execution_status": "executed",
+        "error_code": null,
+        "feedback": "Registered checks passed on source and stored counterexamples.",
+        "rows": [
+          [
+            1,
+            20000
+          ],
+          [
+            2,
+            15000
+          ]
+        ],
+        "scope": "registered task properties and bounded tests; not a complete semantic proof"
+      },
+      "source_output_check": {
+        "valid": true,
+        "code": null,
+        "scope": "Numeric result shape and unique typed keys only; not an answer oracle."
+      },
+      "regression_checks": [
+        {
+          "status": "passed",
+          "property_id": "preserve_zero_orders",
+          "failure_type": null,
+          "before": [
+            [
+              1,
+              1
+            ]
+          ],
+          "after": [
+            [
+              1,
+              1
+            ],
+            [
+              4,
+              0
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "http_attempts": 1,
+  "usage": [
+    {
+      "prompt_tokens": 2060,
+      "completion_tokens": 247,
+      "total_tokens": 2307
+    }
+  ],
+  "redaction": "Projected public evidence; private raw audit retained locally. No provider identifiers or account routes included."
+}

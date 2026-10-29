@@ -1,0 +1,34 @@
+{
+  "initial_independent_summary": {
+    "scheduled": 24,
+    "completed": 24,
+    "passed": 21,
+    "category_counts": {
+      "legal": 8,
+      "semantic_fault": 10,
+      "unsupported": 6
+    },
+    "semantic_wrong_releases": 3,
+    "scope_breaches": 0,
+    "refused_legal": 0,
+    "operational_errors": 0,
+    "dynamic_new_detections": 0
+  },
+  "converted_regression_summary": {
+    "scheduled": 24,
+    "completed": 24,
+    "passed": 24,
+    "category_counts": {
+      "legal": 8,
+      "semantic_fault": 10,
+      "unsupported": 6
+    },
+    "semantic_wrong_releases": 0,
+    "scope_breaches": 0,
+    "refused_legal": 0,
+    "operational_errors": 0,
+    "dynamic_new_detections": 0
+  },
+  "scope": "Fixed schema; independently authored prospective cases, followed by disclosed regression after fixes.",
+  "authoring": "Separate AI contexts for author and label reviewer, with Python/SQLite targets; not a public benchmark or external human evaluation."
+}

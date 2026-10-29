@@ -1,0 +1,155 @@
+{
+  "confirmed_task": {
+    "task_id": "p01",
+    "question": "统计九月已结算明细的净收入；包括合法负金额退款。",
+    "properties": [
+      "exclude_end",
+      "exclude_status",
+      "include_start",
+      "include_negative"
+    ],
+    "output_kind": "scalar",
+    "start": "2026-09-01T00:00:00",
+    "end": "2026-10-01T00:00:00",
+    "status": "settled",
+    "other_label": "其他"
+  },
+  "candidate_sql": "SELECT COALESCE(SUM(l.amount), 0) AS revenue FROM order_lines l WHERE l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at <= '2026-10-01T00:00:00'",
+  "counterexample": {
+    "full": {
+      "property_id": "exclude_end",
+      "base": {
+        "orders": [
+          [
+            1,
+            1,
+            "其他"
+          ],
+          [
+            2,
+            1,
+            "web"
+          ],
+          [
+            3,
+            1,
+            "web"
+          ]
+        ],
+        "lines": [
+          [
+            1,
+            1,
+            1,
+            "settled",
+            "2026-09-16T00:00:00"
+          ],
+          [
+            2,
+            2,
+            1,
+            "settled",
+            "2026-09-16T00:00:00"
+          ],
+          [
+            3,
+            3,
+            1,
+            "settled",
+            "2026-09-16T00:00:00"
+          ]
+        ]
+      },
+      "added_orders": [
+        [
+          4,
+          1,
+          "web"
+        ]
+      ],
+      "added_lines": [
+        [
+          4,
+          4,
+          1,
+          "settled",
+          "2026-10-01T00:00:00"
+        ]
+      ],
+      "record_count": 8
+    },
+    "compact": {
+      "property_id": "exclude_end",
+      "base": {
+        "orders": [
+          [
+            1,
+            1,
+            "其他"
+          ]
+        ],
+        "lines": [
+          [
+            1,
+            1,
+            1,
+            "settled",
+            "2026-09-16T00:00:00"
+          ]
+        ]
+      },
+      "added_orders": [
+        [
+          4,
+          1,
+          "web"
+        ]
+      ],
+      "added_lines": [
+        [
+          4,
+          4,
+          1,
+          "settled",
+          "2026-10-01T00:00:00"
+        ]
+      ],
+      "record_count": 4
+    },
+    "full_verdict": {
+      "status": "violation",
+      "property_id": "exclude_end",
+      "failure_type": "PROPERTY_EXCLUDE_END",
+      "before": [
+        [
+          3
+        ]
+      ],
+      "after": [
+        [
+          4
+        ]
+      ]
+    },
+    "compact_verdict": {
+      "status": "violation",
+      "property_id": "exclude_end",
+      "failure_type": "PROPERTY_EXCLUDE_END",
+      "before": [
+        [
+          1
+        ]
+      ],
+      "after": [
+        [
+          2
+        ]
+      ]
+    },
+    "full_feedback": "{\"task_id\":\"p01\",\"confirmed_property\":\"exclude_end\",\"property_violation\":\"PROPERTY_EXCLUDE_END\",\"data\":{\"property_id\":\"exclude_end\",\"base\":{\"orders\":[[1,1,\"其他\"],[2,1,\"web\"],[3,1,\"web\"]],\"lines\":[[1,1,1,\"settled\",\"2026-09-16T00:00:00\"],[2,2,1,\"settled\",\"2026-09-16T00:00:00\"],[3,3,1,\"settled\",\"2026-09-16T00:00:00\"]]},\"added_orders\":[[4,1,\"web\"]],\"added_lines\":[[4,4,1,\"settled\",\"2026-10-01T00:00:00\"]],\"record_count\":8},\"before\":[[3]],\"after\":[[4]],\"instruction\":\"修正候选实现以满足已确认性质，并保留原任务其他要求；此处不提供正确SQL。\"}",
+    "compact_feedback": "{\"task_id\":\"p01\",\"confirmed_property\":\"exclude_end\",\"property_violation\":\"PROPERTY_EXCLUDE_END\",\"data\":{\"property_id\":\"exclude_end\",\"base\":{\"orders\":[[1,1,\"其他\"]],\"lines\":[[1,1,1,\"settled\",\"2026-09-16T00:00:00\"]]},\"added_orders\":[[4,1,\"web\"]],\"added_lines\":[[4,4,1,\"settled\",\"2026-10-01T00:00:00\"]],\"record_count\":4},\"before\":[[1]],\"after\":[[2]],\"instruction\":\"修正候选实现以满足已确认性质，并保留原任务其他要求；此处不提供正确SQL。\"}",
+    "full_feedback_chars": 503,
+    "compact_feedback_chars": 399,
+    "reduction_status": "completed"
+  }
+}

@@ -1,0 +1,2145 @@
+{
+  "ablation": {
+    "real_model_used": true,
+    "split": "disclosed_development_not_unseen_holdout",
+    "model": "qwen3.8-flash",
+    "max_native_attempts": 3,
+    "summary": {
+      "scheduled_cells": 12,
+      "groups": {
+        "neither:controlled": {
+          "scheduled": 2,
+          "completed": 2,
+          "not_run": 0,
+          "operational_errors": 0,
+          "correct_tasks": 2,
+          "real_model_correct_tasks": 2,
+          "offline_contract_correct": null,
+          "correct_over_scheduled": {
+            "numerator": 2,
+            "denominator": 2
+          },
+          "wrong_releases": 0,
+          "actual_http_attempts": 3,
+          "injected_initial_turns": 2,
+          "native_turns": 5,
+          "escalation_transitions": 0,
+          "escalated_feedbacks": 0,
+          "consumed_escalated_feedbacks": 0,
+          "full_evidence_feedbacks": 0,
+          "consumed_full_evidence_feedbacks": 0,
+          "diagnostic_queries": 44,
+          "regression_queries": 5,
+          "elapsed_seconds": 14.822664,
+          "usage": {
+            "prompt_tokens_known": 5121,
+            "completion_tokens_known": 761,
+            "total_tokens_known": 5882,
+            "event_count": 3,
+            "unknown_usage_events": 0,
+            "usage_complete": true
+          }
+        },
+        "neither:natural": {
+          "scheduled": 1,
+          "completed": 1,
+          "not_run": 0,
+          "operational_errors": 1,
+          "correct_tasks": 0,
+          "real_model_correct_tasks": 0,
+          "offline_contract_correct": null,
+          "correct_over_scheduled": {
+            "numerator": 0,
+            "denominator": 1
+          },
+          "wrong_releases": 0,
+          "actual_http_attempts": 1,
+          "injected_initial_turns": 0,
+          "native_turns": 1,
+          "escalation_transitions": 0,
+          "escalated_feedbacks": 0,
+          "consumed_escalated_feedbacks": 0,
+          "full_evidence_feedbacks": 0,
+          "consumed_full_evidence_feedbacks": 0,
+          "diagnostic_queries": 0,
+          "regression_queries": 0,
+          "elapsed_seconds": 27.806702,
+          "usage": {
+            "prompt_tokens_known": 1182,
+            "completion_tokens_known": 900,
+            "total_tokens_known": 2082,
+            "event_count": 1,
+            "unknown_usage_events": 0,
+            "usage_complete": true
+          }
+        },
+        "capability_only:controlled": {
+          "scheduled": 2,
+          "completed": 2,
+          "not_run": 0,
+          "operational_errors": 0,
+          "correct_tasks": 2,
+          "real_model_correct_tasks": 2,
+          "offline_contract_correct": null,
+          "correct_over_scheduled": {
+            "numerator": 2,
+            "denominator": 2
+          },
+          "wrong_releases": 0,
+          "actual_http_attempts": 2,
+          "injected_initial_turns": 2,
+          "native_turns": 4,
+          "escalation_transitions": 0,
+          "escalated_feedbacks": 0,
+          "consumed_escalated_feedbacks": 0,
+          "full_evidence_feedbacks": 0,
+          "consumed_full_evidence_feedbacks": 0,
+          "diagnostic_queries": 44,
+          "regression_queries": 4,
+          "elapsed_seconds": 8.979775,
+          "usage": {
+            "prompt_tokens_known": 3715,
+            "completion_tokens_known": 479,
+            "total_tokens_known": 4194,
+            "event_count": 2,
+            "unknown_usage_events": 0,
+            "usage_complete": true
+          }
+        },
+        "capability_only:natural": {
+          "scheduled": 1,
+          "completed": 1,
+          "not_run": 0,
+          "operational_errors": 0,
+          "correct_tasks": 1,
+          "real_model_correct_tasks": 1,
+          "offline_contract_correct": null,
+          "correct_over_scheduled": {
+            "numerator": 1,
+            "denominator": 1
+          },
+          "wrong_releases": 0,
+          "actual_http_attempts": 2,
+          "injected_initial_turns": 0,
+          "native_turns": 2,
+          "escalation_transitions": 0,
+          "escalated_feedbacks": 0,
+          "consumed_escalated_feedbacks": 0,
+          "full_evidence_feedbacks": 0,
+          "consumed_full_evidence_feedbacks": 0,
+          "diagnostic_queries": 28,
+          "regression_queries": 4,
+          "elapsed_seconds": 9.895179,
+          "usage": {
+            "prompt_tokens_known": 3618,
+            "completion_tokens_known": 606,
+            "total_tokens_known": 4224,
+            "event_count": 2,
+            "unknown_usage_events": 0,
+            "usage_complete": true
+          }
+        },
+        "guidance_only:controlled": {
+          "scheduled": 2,
+          "completed": 2,
+          "not_run": 0,
+          "operational_errors": 0,
+          "correct_tasks": 2,
+          "real_model_correct_tasks": 2,
+          "offline_contract_correct": null,
+          "correct_over_scheduled": {
+            "numerator": 2,
+            "denominator": 2
+          },
+          "wrong_releases": 0,
+          "actual_http_attempts": 2,
+          "injected_initial_turns": 2,
+          "native_turns": 4,
+          "escalation_transitions": 0,
+          "escalated_feedbacks": 0,
+          "consumed_escalated_feedbacks": 0,
+          "full_evidence_feedbacks": 0,
+          "consumed_full_evidence_feedbacks": 0,
+          "diagnostic_queries": 44,
+          "regression_queries": 4,
+          "elapsed_seconds": 8.69395,
+          "usage": {
+            "prompt_tokens_known": 3311,
+            "completion_tokens_known": 496,
+            "total_tokens_known": 3807,
+            "event_count": 2,
+            "unknown_usage_events": 0,
+            "usage_complete": true
+          }
+        },
+        "guidance_only:natural": {
+          "scheduled": 1,
+          "completed": 1,
+          "not_run": 0,
+          "operational_errors": 0,
+          "correct_tasks": 1,
+          "real_model_correct_tasks": 1,
+          "offline_contract_correct": null,
+          "correct_over_scheduled": {
+            "numerator": 1,
+            "denominator": 1
+          },
+          "wrong_releases": 0,
+          "actual_http_attempts": 2,
+          "injected_initial_turns": 0,
+          "native_turns": 2,
+          "escalation_transitions": 0,
+          "escalated_feedbacks": 0,
+          "consumed_escalated_feedbacks": 0,
+          "full_evidence_feedbacks": 0,
+          "consumed_full_evidence_feedbacks": 0,
+          "diagnostic_queries": 28,
+          "regression_queries": 4,
+          "elapsed_seconds": 8.775991,
+          "usage": {
+            "prompt_tokens_known": 3187,
+            "completion_tokens_known": 534,
+            "total_tokens_known": 3721,
+            "event_count": 2,
+            "unknown_usage_events": 0,
+            "usage_complete": true
+          }
+        },
+        "both:controlled": {
+          "scheduled": 2,
+          "completed": 2,
+          "not_run": 0,
+          "operational_errors": 0,
+          "correct_tasks": 2,
+          "real_model_correct_tasks": 2,
+          "offline_contract_correct": null,
+          "correct_over_scheduled": {
+            "numerator": 2,
+            "denominator": 2
+          },
+          "wrong_releases": 0,
+          "actual_http_attempts": 2,
+          "injected_initial_turns": 2,
+          "native_turns": 4,
+          "escalation_transitions": 0,
+          "escalated_feedbacks": 0,
+          "consumed_escalated_feedbacks": 0,
+          "full_evidence_feedbacks": 0,
+          "consumed_full_evidence_feedbacks": 0,
+          "diagnostic_queries": 44,
+          "regression_queries": 4,
+          "elapsed_seconds": 8.652096,
+          "usage": {
+            "prompt_tokens_known": 3897,
+            "completion_tokens_known": 481,
+            "total_tokens_known": 4378,
+            "event_count": 2,
+            "unknown_usage_events": 0,
+            "usage_complete": true
+          }
+        },
+        "both:natural": {
+          "scheduled": 1,
+          "completed": 1,
+          "not_run": 0,
+          "operational_errors": 0,
+          "correct_tasks": 1,
+          "real_model_correct_tasks": 1,
+          "offline_contract_correct": null,
+          "correct_over_scheduled": {
+            "numerator": 1,
+            "denominator": 1
+          },
+          "wrong_releases": 0,
+          "actual_http_attempts": 2,
+          "injected_initial_turns": 0,
+          "native_turns": 2,
+          "escalation_transitions": 0,
+          "escalated_feedbacks": 0,
+          "consumed_escalated_feedbacks": 0,
+          "full_evidence_feedbacks": 0,
+          "consumed_full_evidence_feedbacks": 0,
+          "diagnostic_queries": 28,
+          "regression_queries": 4,
+          "elapsed_seconds": 9.714251,
+          "usage": {
+            "prompt_tokens_known": 3764,
+            "completion_tokens_known": 598,
+            "total_tokens_known": 4362,
+            "event_count": 2,
+            "unknown_usage_events": 0,
+            "usage_complete": true
+          }
+        }
+      },
+      "interpretation": "real-model development evaluation"
+    },
+    "pairs": [
+      {
+        "case_id": "d10",
+        "track": "controlled",
+        "seed": 53,
+        "all_arms_completed": true,
+        "arms": {
+          "neither": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 2,
+            "usage": {
+              "prompt_tokens_known": 3649,
+              "completion_tokens_known": 526,
+              "total_tokens_known": 4175,
+              "event_count": 2,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          },
+          "capability_only": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 1,
+            "usage": {
+              "prompt_tokens_known": 1950,
+              "completion_tokens_known": 245,
+              "total_tokens_known": 2195,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          },
+          "guidance_only": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 1,
+            "usage": {
+              "prompt_tokens_known": 1839,
+              "completion_tokens_known": 229,
+              "total_tokens_known": 2068,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          },
+          "both": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 1,
+            "usage": {
+              "prompt_tokens_known": 2132,
+              "completion_tokens_known": 237,
+              "total_tokens_known": 2369,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          }
+        }
+      },
+      {
+        "case_id": "d11",
+        "track": "controlled",
+        "seed": 53,
+        "all_arms_completed": true,
+        "arms": {
+          "neither": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 1,
+            "usage": {
+              "prompt_tokens_known": 1472,
+              "completion_tokens_known": 235,
+              "total_tokens_known": 1707,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          },
+          "capability_only": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 1,
+            "usage": {
+              "prompt_tokens_known": 1765,
+              "completion_tokens_known": 234,
+              "total_tokens_known": 1999,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          },
+          "guidance_only": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 1,
+            "usage": {
+              "prompt_tokens_known": 1472,
+              "completion_tokens_known": 267,
+              "total_tokens_known": 1739,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          },
+          "both": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 1,
+            "usage": {
+              "prompt_tokens_known": 1765,
+              "completion_tokens_known": 244,
+              "total_tokens_known": 2009,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          }
+        }
+      },
+      {
+        "case_id": "d03",
+        "track": "natural",
+        "seed": 53,
+        "all_arms_completed": true,
+        "arms": {
+          "neither": {
+            "status": "completed",
+            "correct_task": false,
+            "http_attempts": 1,
+            "usage": {
+              "prompt_tokens_known": 1182,
+              "completion_tokens_known": 900,
+              "total_tokens_known": 2082,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          },
+          "capability_only": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 2,
+            "usage": {
+              "prompt_tokens_known": 3618,
+              "completion_tokens_known": 606,
+              "total_tokens_known": 4224,
+              "event_count": 2,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          },
+          "guidance_only": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 2,
+            "usage": {
+              "prompt_tokens_known": 3187,
+              "completion_tokens_known": 534,
+              "total_tokens_known": 3721,
+              "event_count": 2,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          },
+          "both": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 2,
+            "usage": {
+              "prompt_tokens_known": 3764,
+              "completion_tokens_known": 598,
+              "total_tokens_known": 4362,
+              "event_count": 2,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          }
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens_known": 27795,
+      "completion_tokens_known": 4855,
+      "total_tokens_known": 32650,
+      "event_count": 16,
+      "unknown_usage_events": 0,
+      "usage_complete": true
+    },
+    "source_sha256": {
+      "dataverify/feedback_experiment.py": "d7f1fa272b19f98b1e8ccb3505c50ec6edf5529a2c2d9c8e29f05f7bccfc7d43",
+      "dataverify/probe_agent_bridge.py": "9e5ca599c6a215b2d30f2d231e20817896acacb130901cddcf819e8dc40a38d8",
+      "dataverify/probe_guard.py": "42e680af83215ac039633c1bf3e29be7a7975cb17d9f642ba36545f733c62fe9",
+      "dataverify/probe_capabilities.py": "3c1dcb5946c5b4c247a946f016b1557d1cbf18c2bee7424bdbffe9ef3d23e560",
+      "dataverify/probe_runtime.py": "56570da386629d5a02e8ee3cdfea44b265f1c282a9a6134c572c71e8c25b6317",
+      "dataverify/probe_testing.py": "f91a792f3c503939c6cde8bcaf4ce570faf2b72fff38359af1af893a40bc5ebb",
+      "dataverify/probe_cases.py": "423c963cca953acc5fea335e9c64bd375ab949160fe25127a463d448528ccc49",
+      "dataverify/probe_live_benchmark.py": "a12c4c89e0ec3c528d48acaaac71f937a414dd405950aed20ef3c82b4e4037ef",
+      "dataverify/probe_cost_budget.py": "67d216f359aa5be35d8e0cad7699f1fb1aa94308e4b8793d2bcaef733f8cc6d9",
+      "dataverify/dbgpt_qwen.py": "7016f72050a0c57d40533cd5a091ce89ff1e40c94876b32b11475e420481a443"
+    },
+    "completion_note": "Only the previously unrun capability_only natural trial was supplemented; original HTTP truncation failure retained without retry.",
+    "source_runs": {
+      "initial": {
+        "summary": "reports/feedback_ablation_live_20261029/summary.json",
+        "summary_sha256": "f11c81cd5d079b418394d70f3552f690c1846b6848252221731a541671eddbc3",
+        "code_sha256": {
+          "dataverify/feedback_experiment.py": "d7f1fa272b19f98b1e8ccb3505c50ec6edf5529a2c2d9c8e29f05f7bccfc7d43",
+          "dataverify/probe_agent_bridge.py": "9e5ca599c6a215b2d30f2d231e20817896acacb130901cddcf819e8dc40a38d8",
+          "dataverify/probe_guard.py": "42e680af83215ac039633c1bf3e29be7a7975cb17d9f642ba36545f733c62fe9",
+          "dataverify/probe_capabilities.py": "3c1dcb5946c5b4c247a946f016b1557d1cbf18c2bee7424bdbffe9ef3d23e560",
+          "dataverify/probe_runtime.py": "56570da386629d5a02e8ee3cdfea44b265f1c282a9a6134c572c71e8c25b6317",
+          "dataverify/probe_testing.py": "f91a792f3c503939c6cde8bcaf4ce570faf2b72fff38359af1af893a40bc5ebb",
+          "dataverify/probe_cases.py": "423c963cca953acc5fea335e9c64bd375ab949160fe25127a463d448528ccc49",
+          "dataverify/probe_live_benchmark.py": "a12c4c89e0ec3c528d48acaaac71f937a414dd405950aed20ef3c82b4e4037ef",
+          "dataverify/probe_cost_budget.py": "67d216f359aa5be35d8e0cad7699f1fb1aa94308e4b8793d2bcaef733f8cc6d9",
+          "dataverify/dbgpt_qwen.py": "7016f72050a0c57d40533cd5a091ce89ff1e40c94876b32b11475e420481a443"
+        }
+      },
+      "supplement": {
+        "summary": "reports/feedback_ablation_remainder_20261029/summary.json",
+        "summary_sha256": "8f2ac403f09e5292d470dd1077654ac8d41629dca78cea83567b436b8c7268b6",
+        "code_sha256": {
+          "dataverify/feedback_experiment.py": "db6c193fd551497ab1ca358ce086b47b7f6e3853a6892c247e03c700dbc70b80",
+          "dataverify/probe_agent_bridge.py": "9e5ca599c6a215b2d30f2d231e20817896acacb130901cddcf819e8dc40a38d8",
+          "dataverify/probe_guard.py": "42e680af83215ac039633c1bf3e29be7a7975cb17d9f642ba36545f733c62fe9",
+          "dataverify/probe_capabilities.py": "3c1dcb5946c5b4c247a946f016b1557d1cbf18c2bee7424bdbffe9ef3d23e560",
+          "dataverify/probe_runtime.py": "56570da386629d5a02e8ee3cdfea44b265f1c282a9a6134c572c71e8c25b6317",
+          "dataverify/probe_testing.py": "f91a792f3c503939c6cde8bcaf4ce570faf2b72fff38359af1af893a40bc5ebb",
+          "dataverify/probe_cases.py": "423c963cca953acc5fea335e9c64bd375ab949160fe25127a463d448528ccc49",
+          "dataverify/probe_live_benchmark.py": "a12c4c89e0ec3c528d48acaaac71f937a414dd405950aed20ef3c82b4e4037ef",
+          "dataverify/probe_cost_budget.py": "67d216f359aa5be35d8e0cad7699f1fb1aa94308e4b8793d2bcaef733f8cc6d9",
+          "dataverify/dbgpt_qwen.py": "7016f72050a0c57d40533cd5a091ce89ff1e40c94876b32b11475e420481a443"
+        }
+      }
+    },
+    "rows": [
+      {
+        "case_id": "d10",
+        "track": "controlled",
+        "seed": 53,
+        "arm": "neither",
+        "mode": "compact",
+        "feedback_policy": "legacy_v1",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 2,
+        "injected_initial_turns": 1,
+        "native_turns": 3,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1657,
+              "completion_tokens": 256,
+              "total_tokens": 1913
+            },
+            "usage_complete": true
+          },
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1992,
+              "completion_tokens": 270,
+              "total_tokens": 2262
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d10",
+        "track": "controlled",
+        "seed": 53,
+        "arm": "capability_only",
+        "mode": "compact",
+        "feedback_policy": "capability_only",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 1,
+        "injected_initial_turns": 1,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1950,
+              "completion_tokens": 245,
+              "total_tokens": 2195
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d10",
+        "track": "controlled",
+        "seed": 53,
+        "arm": "guidance_only",
+        "mode": "compact",
+        "feedback_policy": "guidance_only",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 1,
+        "injected_initial_turns": 1,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1839,
+              "completion_tokens": 229,
+              "total_tokens": 2068
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d10",
+        "track": "controlled",
+        "seed": 53,
+        "arm": "both",
+        "mode": "compact",
+        "feedback_policy": "capability_v2",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 1,
+        "injected_initial_turns": 1,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 2132,
+              "completion_tokens": 237,
+              "total_tokens": 2369
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d11",
+        "track": "controlled",
+        "seed": 53,
+        "arm": "neither",
+        "mode": "compact",
+        "feedback_policy": "legacy_v1",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 1,
+        "injected_initial_turns": 1,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1472,
+              "completion_tokens": 235,
+              "total_tokens": 1707
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d11",
+        "track": "controlled",
+        "seed": 53,
+        "arm": "capability_only",
+        "mode": "compact",
+        "feedback_policy": "capability_only",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 1,
+        "injected_initial_turns": 1,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1765,
+              "completion_tokens": 234,
+              "total_tokens": 1999
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d11",
+        "track": "controlled",
+        "seed": 53,
+        "arm": "guidance_only",
+        "mode": "compact",
+        "feedback_policy": "guidance_only",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 1,
+        "injected_initial_turns": 1,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1472,
+              "completion_tokens": 267,
+              "total_tokens": 1739
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d11",
+        "track": "controlled",
+        "seed": 53,
+        "arm": "both",
+        "mode": "compact",
+        "feedback_policy": "capability_v2",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 1,
+        "injected_initial_turns": 1,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1765,
+              "completion_tokens": 244,
+              "total_tokens": 2009
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d03",
+        "track": "natural",
+        "seed": 53,
+        "arm": "neither",
+        "mode": "compact",
+        "feedback_policy": "legacy_v1",
+        "status": "completed",
+        "grade": {
+          "accepted": false,
+          "task_preserved": true,
+          "operational_failure": true,
+          "correct_task": false,
+          "source_correct": false,
+          "boundary_correct": false,
+          "publication_matches_sql": false,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof"
+        },
+        "http_attempts": 1,
+        "injected_initial_turns": 0,
+        "native_turns": 1,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "failed",
+            "http_status": 200,
+            "error_code": "QWEN_RESPONSE_TRUNCATED",
+            "usage": {
+              "prompt_tokens": 1182,
+              "completion_tokens": 900,
+              "total_tokens": 2082
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d03",
+        "track": "natural",
+        "seed": 53,
+        "arm": "capability_only",
+        "mode": "compact",
+        "feedback_policy": "capability_only",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 2,
+        "injected_initial_turns": 0,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1475,
+              "completion_tokens": 334,
+              "total_tokens": 1809
+            },
+            "usage_complete": true
+          },
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 2143,
+              "completion_tokens": 272,
+              "total_tokens": 2415
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d03",
+        "track": "natural",
+        "seed": 53,
+        "arm": "guidance_only",
+        "mode": "compact",
+        "feedback_policy": "guidance_only",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 2,
+        "injected_initial_turns": 0,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1182,
+              "completion_tokens": 307,
+              "total_tokens": 1489
+            },
+            "usage_complete": true
+          },
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 2005,
+              "completion_tokens": 227,
+              "total_tokens": 2232
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d03",
+        "track": "natural",
+        "seed": 53,
+        "arm": "both",
+        "mode": "compact",
+        "feedback_policy": "capability_v2",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 2,
+        "injected_initial_turns": 0,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1475,
+              "completion_tokens": 298,
+              "total_tokens": 1773
+            },
+            "usage_complete": true
+          },
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 2289,
+              "completion_tokens": 300,
+              "total_tokens": 2589
+            },
+            "usage_complete": true
+          }
+        ]
+      }
+    ]
+  },
+  "strategy": {
+    "real_model_used": true,
+    "split": "disclosed_development_not_unseen_holdout",
+    "model": "qwen3.8-flash",
+    "max_native_attempts": 3,
+    "summary": {
+      "scheduled_cells": 9,
+      "groups": {
+        "full_only:controlled": {
+          "scheduled": 2,
+          "completed": 2,
+          "not_run": 0,
+          "operational_errors": 0,
+          "correct_tasks": 2,
+          "real_model_correct_tasks": 2,
+          "offline_contract_correct": null,
+          "correct_over_scheduled": {
+            "numerator": 2,
+            "denominator": 2
+          },
+          "wrong_releases": 0,
+          "actual_http_attempts": 2,
+          "injected_initial_turns": 2,
+          "native_turns": 4,
+          "escalation_transitions": 0,
+          "escalated_feedbacks": 0,
+          "consumed_escalated_feedbacks": 0,
+          "full_evidence_feedbacks": 0,
+          "consumed_full_evidence_feedbacks": 0,
+          "diagnostic_queries": 44,
+          "regression_queries": 4,
+          "elapsed_seconds": 9.545026,
+          "usage": {
+            "prompt_tokens_known": 3987,
+            "completion_tokens_known": 481,
+            "total_tokens_known": 4468,
+            "event_count": 2,
+            "unknown_usage_events": 0,
+            "usage_complete": true
+          }
+        },
+        "full_only:natural": {
+          "scheduled": 1,
+          "completed": 1,
+          "not_run": 0,
+          "operational_errors": 0,
+          "correct_tasks": 1,
+          "real_model_correct_tasks": 1,
+          "offline_contract_correct": null,
+          "correct_over_scheduled": {
+            "numerator": 1,
+            "denominator": 1
+          },
+          "wrong_releases": 0,
+          "actual_http_attempts": 2,
+          "injected_initial_turns": 0,
+          "native_turns": 2,
+          "escalation_transitions": 0,
+          "escalated_feedbacks": 0,
+          "consumed_escalated_feedbacks": 0,
+          "full_evidence_feedbacks": 0,
+          "consumed_full_evidence_feedbacks": 0,
+          "diagnostic_queries": 28,
+          "regression_queries": 4,
+          "elapsed_seconds": 12.273138,
+          "usage": {
+            "prompt_tokens_known": 4078,
+            "completion_tokens_known": 797,
+            "total_tokens_known": 4875,
+            "event_count": 2,
+            "unknown_usage_events": 0,
+            "usage_complete": true
+          }
+        },
+        "compact_only:controlled": {
+          "scheduled": 2,
+          "completed": 2,
+          "not_run": 0,
+          "operational_errors": 0,
+          "correct_tasks": 2,
+          "real_model_correct_tasks": 2,
+          "offline_contract_correct": null,
+          "correct_over_scheduled": {
+            "numerator": 2,
+            "denominator": 2
+          },
+          "wrong_releases": 0,
+          "actual_http_attempts": 2,
+          "injected_initial_turns": 2,
+          "native_turns": 4,
+          "escalation_transitions": 0,
+          "escalated_feedbacks": 0,
+          "consumed_escalated_feedbacks": 0,
+          "full_evidence_feedbacks": 0,
+          "consumed_full_evidence_feedbacks": 0,
+          "diagnostic_queries": 44,
+          "regression_queries": 4,
+          "elapsed_seconds": 9.417426,
+          "usage": {
+            "prompt_tokens_known": 3897,
+            "completion_tokens_known": 479,
+            "total_tokens_known": 4376,
+            "event_count": 2,
+            "unknown_usage_events": 0,
+            "usage_complete": true
+          }
+        },
+        "compact_only:natural": {
+          "scheduled": 1,
+          "completed": 1,
+          "not_run": 0,
+          "operational_errors": 0,
+          "correct_tasks": 1,
+          "real_model_correct_tasks": 1,
+          "offline_contract_correct": null,
+          "correct_over_scheduled": {
+            "numerator": 1,
+            "denominator": 1
+          },
+          "wrong_releases": 0,
+          "actual_http_attempts": 2,
+          "injected_initial_turns": 0,
+          "native_turns": 2,
+          "escalation_transitions": 0,
+          "escalated_feedbacks": 0,
+          "consumed_escalated_feedbacks": 0,
+          "full_evidence_feedbacks": 0,
+          "consumed_full_evidence_feedbacks": 0,
+          "diagnostic_queries": 28,
+          "regression_queries": 4,
+          "elapsed_seconds": 8.25579,
+          "usage": {
+            "prompt_tokens_known": 3726,
+            "completion_tokens_known": 512,
+            "total_tokens_known": 4238,
+            "event_count": 2,
+            "unknown_usage_events": 0,
+            "usage_complete": true
+          }
+        },
+        "adaptive:controlled": {
+          "scheduled": 2,
+          "completed": 2,
+          "not_run": 0,
+          "operational_errors": 0,
+          "correct_tasks": 2,
+          "real_model_correct_tasks": 2,
+          "offline_contract_correct": null,
+          "correct_over_scheduled": {
+            "numerator": 2,
+            "denominator": 2
+          },
+          "wrong_releases": 0,
+          "actual_http_attempts": 2,
+          "injected_initial_turns": 2,
+          "native_turns": 4,
+          "escalation_transitions": 0,
+          "escalated_feedbacks": 0,
+          "consumed_escalated_feedbacks": 0,
+          "full_evidence_feedbacks": 0,
+          "consumed_full_evidence_feedbacks": 0,
+          "diagnostic_queries": 44,
+          "regression_queries": 4,
+          "elapsed_seconds": 9.571368,
+          "usage": {
+            "prompt_tokens_known": 3947,
+            "completion_tokens_known": 486,
+            "total_tokens_known": 4433,
+            "event_count": 2,
+            "unknown_usage_events": 0,
+            "usage_complete": true
+          }
+        },
+        "adaptive:natural": {
+          "scheduled": 1,
+          "completed": 1,
+          "not_run": 0,
+          "operational_errors": 0,
+          "correct_tasks": 1,
+          "real_model_correct_tasks": 1,
+          "offline_contract_correct": null,
+          "correct_over_scheduled": {
+            "numerator": 1,
+            "denominator": 1
+          },
+          "wrong_releases": 0,
+          "actual_http_attempts": 2,
+          "injected_initial_turns": 0,
+          "native_turns": 2,
+          "escalation_transitions": 0,
+          "escalated_feedbacks": 0,
+          "consumed_escalated_feedbacks": 0,
+          "full_evidence_feedbacks": 0,
+          "consumed_full_evidence_feedbacks": 0,
+          "diagnostic_queries": 28,
+          "regression_queries": 4,
+          "elapsed_seconds": 10.347717,
+          "usage": {
+            "prompt_tokens_known": 3889,
+            "completion_tokens_known": 672,
+            "total_tokens_known": 4561,
+            "event_count": 2,
+            "unknown_usage_events": 0,
+            "usage_complete": true
+          }
+        }
+      },
+      "interpretation": "real-model development evaluation"
+    },
+    "pairs": [
+      {
+        "case_id": "d10",
+        "track": "controlled",
+        "seed": 53,
+        "all_arms_completed": true,
+        "arms": {
+          "full_only": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 1,
+            "usage": {
+              "prompt_tokens_known": 2222,
+              "completion_tokens_known": 238,
+              "total_tokens_known": 2460,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          },
+          "compact_only": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 1,
+            "usage": {
+              "prompt_tokens_known": 2132,
+              "completion_tokens_known": 239,
+              "total_tokens_known": 2371,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          },
+          "adaptive": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 1,
+            "usage": {
+              "prompt_tokens_known": 2157,
+              "completion_tokens_known": 242,
+              "total_tokens_known": 2399,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          }
+        }
+      },
+      {
+        "case_id": "d11",
+        "track": "controlled",
+        "seed": 53,
+        "all_arms_completed": true,
+        "arms": {
+          "full_only": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 1,
+            "usage": {
+              "prompt_tokens_known": 1765,
+              "completion_tokens_known": 243,
+              "total_tokens_known": 2008,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          },
+          "compact_only": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 1,
+            "usage": {
+              "prompt_tokens_known": 1765,
+              "completion_tokens_known": 240,
+              "total_tokens_known": 2005,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          },
+          "adaptive": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 1,
+            "usage": {
+              "prompt_tokens_known": 1790,
+              "completion_tokens_known": 244,
+              "total_tokens_known": 2034,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          }
+        }
+      },
+      {
+        "case_id": "d03",
+        "track": "natural",
+        "seed": 53,
+        "all_arms_completed": true,
+        "arms": {
+          "full_only": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 2,
+            "usage": {
+              "prompt_tokens_known": 4078,
+              "completion_tokens_known": 797,
+              "total_tokens_known": 4875,
+              "event_count": 2,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          },
+          "compact_only": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 2,
+            "usage": {
+              "prompt_tokens_known": 3726,
+              "completion_tokens_known": 512,
+              "total_tokens_known": 4238,
+              "event_count": 2,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          },
+          "adaptive": {
+            "status": "completed",
+            "correct_task": true,
+            "http_attempts": 2,
+            "usage": {
+              "prompt_tokens_known": 3889,
+              "completion_tokens_known": 672,
+              "total_tokens_known": 4561,
+              "event_count": 2,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "escalated_feedbacks": 0
+          }
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens_known": 23524,
+      "completion_tokens_known": 3427,
+      "total_tokens_known": 26951,
+      "event_count": 12,
+      "unknown_usage_events": 0,
+      "usage_complete": true
+    },
+    "source_sha256": {
+      "dataverify/feedback_experiment.py": "db6c193fd551497ab1ca358ce086b47b7f6e3853a6892c247e03c700dbc70b80",
+      "dataverify/probe_agent_bridge.py": "9e5ca599c6a215b2d30f2d231e20817896acacb130901cddcf819e8dc40a38d8",
+      "dataverify/probe_guard.py": "42e680af83215ac039633c1bf3e29be7a7975cb17d9f642ba36545f733c62fe9",
+      "dataverify/probe_capabilities.py": "3c1dcb5946c5b4c247a946f016b1557d1cbf18c2bee7424bdbffe9ef3d23e560",
+      "dataverify/probe_runtime.py": "56570da386629d5a02e8ee3cdfea44b265f1c282a9a6134c572c71e8c25b6317",
+      "dataverify/probe_testing.py": "f91a792f3c503939c6cde8bcaf4ce570faf2b72fff38359af1af893a40bc5ebb",
+      "dataverify/probe_cases.py": "423c963cca953acc5fea335e9c64bd375ab949160fe25127a463d448528ccc49",
+      "dataverify/probe_live_benchmark.py": "a12c4c89e0ec3c528d48acaaac71f937a414dd405950aed20ef3c82b4e4037ef",
+      "dataverify/probe_cost_budget.py": "67d216f359aa5be35d8e0cad7699f1fb1aa94308e4b8793d2bcaef733f8cc6d9",
+      "dataverify/dbgpt_qwen.py": "7016f72050a0c57d40533cd5a091ce89ff1e40c94876b32b11475e420481a443"
+    },
+    "completion_note": null,
+    "source_runs": null,
+    "rows": [
+      {
+        "case_id": "d10",
+        "track": "controlled",
+        "seed": 53,
+        "arm": "full_only",
+        "mode": "full",
+        "feedback_policy": "capability_v2",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 1,
+        "injected_initial_turns": 1,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 2222,
+              "completion_tokens": 238,
+              "total_tokens": 2460
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d10",
+        "track": "controlled",
+        "seed": 53,
+        "arm": "compact_only",
+        "mode": "compact",
+        "feedback_policy": "capability_v2",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 1,
+        "injected_initial_turns": 1,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 2132,
+              "completion_tokens": 239,
+              "total_tokens": 2371
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d10",
+        "track": "controlled",
+        "seed": 53,
+        "arm": "adaptive",
+        "mode": "adaptive",
+        "feedback_policy": "capability_v2",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 1,
+        "injected_initial_turns": 1,
+        "native_turns": 2,
+        "feedback_selections": [
+          {
+            "selected_mode": "compact",
+            "escalation_reason": null,
+            "evidence_available": true,
+            "after_action_index": 0,
+            "new_escalation_transition": false,
+            "failed_full_feedback": false,
+            "full_evidence_emitted": false,
+            "sent_in_later_native_request": true,
+            "sent_in_later_http_attempt": true
+          },
+          {
+            "selected_mode": "compact",
+            "escalation_reason": null,
+            "evidence_available": false,
+            "after_action_index": 1,
+            "new_escalation_transition": false,
+            "failed_full_feedback": false,
+            "full_evidence_emitted": false,
+            "sent_in_later_native_request": false,
+            "sent_in_later_http_attempt": false
+          }
+        ],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 2157,
+              "completion_tokens": 242,
+              "total_tokens": 2399
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d11",
+        "track": "controlled",
+        "seed": 53,
+        "arm": "full_only",
+        "mode": "full",
+        "feedback_policy": "capability_v2",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 1,
+        "injected_initial_turns": 1,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1765,
+              "completion_tokens": 243,
+              "total_tokens": 2008
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d11",
+        "track": "controlled",
+        "seed": 53,
+        "arm": "compact_only",
+        "mode": "compact",
+        "feedback_policy": "capability_v2",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 1,
+        "injected_initial_turns": 1,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1765,
+              "completion_tokens": 240,
+              "total_tokens": 2005
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d11",
+        "track": "controlled",
+        "seed": 53,
+        "arm": "adaptive",
+        "mode": "adaptive",
+        "feedback_policy": "capability_v2",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 1,
+        "injected_initial_turns": 1,
+        "native_turns": 2,
+        "feedback_selections": [
+          {
+            "selected_mode": "compact",
+            "escalation_reason": null,
+            "evidence_available": false,
+            "after_action_index": 0,
+            "new_escalation_transition": false,
+            "failed_full_feedback": false,
+            "full_evidence_emitted": false,
+            "sent_in_later_native_request": true,
+            "sent_in_later_http_attempt": true
+          },
+          {
+            "selected_mode": "compact",
+            "escalation_reason": null,
+            "evidence_available": false,
+            "after_action_index": 1,
+            "new_escalation_transition": false,
+            "failed_full_feedback": false,
+            "full_evidence_emitted": false,
+            "sent_in_later_native_request": false,
+            "sent_in_later_http_attempt": false
+          }
+        ],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1790,
+              "completion_tokens": 244,
+              "total_tokens": 2034
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d03",
+        "track": "natural",
+        "seed": 53,
+        "arm": "full_only",
+        "mode": "full",
+        "feedback_policy": "capability_v2",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 2,
+        "injected_initial_turns": 0,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1475,
+              "completion_tokens": 522,
+              "total_tokens": 1997
+            },
+            "usage_complete": true
+          },
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 2603,
+              "completion_tokens": 275,
+              "total_tokens": 2878
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d03",
+        "track": "natural",
+        "seed": 53,
+        "arm": "compact_only",
+        "mode": "compact",
+        "feedback_policy": "capability_v2",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 2,
+        "injected_initial_turns": 0,
+        "native_turns": 2,
+        "feedback_selections": [],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1475,
+              "completion_tokens": 260,
+              "total_tokens": 1735
+            },
+            "usage_complete": true
+          },
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 2251,
+              "completion_tokens": 252,
+              "total_tokens": 2503
+            },
+            "usage_complete": true
+          }
+        ]
+      },
+      {
+        "case_id": "d03",
+        "track": "natural",
+        "seed": 53,
+        "arm": "adaptive",
+        "mode": "adaptive",
+        "feedback_policy": "capability_v2",
+        "status": "completed",
+        "grade": {
+          "accepted": true,
+          "task_preserved": true,
+          "operational_failure": false,
+          "correct_task": true,
+          "source_correct": true,
+          "boundary_correct": true,
+          "publication_matches_sql": true,
+          "wrong_release": false,
+          "unscorable": false,
+          "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+          "source_grade": {
+            "correct": true,
+            "code": "MATCH"
+          },
+          "boundary_grade": {
+            "correct": true,
+            "code": "MATCH"
+          }
+        },
+        "http_attempts": 2,
+        "injected_initial_turns": 0,
+        "native_turns": 2,
+        "feedback_selections": [
+          {
+            "selected_mode": "compact",
+            "escalation_reason": null,
+            "evidence_available": true,
+            "after_action_index": 0,
+            "new_escalation_transition": false,
+            "failed_full_feedback": false,
+            "full_evidence_emitted": false,
+            "sent_in_later_native_request": true,
+            "sent_in_later_http_attempt": true
+          },
+          {
+            "selected_mode": "compact",
+            "escalation_reason": null,
+            "evidence_available": false,
+            "after_action_index": 1,
+            "new_escalation_transition": false,
+            "failed_full_feedback": false,
+            "full_evidence_emitted": false,
+            "sent_in_later_native_request": false,
+            "sent_in_later_http_attempt": false
+          }
+        ],
+        "escalation_transitions": 0,
+        "escalated_feedbacks": 0,
+        "consumed_escalated_feedbacks": 0,
+        "full_evidence_feedbacks": 0,
+        "consumed_full_evidence_feedbacks": 0,
+        "source_unchanged": true,
+        "http_outcomes": [
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 1475,
+              "completion_tokens": 398,
+              "total_tokens": 1873
+            },
+            "usage_complete": true
+          },
+          {
+            "status": "completed",
+            "http_status": 200,
+            "error_code": null,
+            "usage": {
+              "prompt_tokens": 2414,
+              "completion_tokens": 274,
+              "total_tokens": 2688
+            },
+            "usage_complete": true
+          }
+        ]
+      }
+    ]
+  }
+}

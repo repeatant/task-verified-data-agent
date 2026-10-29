@@ -1,0 +1,13 @@
+.venv*/
+.upstream/
+__pycache__/
+.pytest_cache/
+.hypothesis/
+.test-temp*/
+tmp/
+reports/
+artifacts/
+.env
+.env.*
+!.env.example
+*.sqlite3*

@@ -1,0 +1,366 @@
+{
+  "previous_compression_pairing": {
+    "scheduled_eligible_pairs": 16,
+    "comparable_pairs": 16,
+    "excluded_pairs": [],
+    "context_matches_except_diagnostic_and_native_clock": true,
+    "context_mismatches": [],
+    "native_clock_limitation": "Inherited native prompts contain wall-clock time; both arms keep it. All other model context is compared after masking only the clock and diagnostic.",
+    "full": {
+      "prompt_tokens": 28017,
+      "completion_tokens": 3599,
+      "total_tokens": 31616,
+      "estimated_cny": 0.0321309,
+      "correct": 14,
+      "http_attempts": 16,
+      "initial_diagnostic_characters": 9308
+    },
+    "compact": {
+      "prompt_tokens": 26044,
+      "completion_tokens": 3377,
+      "total_tokens": 29421,
+      "estimated_cny": 0.0299531,
+      "correct": 14,
+      "http_attempts": 16,
+      "initial_diagnostic_characters": 6598
+    },
+    "prompt_tokens_reduction_percent": 7.042152978548739,
+    "completion_tokens_reduction_percent": 6.168380105584885,
+    "total_tokens_reduction_percent": 6.942687246963563,
+    "estimated_cny_reduction_percent": 6.777899156263899,
+    "initial_diagnostic_characters_reduction_percent": 29.114740008594758
+  },
+  "previous_full_development_summary": {
+    "scheduled_cells": 70,
+    "groups": {
+      "full:controlled": {
+        "scheduled": 32,
+        "completed": 32,
+        "not_run": 0,
+        "operational_errors": 0,
+        "accepted": 30,
+        "correct_tasks": 30,
+        "source_correct": 30,
+        "boundary_correct": 30,
+        "wrong_releases": 0,
+        "unscorable": 0,
+        "actual_http_attempts": 22,
+        "native_turns": 54,
+        "usage": {
+          "prompt_tokens_known": 36747,
+          "completion_tokens_known": 5040,
+          "total_tokens_known": 41787,
+          "event_count": 22,
+          "unknown_usage_events": 0,
+          "usage_complete": true
+        },
+        "correct_over_scheduled": {
+          "numerator": 30,
+          "denominator": 32
+        }
+      },
+      "full:natural": {
+        "scheduled": 3,
+        "completed": 3,
+        "not_run": 0,
+        "operational_errors": 0,
+        "accepted": 3,
+        "correct_tasks": 3,
+        "source_correct": 3,
+        "boundary_correct": 3,
+        "wrong_releases": 0,
+        "unscorable": 0,
+        "actual_http_attempts": 4,
+        "native_turns": 4,
+        "usage": {
+          "prompt_tokens_known": 5992,
+          "completion_tokens_known": 1692,
+          "total_tokens_known": 7684,
+          "event_count": 4,
+          "unknown_usage_events": 0,
+          "usage_complete": true
+        },
+        "correct_over_scheduled": {
+          "numerator": 3,
+          "denominator": 3
+        }
+      },
+      "compact:controlled": {
+        "scheduled": 32,
+        "completed": 32,
+        "not_run": 0,
+        "operational_errors": 0,
+        "accepted": 30,
+        "correct_tasks": 30,
+        "source_correct": 30,
+        "boundary_correct": 30,
+        "wrong_releases": 0,
+        "unscorable": 0,
+        "actual_http_attempts": 22,
+        "native_turns": 54,
+        "usage": {
+          "prompt_tokens_known": 34774,
+          "completion_tokens_known": 4702,
+          "total_tokens_known": 39476,
+          "event_count": 22,
+          "unknown_usage_events": 0,
+          "usage_complete": true
+        },
+        "correct_over_scheduled": {
+          "numerator": 30,
+          "denominator": 32
+        }
+      },
+      "compact:natural": {
+        "scheduled": 3,
+        "completed": 3,
+        "not_run": 0,
+        "operational_errors": 0,
+        "accepted": 2,
+        "correct_tasks": 2,
+        "source_correct": 2,
+        "boundary_correct": 2,
+        "wrong_releases": 0,
+        "unscorable": 0,
+        "actual_http_attempts": 4,
+        "native_turns": 4,
+        "usage": {
+          "prompt_tokens_known": 5341,
+          "completion_tokens_known": 1101,
+          "total_tokens_known": 6442,
+          "event_count": 4,
+          "unknown_usage_events": 0,
+          "usage_complete": true
+        },
+        "correct_over_scheduled": {
+          "numerator": 2,
+          "denominator": 3
+        }
+      }
+    }
+  },
+  "capability_component_checks": {
+    "passed": 40,
+    "scheduled": 40,
+    "all_passed": true
+  },
+  "capability_runs": [
+    {
+      "directory": "legacy_seed17",
+      "policy": "legacy_v1",
+      "summary": {
+        "scheduled_cells": 1,
+        "groups": {
+          "compact:controlled": {
+            "scheduled": 1,
+            "completed": 1,
+            "not_run": 0,
+            "operational_errors": 0,
+            "accepted": 0,
+            "correct_tasks": 0,
+            "source_correct": 0,
+            "boundary_correct": 0,
+            "wrong_releases": 0,
+            "unscorable": 0,
+            "actual_http_attempts": 1,
+            "native_turns": 2,
+            "usage": {
+              "prompt_tokens_known": 1657,
+              "completion_tokens_known": 892,
+              "total_tokens_known": 2549,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "correct_over_scheduled": {
+              "numerator": 0,
+              "denominator": 1
+            }
+          }
+        }
+      },
+      "usage": {
+        "prompt_tokens_known": 1657,
+        "completion_tokens_known": 892,
+        "total_tokens_known": 2549,
+        "event_count": 1,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      }
+    },
+    {
+      "directory": "capability_seed17",
+      "policy": "capability_v2",
+      "summary": {
+        "scheduled_cells": 1,
+        "groups": {
+          "compact:controlled": {
+            "scheduled": 1,
+            "completed": 1,
+            "not_run": 0,
+            "operational_errors": 0,
+            "accepted": 1,
+            "correct_tasks": 1,
+            "source_correct": 1,
+            "boundary_correct": 1,
+            "wrong_releases": 0,
+            "unscorable": 0,
+            "actual_http_attempts": 1,
+            "native_turns": 2,
+            "usage": {
+              "prompt_tokens_known": 2060,
+              "completion_tokens_known": 247,
+              "total_tokens_known": 2307,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "correct_over_scheduled": {
+              "numerator": 1,
+              "denominator": 1
+            }
+          }
+        }
+      },
+      "usage": {
+        "prompt_tokens_known": 2060,
+        "completion_tokens_known": 247,
+        "total_tokens_known": 2307,
+        "event_count": 1,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      }
+    },
+    {
+      "directory": "capability_seed31",
+      "policy": "capability_v2",
+      "summary": {
+        "scheduled_cells": 1,
+        "groups": {
+          "compact:controlled": {
+            "scheduled": 1,
+            "completed": 1,
+            "not_run": 0,
+            "operational_errors": 0,
+            "accepted": 1,
+            "correct_tasks": 1,
+            "source_correct": 1,
+            "boundary_correct": 1,
+            "wrong_releases": 0,
+            "unscorable": 0,
+            "actual_http_attempts": 1,
+            "native_turns": 2,
+            "usage": {
+              "prompt_tokens_known": 2060,
+              "completion_tokens_known": 250,
+              "total_tokens_known": 2310,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "correct_over_scheduled": {
+              "numerator": 1,
+              "denominator": 1
+            }
+          }
+        }
+      },
+      "usage": {
+        "prompt_tokens_known": 2060,
+        "completion_tokens_known": 250,
+        "total_tokens_known": 2310,
+        "event_count": 1,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      }
+    },
+    {
+      "directory": "legacy_seed31",
+      "policy": "legacy_v1",
+      "summary": {
+        "scheduled_cells": 1,
+        "groups": {
+          "compact:controlled": {
+            "scheduled": 1,
+            "completed": 1,
+            "not_run": 0,
+            "operational_errors": 0,
+            "accepted": 0,
+            "correct_tasks": 0,
+            "source_correct": 0,
+            "boundary_correct": 0,
+            "wrong_releases": 0,
+            "unscorable": 0,
+            "actual_http_attempts": 1,
+            "native_turns": 2,
+            "usage": {
+              "prompt_tokens_known": 1657,
+              "completion_tokens_known": 263,
+              "total_tokens_known": 1920,
+              "event_count": 1,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "correct_over_scheduled": {
+              "numerator": 0,
+              "denominator": 1
+            }
+          }
+        }
+      },
+      "usage": {
+        "prompt_tokens_known": 1657,
+        "completion_tokens_known": 263,
+        "total_tokens_known": 1920,
+        "event_count": 1,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      }
+    },
+    {
+      "directory": "natural_v2",
+      "policy": "capability_v2",
+      "summary": {
+        "scheduled_cells": 8,
+        "groups": {
+          "compact:natural": {
+            "scheduled": 8,
+            "completed": 8,
+            "not_run": 0,
+            "operational_errors": 0,
+            "accepted": 8,
+            "correct_tasks": 8,
+            "source_correct": 8,
+            "boundary_correct": 8,
+            "wrong_releases": 0,
+            "unscorable": 0,
+            "actual_http_attempts": 10,
+            "native_turns": 10,
+            "usage": {
+              "prompt_tokens_known": 15914,
+              "completion_tokens_known": 2750,
+              "total_tokens_known": 18664,
+              "event_count": 10,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "correct_over_scheduled": {
+              "numerator": 8,
+              "denominator": 8
+            }
+          }
+        }
+      },
+      "usage": {
+        "prompt_tokens_known": 15914,
+        "completion_tokens_known": 2750,
+        "total_tokens_known": 18664,
+        "event_count": 10,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      }
+    }
+  ],
+  "scope": "Post-change boundary regressions in existing task families; not unseen-template holdout.",
+  "limitation": "Small disclosed development/boundary regressions, not unseen-template generalization."
+}

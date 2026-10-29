@@ -1,0 +1,15 @@
+{
+  "repository": "https://github.com/eosphoros-ai/DB-GPT",
+  "commit": "06a46eea2d248a0f2b3e9096035424df4f2dc2eb",
+  "license": "MIT",
+  "sha256": {
+    "packages/dbgpt-core/src/dbgpt/agent/core/base_agent.py": "d353e2f6931c5e59d1dc012fa85204b09cf2d6d9eb305ad77f56aedb3f9ae26c",
+    "packages/dbgpt-core/src/dbgpt/agent/core/role.py": "bf5a4b3a9bc384f665ba0928080112e3ad4999bf7f2c3018f2a30bc884a15ef4",
+    "packages/dbgpt-core/src/dbgpt/agent/core/action/base.py": "33c4cae6b9f026ec60d3152eee74fc78276e591dc0a78d3cd74775aa8445bb85",
+    "packages/dbgpt-core/src/dbgpt/agent/expand/data_scientist_agent.py": "74a9a730d9cc386b938d532d07d95e5346cde6a8dd7fc91196fe2d04bac7c117",
+    "packages/dbgpt-core/src/dbgpt/agent/expand/actions/chart_action.py": "585413a4a2305bec5a554d347e07c1c98e547a7aaa1d02291fba793433c15910",
+    "packages/dbgpt-core/src/dbgpt/agent/resource/database.py": "c4d42f8246d8bf51041afc117105298a5b857668f2c5d29f77ea3aeddccb4c08",
+    "packages/dbgpt-core/src/dbgpt/agent/util/llm/llm_client.py": "cbaab5a90dd349f2f4912ded0c299037ee5c546da8b07e8cc026f8824201c848",
+    "packages/dbgpt-core/src/dbgpt/core/interface/llm.py": "0493079b2808d56f311970517d5a7a7e3285f8e3bdc500c86c65b4516a1ed4f6"
+  }
+}

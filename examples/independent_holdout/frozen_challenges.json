@@ -1,0 +1,2059 @@
+{
+  "scope": "独立作者在被测系统开发后，仅根据公开任务契约创建并预先冻结的24项小规模挑战。固定orders/order_lines schema；不是公开基准，也不支持跨schema泛化结论。",
+  "challenges": [
+    {
+      "id": "h01",
+      "category": "legal",
+      "task": {
+        "task_id": "h01",
+        "question": "请统计从 2026-01-01T00:00:00（含）到 2026-01-02T00:00:00（不含），状态为 settled 的订单明细净金额。退款也要计入，没有符合条件的明细时返回0。",
+        "properties": [
+          "exclude_end",
+          "exclude_status",
+          "include_start",
+          "include_negative"
+        ],
+        "output_kind": "scalar",
+        "start": "2026-01-01T00:00:00",
+        "end": "2026-01-02T00:00:00",
+        "status": "settled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 900,
+            "channel": "web"
+          },
+          {
+            "order_id": 2,
+            "total": 400,
+            "channel": null
+          },
+          {
+            "order_id": 3,
+            "total": -17,
+            "channel": "store"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 100,
+            "status": "settled",
+            "settled_at": "2026-01-01T00:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 1,
+            "amount": -30,
+            "status": "settled",
+            "settled_at": "2026-01-01T12:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 2,
+            "amount": 70,
+            "status": "settled",
+            "settled_at": "2026-01-02T00:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 2,
+            "amount": 500,
+            "status": "pending",
+            "settled_at": "2026-01-01T15:00:00"
+          },
+          {
+            "line_id": 5,
+            "order_id": 3,
+            "amount": 20,
+            "status": "settled",
+            "settled_at": "2025-12-31T23:59:59"
+          },
+          {
+            "line_id": 6,
+            "order_id": 3,
+            "amount": 12,
+            "status": "settled",
+            "settled_at": "2026-01-01T23:59:59"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(SUM(order_lines.amount), 0)\nFROM order_lines\nWHERE order_lines.settled_at >= '2026-01-01T00:00:00'\n  AND order_lines.settled_at < '2026-01-02T00:00:00'\n  AND order_lines.status = 'settled'",
+      "expected_rows": [
+        [
+          82
+        ]
+      ],
+      "reason": "支持的无连接标量聚合；数据同时区分上下边界、退款和其他状态。"
+    },
+    {
+      "id": "h02",
+      "category": "legal",
+      "task": {
+        "task_id": "h02",
+        "question": "请统计从 2026-03-01T00:00:00（含）到 2026-03-02T00:00:00（不含），状态为 pending 的订单明细净金额。退款也要计入，没有符合条件的明细时返回0。",
+        "properties": [
+          "exclude_end",
+          "exclude_status",
+          "include_start",
+          "include_negative"
+        ],
+        "output_kind": "scalar",
+        "start": "2026-03-01T00:00:00",
+        "end": "2026-03-02T00:00:00",
+        "status": "pending",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 101,
+            "total": 50,
+            "channel": "app"
+          },
+          {
+            "order_id": 102,
+            "total": 0,
+            "channel": null
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 101,
+            "amount": 50,
+            "status": "settled",
+            "settled_at": "2026-03-01T12:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 102,
+            "amount": -9,
+            "status": "cancelled",
+            "settled_at": "2026-03-01T13:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 101,
+            "amount": 6,
+            "status": "pending",
+            "settled_at": "2026-02-28T23:59:59"
+          },
+          {
+            "line_id": 4,
+            "order_id": 102,
+            "amount": 20,
+            "status": "pending",
+            "settled_at": "2026-03-02T00:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(SUM(order_lines.amount), 0) AS net_amount\nFROM orders INNER JOIN order_lines\n  ON orders.order_id = order_lines.order_id\n AND order_lines.status = 'pending'\n AND order_lines.settled_at >= '2026-03-01T00:00:00'\n AND order_lines.settled_at < '2026-03-02T00:00:00'",
+      "expected_rows": [
+        [
+          0
+        ]
+      ],
+      "reason": "支持在INNER JOIN的ON中放置全部筛选条件；有效明细为空，COALESCE给出0。"
+    },
+    {
+      "id": "h03",
+      "category": "legal",
+      "task": {
+        "task_id": "h03",
+        "question": "请统计从 2026-04-10T22:00:00（含）到 2026-04-11T02:00:00（不含），状态为 cancelled 的订单明细净金额。退款也要计入，没有符合条件的明细时返回0。",
+        "properties": [
+          "exclude_end",
+          "exclude_status",
+          "include_start",
+          "include_negative"
+        ],
+        "output_kind": "scalar",
+        "start": "2026-04-10T22:00:00",
+        "end": "2026-04-11T02:00:00",
+        "status": "cancelled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 201,
+            "total": 900,
+            "channel": "night"
+          },
+          {
+            "order_id": 202,
+            "total": 0,
+            "channel": null
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 201,
+            "amount": 100,
+            "status": "cancelled",
+            "settled_at": "2026-04-10T22:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 202,
+            "amount": -25,
+            "status": "cancelled",
+            "settled_at": "2026-04-11T00:15:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 201,
+            "amount": 500,
+            "status": "settled",
+            "settled_at": "2026-04-10T23:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 202,
+            "amount": 40,
+            "status": "cancelled",
+            "settled_at": "2026-04-11T02:00:00"
+          },
+          {
+            "line_id": 5,
+            "order_id": 201,
+            "amount": 20,
+            "status": "cancelled",
+            "settled_at": "2026-04-10T21:59:59"
+          },
+          {
+            "line_id": 6,
+            "order_id": 202,
+            "amount": 0,
+            "status": "cancelled",
+            "settled_at": "2026-04-11T01:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(SUM(order_lines.amount), 0)\nFROM order_lines INNER JOIN orders\n  ON orders.order_id = order_lines.order_id AND order_lines.status = 'cancelled'\nWHERE order_lines.settled_at < '2026-04-11T02:00:00'\n  AND order_lines.settled_at >= '2026-04-10T22:00:00'",
+      "expected_rows": [
+        [
+          75
+        ]
+      ],
+      "reason": "支持反向书写FROM两表及在ON和WHERE间拆分筛选；跨日区间及非默认目标状态仍须正确。"
+    },
+    {
+      "id": "h04",
+      "category": "legal",
+      "task": {
+        "task_id": "h04",
+        "question": "请按订单编号列出所有订单在 2026-05-01T00:00:00（含）至 2026-05-03T00:00:00（不含）期间、状态为 settled 的明细净金额。退款计入，每个订单都要保留，没有符合条件的明细则金额为0。",
+        "properties": [
+          "preserve_zero_orders"
+        ],
+        "output_kind": "orders",
+        "start": "2026-05-01T00:00:00",
+        "end": "2026-05-03T00:00:00",
+        "status": "settled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 7,
+            "total": 0,
+            "channel": "web"
+          },
+          {
+            "order_id": 8,
+            "total": 22,
+            "channel": null
+          },
+          {
+            "order_id": 9,
+            "total": -5,
+            "channel": "Other"
+          },
+          {
+            "order_id": 10,
+            "total": 44,
+            "channel": "web"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 7,
+            "amount": 45,
+            "status": "settled",
+            "settled_at": "2026-05-01T09:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 7,
+            "amount": -45,
+            "status": "settled",
+            "settled_at": "2026-05-02T09:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 8,
+            "amount": 90,
+            "status": "pending",
+            "settled_at": "2026-05-02T10:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 9,
+            "amount": -15,
+            "status": "settled",
+            "settled_at": "2026-05-01T00:00:00"
+          },
+          {
+            "line_id": 5,
+            "order_id": 9,
+            "amount": 5,
+            "status": "settled",
+            "settled_at": "2026-05-02T23:59:59"
+          },
+          {
+            "line_id": 6,
+            "order_id": 10,
+            "amount": 77,
+            "status": "settled",
+            "settled_at": "2026-05-03T00:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT orders.order_id, COALESCE(SUM(order_lines.amount), 0)\nFROM orders LEFT JOIN order_lines\n  ON orders.order_id = order_lines.order_id\n AND order_lines.settled_at >= '2026-05-01T00:00:00'\n AND order_lines.settled_at < '2026-05-03T00:00:00'\n AND order_lines.status = 'settled'\nGROUP BY orders.order_id",
+      "expected_rows": [
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          9,
+          -10
+        ],
+        [
+          10,
+          0
+        ]
+      ],
+      "reason": "支持订单保留结构；净额抵消为0、只有其他状态、只有区间外明细均保留订单。"
+    },
+    {
+      "id": "h05",
+      "category": "legal",
+      "task": {
+        "task_id": "h05",
+        "question": "请按订单编号列出所有订单在 2026-06-15T09:20:00（含）至 2026-06-15T18:10:00（不含）期间、状态为 pending 的明细净金额。退款计入，每个订单都要保留，没有符合条件的明细则金额为0。",
+        "properties": [
+          "preserve_zero_orders"
+        ],
+        "output_kind": "orders",
+        "start": "2026-06-15T09:20:00",
+        "end": "2026-06-15T18:10:00",
+        "status": "pending",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 11,
+            "total": 100,
+            "channel": "app"
+          },
+          {
+            "order_id": 12,
+            "total": 200,
+            "channel": "app"
+          },
+          {
+            "order_id": 13,
+            "total": -3,
+            "channel": null
+          },
+          {
+            "order_id": 14,
+            "total": 0,
+            "channel": "kiosk"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 11,
+            "amount": 30,
+            "status": "pending",
+            "settled_at": "2026-06-15T09:20:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 11,
+            "amount": -8,
+            "status": "pending",
+            "settled_at": "2026-06-15T18:09:59"
+          },
+          {
+            "line_id": 3,
+            "order_id": 12,
+            "amount": 0,
+            "status": "pending",
+            "settled_at": "2026-06-15T12:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 13,
+            "amount": 13,
+            "status": "cancelled",
+            "settled_at": "2026-06-15T12:00:00"
+          },
+          {
+            "line_id": 5,
+            "order_id": 14,
+            "amount": 10,
+            "status": "pending",
+            "settled_at": "2026-06-15T11:00:00"
+          },
+          {
+            "line_id": 6,
+            "order_id": 14,
+            "amount": 10,
+            "status": "pending",
+            "settled_at": "2026-06-15T14:00:00"
+          },
+          {
+            "line_id": 7,
+            "order_id": 11,
+            "amount": 99,
+            "status": "pending",
+            "settled_at": "2026-06-15T18:10:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT orders.order_id AS order_key, COALESCE(SUM(order_lines.amount), 0) AS net_amount\nFROM orders LEFT OUTER JOIN order_lines\n  ON order_lines.order_id = orders.order_id\n AND (order_lines.status = 'pending' AND\n      (order_lines.settled_at < '2026-06-15T18:10:00' AND order_lines.settled_at >= '2026-06-15T09:20:00'))\nGROUP BY orders.order_id",
+      "expected_rows": [
+        [
+          11,
+          22
+        ],
+        [
+          12,
+          0
+        ],
+        [
+          13,
+          0
+        ],
+        [
+          14,
+          20
+        ]
+      ],
+      "reason": "LEFT OUTER与LEFT等价；连接等式换向、AND括号和输出别名不改变支持范围或业务结果。"
+    },
+    {
+      "id": "h06",
+      "category": "legal",
+      "task": {
+        "task_id": "h06",
+        "question": "请按渠道统计 2026-07-01T00:00:00（含）至 2026-07-02T00:00:00（不含）期间、状态为 settled 的明细净金额，退款计入。空渠道统一显示为“Other”，并与实际同名渠道合并；只返回存在符合条件明细的渠道。",
+        "properties": [
+          "merge_other_channels"
+        ],
+        "output_kind": "channels",
+        "start": "2026-07-01T00:00:00",
+        "end": "2026-07-02T00:00:00",
+        "status": "settled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 21,
+            "total": 10,
+            "channel": "web"
+          },
+          {
+            "order_id": 22,
+            "total": 20,
+            "channel": null
+          },
+          {
+            "order_id": 23,
+            "total": 30,
+            "channel": "Other"
+          },
+          {
+            "order_id": 24,
+            "total": 40,
+            "channel": "store"
+          },
+          {
+            "order_id": 25,
+            "total": 50,
+            "channel": "quiet"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 21,
+            "amount": 50,
+            "status": "settled",
+            "settled_at": "2026-07-01T00:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 21,
+            "amount": -20,
+            "status": "settled",
+            "settled_at": "2026-07-01T06:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 22,
+            "amount": 40,
+            "status": "settled",
+            "settled_at": "2026-07-01T08:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 22,
+            "amount": -5,
+            "status": "settled",
+            "settled_at": "2026-07-01T10:00:00"
+          },
+          {
+            "line_id": 5,
+            "order_id": 23,
+            "amount": 7,
+            "status": "settled",
+            "settled_at": "2026-07-01T12:00:00"
+          },
+          {
+            "line_id": 6,
+            "order_id": 24,
+            "amount": 0,
+            "status": "settled",
+            "settled_at": "2026-07-01T15:00:00"
+          },
+          {
+            "line_id": 7,
+            "order_id": 25,
+            "amount": 99,
+            "status": "pending",
+            "settled_at": "2026-07-01T15:00:00"
+          },
+          {
+            "line_id": 8,
+            "order_id": 22,
+            "amount": 100,
+            "status": "settled",
+            "settled_at": "2026-07-02T00:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(orders.channel, 'Other'), SUM(order_lines.amount)\nFROM orders INNER JOIN order_lines ON orders.order_id = order_lines.order_id\nWHERE order_lines.status = 'settled'\n  AND order_lines.settled_at >= '2026-07-01T00:00:00'\n  AND order_lines.settled_at < '2026-07-02T00:00:00'\nGROUP BY COALESCE(orders.channel, 'Other')",
+      "expected_rows": [
+        [
+          "Other",
+          42
+        ],
+        [
+          "store",
+          0
+        ],
+        [
+          "web",
+          30
+        ]
+      ],
+      "reason": "渠道按COALESCE后的键分组，NULL与实际Other合并；存在有效零金额明细的渠道仍输出。"
+    },
+    {
+      "id": "h07",
+      "category": "legal",
+      "task": {
+        "task_id": "h07",
+        "question": "请按渠道统计 2026-08-01T12:00:00（含）至 2026-08-03T12:00:00（不含）期间、状态为 cancelled 的明细净金额，退款计入。空渠道统一显示为“D'Autres”，并与实际同名渠道合并；只返回存在符合条件明细的渠道。",
+        "properties": [
+          "merge_other_channels"
+        ],
+        "output_kind": "channels",
+        "start": "2026-08-01T12:00:00",
+        "end": "2026-08-03T12:00:00",
+        "status": "cancelled",
+        "other_label": "D'Autres"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 31,
+            "total": 11,
+            "channel": null
+          },
+          {
+            "order_id": 32,
+            "total": 22,
+            "channel": "D'Autres"
+          },
+          {
+            "order_id": 33,
+            "total": 33,
+            "channel": "mail"
+          },
+          {
+            "order_id": 34,
+            "total": 44,
+            "channel": "kiosk"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 31,
+            "amount": 12,
+            "status": "cancelled",
+            "settled_at": "2026-08-01T12:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 31,
+            "amount": -2,
+            "status": "cancelled",
+            "settled_at": "2026-08-02T12:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 32,
+            "amount": 10,
+            "status": "cancelled",
+            "settled_at": "2026-08-03T11:59:59"
+          },
+          {
+            "line_id": 4,
+            "order_id": 33,
+            "amount": -7,
+            "status": "cancelled",
+            "settled_at": "2026-08-02T10:00:00"
+          },
+          {
+            "line_id": 5,
+            "order_id": 33,
+            "amount": 0,
+            "status": "cancelled",
+            "settled_at": "2026-08-02T11:00:00"
+          },
+          {
+            "line_id": 6,
+            "order_id": 34,
+            "amount": 90,
+            "status": "settled",
+            "settled_at": "2026-08-02T12:00:00"
+          },
+          {
+            "line_id": 7,
+            "order_id": 32,
+            "amount": 5,
+            "status": "cancelled",
+            "settled_at": "2026-08-03T12:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(orders.channel, 'D''Autres') AS channel_key, COALESCE(SUM(order_lines.amount), 0) AS net_amount\nFROM order_lines INNER JOIN orders\n  ON order_lines.order_id = orders.order_id\n AND order_lines.settled_at < '2026-08-03T12:00:00'\n AND order_lines.status = 'cancelled'\n AND order_lines.settled_at >= '2026-08-01T12:00:00'\nGROUP BY COALESCE(orders.channel, 'D''Autres')",
+      "expected_rows": [
+        [
+          "D'Autres",
+          20
+        ],
+        [
+          "mail",
+          -7
+        ]
+      ],
+      "reason": "支持渠道聚合的反向表顺序、全ON筛选与SUM外COALESCE；包含单引号的回退标签须正确转义并合并。"
+    },
+    {
+      "id": "h08",
+      "category": "legal",
+      "task": {
+        "task_id": "h08",
+        "question": "请统计从 2026-09-09T08:15:00（含）到 2026-09-09T10:45:00（不含），状态为 pending 的订单明细净金额。退款也要计入，没有符合条件的明细时返回0。",
+        "properties": [
+          "exclude_end",
+          "exclude_status",
+          "include_start",
+          "include_negative"
+        ],
+        "output_kind": "scalar",
+        "start": "2026-09-09T08:15:00",
+        "end": "2026-09-09T10:45:00",
+        "status": "pending",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 41,
+            "total": 999,
+            "channel": "store"
+          },
+          {
+            "order_id": 42,
+            "total": 0,
+            "channel": null
+          },
+          {
+            "order_id": 43,
+            "total": -100,
+            "channel": "web"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 41,
+            "amount": 60,
+            "status": "pending",
+            "settled_at": "2026-09-09T08:15:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 42,
+            "amount": -15,
+            "status": "pending",
+            "settled_at": "2026-09-09T09:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 43,
+            "amount": 60,
+            "status": "pending",
+            "settled_at": "2026-09-09T10:44:59"
+          },
+          {
+            "line_id": 4,
+            "order_id": 42,
+            "amount": 200,
+            "status": "settled",
+            "settled_at": "2026-09-09T09:00:00"
+          },
+          {
+            "line_id": 5,
+            "order_id": 41,
+            "amount": 77,
+            "status": "pending",
+            "settled_at": "2026-09-09T10:45:00"
+          },
+          {
+            "line_id": 6,
+            "order_id": 43,
+            "amount": 3,
+            "status": "pending",
+            "settled_at": "2026-09-09T08:14:59"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(SUM(order_lines.amount), 0) AS net_amount\nFROM order_lines\nWHERE ('2026-09-09T08:15:00' <= order_lines.settled_at)\n  AND ('2026-09-09T10:45:00' > order_lines.settled_at)\n  AND ('pending' = order_lines.status)",
+      "expected_rows": [
+        [
+          105
+        ]
+      ],
+      "reason": "直接列/字面量比较换向仍在支持范围；非整点区间、非默认状态、退款和同额明细组合。"
+    },
+    {
+      "id": "h09",
+      "category": "semantic_fault",
+      "task": {
+        "task_id": "h09",
+        "question": "请统计从 2026-01-10T00:00:00（含）到 2026-01-11T00:00:00（不含），状态为 settled 的订单明细净金额。退款也要计入，没有符合条件的明细时返回0。",
+        "properties": [
+          "exclude_end",
+          "exclude_status",
+          "include_start",
+          "include_negative"
+        ],
+        "output_kind": "scalar",
+        "start": "2026-01-10T00:00:00",
+        "end": "2026-01-11T00:00:00",
+        "status": "settled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 20,
+            "channel": "web"
+          },
+          {
+            "order_id": 2,
+            "total": 30,
+            "channel": "app"
+          },
+          {
+            "order_id": 3,
+            "total": 5,
+            "channel": null
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 20,
+            "status": "settled",
+            "settled_at": "2026-01-10T01:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 2,
+            "amount": 30,
+            "status": "settled",
+            "settled_at": "2026-01-10T02:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 3,
+            "amount": -5,
+            "status": "settled",
+            "settled_at": "2026-01-10T03:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 1,
+            "amount": 100,
+            "status": "pending",
+            "settled_at": "2026-01-10T04:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(SUM(order_lines.amount), 0)\nFROM orders INNER JOIN order_lines ON orders.order_id = order_lines.order_id\nWHERE order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-01-10T00:00:00'\n AND order_lines.settled_at < '2026-01-11T00:00:00'\n AND orders.channel = 'web'",
+      "expected_rows": [
+        [
+          45
+        ]
+      ],
+      "reason": "额外加入任务未要求的渠道限制，漏掉app及空渠道的有效净额；不是边界或状态遗漏。"
+    },
+    {
+      "id": "h10",
+      "category": "semantic_fault",
+      "task": {
+        "task_id": "h10",
+        "question": "请统计从 2026-02-02T00:00:00（含）到 2026-02-03T00:00:00（不含），状态为 cancelled 的订单明细净金额。退款也要计入，没有符合条件的明细时返回0。",
+        "properties": [
+          "exclude_end",
+          "exclude_status",
+          "include_start",
+          "include_negative"
+        ],
+        "output_kind": "scalar",
+        "start": "2026-02-02T00:00:00",
+        "end": "2026-02-03T00:00:00",
+        "status": "cancelled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 100,
+            "channel": null
+          },
+          {
+            "order_id": 2,
+            "total": 200,
+            "channel": "desk"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 40,
+            "status": "cancelled",
+            "settled_at": "2026-02-02T01:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 2,
+            "amount": -10,
+            "status": "cancelled",
+            "settled_at": "2026-02-02T02:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 2,
+            "amount": 40,
+            "status": "settled",
+            "settled_at": "2026-02-02T03:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 1,
+            "amount": -7,
+            "status": "pending",
+            "settled_at": "2026-02-02T04:00:00"
+          },
+          {
+            "line_id": 5,
+            "order_id": 2,
+            "amount": 55,
+            "status": "cancelled",
+            "settled_at": "2026-02-03T00:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(SUM(order_lines.amount), 0)\nFROM order_lines\nWHERE order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-02-02T00:00:00'\n AND order_lines.settled_at < '2026-02-03T00:00:00'",
+      "expected_rows": [
+        [
+          30
+        ]
+      ],
+      "reason": "把声明为cancelled的目标状态硬编码成settled；状态条件存在但值错误。"
+    },
+    {
+      "id": "h11",
+      "category": "semantic_fault",
+      "task": {
+        "task_id": "h11",
+        "question": "请按订单编号列出所有订单在 2026-03-03T00:00:00（含）至 2026-03-04T00:00:00（不含）期间、状态为 settled 的明细净金额。退款计入，每个订单都要保留，没有符合条件的明细则金额为0。",
+        "properties": [
+          "preserve_zero_orders"
+        ],
+        "output_kind": "orders",
+        "start": "2026-03-03T00:00:00",
+        "end": "2026-03-04T00:00:00",
+        "status": "settled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 0,
+            "channel": "web"
+          },
+          {
+            "order_id": 2,
+            "total": -2,
+            "channel": null
+          },
+          {
+            "order_id": 3,
+            "total": 100,
+            "channel": "store"
+          },
+          {
+            "order_id": 4,
+            "total": 200,
+            "channel": "phone"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 12,
+            "status": "settled",
+            "settled_at": "2026-03-03T01:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 2,
+            "amount": -6,
+            "status": "settled",
+            "settled_at": "2026-03-03T02:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 3,
+            "amount": 5,
+            "status": "settled",
+            "settled_at": "2026-03-03T03:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT orders.order_id, COALESCE(SUM(order_lines.amount), 0)\nFROM orders LEFT JOIN order_lines\n ON orders.order_id = order_lines.order_id\n AND order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-03-03T00:00:00'\n AND order_lines.settled_at < '2026-03-04T00:00:00'\nWHERE orders.total > 0\nGROUP BY orders.order_id",
+      "expected_rows": [
+        [
+          1,
+          12
+        ],
+        [
+          2,
+          -6
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "reason": "把订单头total当成有效订单资格，错误删除total为0或负数的订单；该字段不参与任务范围。"
+    },
+    {
+      "id": "h12",
+      "category": "semantic_fault",
+      "task": {
+        "task_id": "h12",
+        "question": "请统计从 2026-06-12T09:30:00（含）到 2026-06-12T17:00:00（不含），状态为 settled 的订单明细净金额。退款也要计入，没有符合条件的明细时返回0。",
+        "properties": [
+          "exclude_end",
+          "exclude_status",
+          "include_start",
+          "include_negative"
+        ],
+        "output_kind": "scalar",
+        "start": "2026-06-12T09:30:00",
+        "end": "2026-06-12T17:00:00",
+        "status": "settled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 50,
+            "channel": "web"
+          },
+          {
+            "order_id": 2,
+            "total": -20,
+            "channel": null
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 10,
+            "status": "settled",
+            "settled_at": "2026-06-12T09:30:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 2,
+            "amount": -3,
+            "status": "settled",
+            "settled_at": "2026-06-12T12:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 1,
+            "amount": 50,
+            "status": "settled",
+            "settled_at": "2026-06-12T08:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 2,
+            "amount": -20,
+            "status": "settled",
+            "settled_at": "2026-06-12T18:00:00"
+          },
+          {
+            "line_id": 5,
+            "order_id": 1,
+            "amount": 100,
+            "status": "pending",
+            "settled_at": "2026-06-12T12:00:00"
+          },
+          {
+            "line_id": 6,
+            "order_id": 1,
+            "amount": 2,
+            "status": "settled",
+            "settled_at": "2026-06-12T17:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(SUM(order_lines.amount), 0)\nFROM order_lines\nWHERE order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-06-12T00:00:00'\n AND order_lines.settled_at < '2026-06-13T00:00:00'",
+      "expected_rows": [
+        [
+          7
+        ]
+      ],
+      "reason": "错误把含时分秒的业务区间扩展为整日；比较符正确但边界字面值被截整。"
+    },
+    {
+      "id": "h13",
+      "category": "semantic_fault",
+      "task": {
+        "task_id": "h13",
+        "question": "请按渠道统计 2026-07-13T00:00:00（含）至 2026-07-14T00:00:00（不含）期间、状态为 settled 的明细净金额，退款计入。空渠道统一显示为“Other”，并与实际同名渠道合并；只返回存在符合条件明细的渠道。",
+        "properties": [
+          "merge_other_channels"
+        ],
+        "output_kind": "channels",
+        "start": "2026-07-13T00:00:00",
+        "end": "2026-07-14T00:00:00",
+        "status": "settled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 10,
+            "channel": null
+          },
+          {
+            "order_id": 2,
+            "total": 5,
+            "channel": "Other"
+          },
+          {
+            "order_id": 3,
+            "total": 7,
+            "channel": "web"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 10,
+            "status": "settled",
+            "settled_at": "2026-07-13T01:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 2,
+            "amount": 5,
+            "status": "settled",
+            "settled_at": "2026-07-13T02:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 3,
+            "amount": 7,
+            "status": "settled",
+            "settled_at": "2026-07-13T03:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 1,
+            "amount": -3,
+            "status": "pending",
+            "settled_at": "2026-07-13T04:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(orders.channel, 'Other'), SUM(order_lines.amount)\nFROM orders INNER JOIN order_lines ON orders.order_id = order_lines.order_id\nWHERE order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-07-13T00:00:00'\n AND order_lines.settled_at < '2026-07-14T00:00:00'\n AND orders.channel IS NULL\nGROUP BY COALESCE(orders.channel, 'Other')",
+      "expected_rows": [
+        [
+          "Other",
+          15
+        ],
+        [
+          "web",
+          7
+        ]
+      ],
+      "reason": "错误把空渠道回退规则当作只看NULL渠道的范围条件；实际Other及普通渠道都不应被筛掉。"
+    },
+    {
+      "id": "h14",
+      "category": "semantic_fault",
+      "task": {
+        "task_id": "h14",
+        "question": "请按渠道统计 2026-08-14T00:00:00（含）至 2026-08-15T00:00:00（不含）期间、状态为 settled 的明细净金额，退款计入。空渠道统一显示为“其他”，并与实际同名渠道合并；只返回存在符合条件明细的渠道。",
+        "properties": [
+          "merge_other_channels"
+        ],
+        "output_kind": "channels",
+        "start": "2026-08-14T00:00:00",
+        "end": "2026-08-15T00:00:00",
+        "status": "settled",
+        "other_label": "其他"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 10,
+            "channel": null
+          },
+          {
+            "order_id": 2,
+            "total": 3,
+            "channel": "其他"
+          },
+          {
+            "order_id": 3,
+            "total": 4,
+            "channel": "Unknown"
+          },
+          {
+            "order_id": 4,
+            "total": 0,
+            "channel": "web"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 10,
+            "status": "settled",
+            "settled_at": "2026-08-14T01:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 2,
+            "amount": -3,
+            "status": "settled",
+            "settled_at": "2026-08-14T02:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 3,
+            "amount": 4,
+            "status": "settled",
+            "settled_at": "2026-08-14T03:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 4,
+            "amount": 0,
+            "status": "settled",
+            "settled_at": "2026-08-14T04:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(orders.channel, 'Unknown'), SUM(order_lines.amount)\nFROM orders INNER JOIN order_lines ON orders.order_id = order_lines.order_id\nWHERE order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-08-14T00:00:00'\n AND order_lines.settled_at < '2026-08-15T00:00:00'\nGROUP BY COALESCE(orders.channel, 'Unknown')",
+      "expected_rows": [
+        [
+          "Unknown",
+          4
+        ],
+        [
+          "web",
+          0
+        ],
+        [
+          "其他",
+          7
+        ]
+      ],
+      "reason": "COALESCE存在但用了错误的回退标签，NULL应合并到其他而非实际存在的Unknown渠道。"
+    },
+    {
+      "id": "h15",
+      "category": "semantic_fault",
+      "task": {
+        "task_id": "h15",
+        "question": "请按渠道统计 2026-09-15T00:00:00（含）至 2026-09-16T00:00:00（不含）期间、状态为 settled 的明细净金额，退款计入。空渠道统一显示为“Other”，并与实际同名渠道合并；只返回存在符合条件明细的渠道。",
+        "properties": [
+          "merge_other_channels"
+        ],
+        "output_kind": "channels",
+        "start": "2026-09-15T00:00:00",
+        "end": "2026-09-16T00:00:00",
+        "status": "settled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 10,
+            "channel": "web"
+          },
+          {
+            "order_id": 2,
+            "total": 20,
+            "channel": null
+          },
+          {
+            "order_id": 3,
+            "total": 0,
+            "channel": "Other"
+          },
+          {
+            "order_id": 4,
+            "total": 9,
+            "channel": "mail"
+          },
+          {
+            "order_id": 5,
+            "total": 0,
+            "channel": "zero"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 10,
+            "status": "settled",
+            "settled_at": "2026-09-15T01:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 2,
+            "amount": 20,
+            "status": "pending",
+            "settled_at": "2026-09-15T02:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 4,
+            "amount": 9,
+            "status": "settled",
+            "settled_at": "2026-09-16T00:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 5,
+            "amount": 0,
+            "status": "settled",
+            "settled_at": "2026-09-15T03:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(orders.channel, 'Other'), COALESCE(SUM(order_lines.amount), 0)\nFROM orders LEFT JOIN order_lines\n ON orders.order_id = order_lines.order_id\n AND order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-09-15T00:00:00'\n AND order_lines.settled_at < '2026-09-16T00:00:00'\nGROUP BY COALESCE(orders.channel, 'Other')",
+      "expected_rows": [
+        [
+          "web",
+          10
+        ],
+        [
+          "zero",
+          0
+        ]
+      ],
+      "reason": "把订单保留策略套到渠道输出，生成完全没有有效明细的虚假零额渠道；真正存在零金额明细的zero渠道必须保留。"
+    },
+    {
+      "id": "h16",
+      "category": "semantic_fault",
+      "task": {
+        "task_id": "h16",
+        "question": "请统计从 2026-10-16T00:00:00（含）到 2026-10-17T00:00:00（不含），状态为 settled 的订单明细净金额。退款也要计入，没有符合条件的明细时返回0。",
+        "properties": [
+          "exclude_end",
+          "exclude_status",
+          "include_start",
+          "include_negative"
+        ],
+        "output_kind": "scalar",
+        "start": "2026-10-16T00:00:00",
+        "end": "2026-10-17T00:00:00",
+        "status": "settled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 50,
+            "channel": "web"
+          },
+          {
+            "order_id": 2,
+            "total": -40,
+            "channel": null
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 10,
+            "status": "settled",
+            "settled_at": "2026-10-16T00:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 1,
+            "amount": -2,
+            "status": "settled",
+            "settled_at": "2026-10-16T12:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 2,
+            "amount": -40,
+            "status": "settled",
+            "settled_at": "2026-10-17T00:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 2,
+            "amount": 7,
+            "status": "settled",
+            "settled_at": "2026-10-15T23:59:59"
+          },
+          {
+            "line_id": 5,
+            "order_id": 1,
+            "amount": 55,
+            "status": "pending",
+            "settled_at": "2026-10-16T13:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(SUM(order_lines.amount), 0)\nFROM order_lines\nWHERE order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-10-16T00:00:00'\n AND order_lines.settled_at <= '2026-10-17T00:00:00'",
+      "expected_rows": [
+        [
+          8
+        ]
+      ],
+      "reason": "结束时间是开区间；使用小于等于会额外纳入恰好结束时刻的退款。"
+    },
+    {
+      "id": "h17",
+      "category": "semantic_fault",
+      "task": {
+        "task_id": "h17",
+        "question": "请统计从 2026-11-17T00:00:00（含）到 2026-11-18T00:00:00（不含），状态为 pending 的订单明细净金额。退款也要计入，没有符合条件的明细时返回0。",
+        "properties": [
+          "exclude_end",
+          "exclude_status",
+          "include_start",
+          "include_negative"
+        ],
+        "output_kind": "scalar",
+        "start": "2026-11-17T00:00:00",
+        "end": "2026-11-18T00:00:00",
+        "status": "pending",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 100,
+            "channel": "app"
+          },
+          {
+            "order_id": 2,
+            "total": 100,
+            "channel": null
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 100,
+            "status": "pending",
+            "settled_at": "2026-11-17T01:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 1,
+            "amount": -30,
+            "status": "pending",
+            "settled_at": "2026-11-17T02:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 2,
+            "amount": 100,
+            "status": "pending",
+            "settled_at": "2026-11-17T03:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 2,
+            "amount": 0,
+            "status": "pending",
+            "settled_at": "2026-11-17T04:00:00"
+          },
+          {
+            "line_id": 5,
+            "order_id": 1,
+            "amount": -50,
+            "status": "settled",
+            "settled_at": "2026-11-17T05:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(SUM(order_lines.amount), 0)\nFROM order_lines\nWHERE order_lines.status = 'pending'\n AND order_lines.settled_at >= '2026-11-17T00:00:00'\n AND order_lines.settled_at < '2026-11-18T00:00:00'\n AND order_lines.amount > 0",
+      "expected_rows": [
+        [
+          170
+        ]
+      ],
+      "reason": "净额必须计入负金额；额外正金额过滤会删除有效退款。"
+    },
+    {
+      "id": "h18",
+      "category": "semantic_fault",
+      "task": {
+        "task_id": "h18",
+        "question": "请按订单编号列出所有订单在 2026-12-18T00:00:00（含）至 2026-12-19T00:00:00（不含）期间、状态为 settled 的明细净金额。退款计入，每个订单都要保留，没有符合条件的明细则金额为0。",
+        "properties": [
+          "preserve_zero_orders"
+        ],
+        "output_kind": "orders",
+        "start": "2026-12-18T00:00:00",
+        "end": "2026-12-19T00:00:00",
+        "status": "settled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 20,
+            "channel": "web"
+          },
+          {
+            "order_id": 2,
+            "total": 7,
+            "channel": null
+          },
+          {
+            "order_id": 3,
+            "total": 0,
+            "channel": "store"
+          },
+          {
+            "order_id": 4,
+            "total": 8,
+            "channel": "phone"
+          },
+          {
+            "order_id": 5,
+            "total": -4,
+            "channel": "web"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 20,
+            "status": "settled",
+            "settled_at": "2026-12-18T01:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 1,
+            "amount": -20,
+            "status": "settled",
+            "settled_at": "2026-12-18T02:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 2,
+            "amount": 7,
+            "status": "pending",
+            "settled_at": "2026-12-18T03:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 4,
+            "amount": 8,
+            "status": "settled",
+            "settled_at": "2026-12-19T00:00:00"
+          },
+          {
+            "line_id": 5,
+            "order_id": 5,
+            "amount": -4,
+            "status": "settled",
+            "settled_at": "2026-12-18T04:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT orders.order_id, COALESCE(SUM(order_lines.amount), 0)\nFROM orders LEFT JOIN order_lines ON orders.order_id = order_lines.order_id\nWHERE order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-12-18T00:00:00'\n AND order_lines.settled_at < '2026-12-19T00:00:00'\nGROUP BY orders.order_id",
+      "expected_rows": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          -4
+        ]
+      ],
+      "reason": "明细筛选放到LEFT JOIN后的WHERE中，删除无明细、只有其他状态或区间外明细的订单。"
+    },
+    {
+      "id": "h19",
+      "category": "unsupported",
+      "task": {
+        "task_id": "h19",
+        "question": "请统计从 2026-01-19T00:00:00（含）到 2026-01-20T00:00:00（不含），状态为 settled 的订单明细净金额。退款也要计入，没有符合条件的明细时返回0。",
+        "properties": [
+          "exclude_end",
+          "exclude_status",
+          "include_start",
+          "include_negative"
+        ],
+        "output_kind": "scalar",
+        "start": "2026-01-19T00:00:00",
+        "end": "2026-01-20T00:00:00",
+        "status": "settled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 80,
+            "channel": "web"
+          },
+          {
+            "order_id": 2,
+            "total": 10,
+            "channel": null
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 30,
+            "status": "settled",
+            "settled_at": "2026-01-19T00:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 2,
+            "amount": -5,
+            "status": "settled",
+            "settled_at": "2026-01-19T12:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 1,
+            "amount": 30,
+            "status": "pending",
+            "settled_at": "2026-01-19T12:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 2,
+            "amount": 70,
+            "status": "settled",
+            "settled_at": "2026-01-20T00:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(SUM(CASE WHEN order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-01-19T00:00:00'\n AND order_lines.settled_at < '2026-01-20T00:00:00'\n THEN order_lines.amount ELSE 0 END), 0)\nFROM order_lines",
+      "expected_rows": [
+        [
+          25
+        ]
+      ],
+      "reason": "CASE条件聚合不在支持范围，SUM参数也不再是直接的order_lines.amount；即使本数据业务结果相同也应拒绝。"
+    },
+    {
+      "id": "h20",
+      "category": "unsupported",
+      "task": {
+        "task_id": "h20",
+        "question": "请统计从 2026-02-20T06:00:00（含）到 2026-02-21T06:00:00（不含），状态为 cancelled 的订单明细净金额。退款也要计入，没有符合条件的明细时返回0。",
+        "properties": [
+          "exclude_end",
+          "exclude_status",
+          "include_start",
+          "include_negative"
+        ],
+        "output_kind": "scalar",
+        "start": "2026-02-20T06:00:00",
+        "end": "2026-02-21T06:00:00",
+        "status": "cancelled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 60,
+            "channel": "desk"
+          },
+          {
+            "order_id": 2,
+            "total": 10,
+            "channel": null
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 60,
+            "status": "cancelled",
+            "settled_at": "2026-02-20T06:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 2,
+            "amount": -10,
+            "status": "cancelled",
+            "settled_at": "2026-02-21T05:59:59"
+          },
+          {
+            "line_id": 3,
+            "order_id": 1,
+            "amount": 60,
+            "status": "settled",
+            "settled_at": "2026-02-20T12:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 2,
+            "amount": 90,
+            "status": "cancelled",
+            "settled_at": "2026-02-21T06:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "WITH narrowed AS (\n SELECT order_lines.amount FROM order_lines\n WHERE order_lines.status = 'cancelled'\n AND order_lines.settled_at >= '2026-02-20T06:00:00'\n AND order_lines.settled_at < '2026-02-21T06:00:00'\n)\nSELECT COALESCE(SUM(narrowed.amount), 0) FROM narrowed",
+      "expected_rows": [
+        [
+          50
+        ]
+      ],
+      "reason": "WITH/CTE及其间接数据源超出单SELECT、直接SUM(order_lines.amount)的支持范围。"
+    },
+    {
+      "id": "h21",
+      "category": "unsupported",
+      "task": {
+        "task_id": "h21",
+        "question": "请统计从 2026-03-21T00:00:00（含）到 2026-03-22T00:00:00（不含），状态为 pending 的订单明细净金额。退款也要计入，没有符合条件的明细时返回0。",
+        "properties": [
+          "exclude_end",
+          "exclude_status",
+          "include_start",
+          "include_negative"
+        ],
+        "output_kind": "scalar",
+        "start": "2026-03-21T00:00:00",
+        "end": "2026-03-22T00:00:00",
+        "status": "pending",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 24,
+            "channel": "app"
+          },
+          {
+            "order_id": 2,
+            "total": -4,
+            "channel": null
+          },
+          {
+            "order_id": 3,
+            "total": 0,
+            "channel": "web"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 12,
+            "status": "pending",
+            "settled_at": "2026-03-21T01:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 1,
+            "amount": 12,
+            "status": "pending",
+            "settled_at": "2026-03-21T02:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 2,
+            "amount": -4,
+            "status": "pending",
+            "settled_at": "2026-03-21T03:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 3,
+            "amount": 100,
+            "status": "settled",
+            "settled_at": "2026-03-21T04:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(SUM(order_lines.amount), 0)\nFROM order_lines\nWHERE order_lines.status = 'pending'\n AND order_lines.settled_at >= '2026-03-21T00:00:00'\n AND order_lines.settled_at < '2026-03-22T00:00:00'\n AND order_lines.order_id IN (SELECT orders.order_id FROM orders)",
+      "expected_rows": [
+        [
+          20
+        ]
+      ],
+      "reason": "IN中的子查询超出直接比较加AND的谓词范围；有效外键令它在本数据中冗余，但语法仍应拒绝。"
+    },
+    {
+      "id": "h22",
+      "category": "unsupported",
+      "task": {
+        "task_id": "h22",
+        "question": "请按渠道统计 2026-04-22T00:00:00（含）至 2026-04-23T00:00:00（不含）期间、状态为 settled 的明细净金额，退款计入。空渠道统一显示为“Other”，并与实际同名渠道合并；只返回存在符合条件明细的渠道。",
+        "properties": [
+          "merge_other_channels"
+        ],
+        "output_kind": "channels",
+        "start": "2026-04-22T00:00:00",
+        "end": "2026-04-23T00:00:00",
+        "status": "settled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 20,
+            "channel": null
+          },
+          {
+            "order_id": 2,
+            "total": 5,
+            "channel": "Other"
+          },
+          {
+            "order_id": 3,
+            "total": 8,
+            "channel": "web"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 20,
+            "status": "settled",
+            "settled_at": "2026-04-22T01:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 2,
+            "amount": -5,
+            "status": "settled",
+            "settled_at": "2026-04-22T02:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 3,
+            "amount": 8,
+            "status": "settled",
+            "settled_at": "2026-04-22T03:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 3,
+            "amount": 99,
+            "status": "pending",
+            "settled_at": "2026-04-22T04:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(orders.channel, 'Other'),\n SUM(order_lines.amount) OVER (PARTITION BY COALESCE(orders.channel, 'Other'))\nFROM orders INNER JOIN order_lines ON orders.order_id = order_lines.order_id\nWHERE order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-04-22T00:00:00'\n AND order_lines.settled_at < '2026-04-23T00:00:00'",
+      "expected_rows": [
+        [
+          "Other",
+          15
+        ],
+        [
+          "web",
+          8
+        ]
+      ],
+      "reason": "窗口函数OVER/PARTITION BY不受支持；窗口还会为合并后的Other重复输出，而不是单行分组结果。"
+    },
+    {
+      "id": "h23",
+      "category": "unsupported",
+      "task": {
+        "task_id": "h23",
+        "question": "请按订单编号列出所有订单在 2026-05-23T00:00:00（含）至 2026-05-24T00:00:00（不含）期间、状态为 settled 的明细净金额。退款计入，每个订单都要保留，没有符合条件的明细则金额为0。",
+        "properties": [
+          "preserve_zero_orders"
+        ],
+        "output_kind": "orders",
+        "start": "2026-05-23T00:00:00",
+        "end": "2026-05-24T00:00:00",
+        "status": "settled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 8,
+            "channel": "web"
+          },
+          {
+            "order_id": 2,
+            "total": 0,
+            "channel": null
+          },
+          {
+            "order_id": 3,
+            "total": 20,
+            "channel": "app"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 8,
+            "status": "settled",
+            "settled_at": "2026-05-23T01:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 1,
+            "amount": -2,
+            "status": "settled",
+            "settled_at": "2026-05-23T02:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 3,
+            "amount": 20,
+            "status": "pending",
+            "settled_at": "2026-05-23T03:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT orders.order_id, COALESCE(SUM(order_lines.amount), 0)\nFROM orders LEFT JOIN order_lines\n ON orders.order_id = order_lines.order_id\n AND order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-05-23T00:00:00'\n AND order_lines.settled_at < '2026-05-24T00:00:00'\nGROUP BY orders.order_id\nUNION ALL\nSELECT orders.order_id, 0 FROM orders WHERE orders.order_id < 0",
+      "expected_rows": [
+        [
+          1,
+          6
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "reason": "UNION ALL及第二个SELECT被明确排除；正整数主键令第二分支为空也不能将它当作受支持候选。"
+    },
+    {
+      "id": "h24",
+      "category": "unsupported",
+      "task": {
+        "task_id": "h24",
+        "question": "请按渠道统计 2026-06-24T00:00:00（含）至 2026-06-25T00:00:00（不含）期间、状态为 settled 的明细净金额，退款计入。空渠道统一显示为“Other”，并与实际同名渠道合并；只返回存在符合条件明细的渠道。",
+        "properties": [
+          "merge_other_channels"
+        ],
+        "output_kind": "channels",
+        "start": "2026-06-24T00:00:00",
+        "end": "2026-06-25T00:00:00",
+        "status": "settled",
+        "other_label": "Other"
+      },
+      "data": {
+        "orders": [
+          {
+            "order_id": 1,
+            "total": 10,
+            "channel": null
+          },
+          {
+            "order_id": 2,
+            "total": 10,
+            "channel": "Other"
+          },
+          {
+            "order_id": 3,
+            "total": -6,
+            "channel": "web"
+          }
+        ],
+        "lines": [
+          {
+            "line_id": 1,
+            "order_id": 1,
+            "amount": 10,
+            "status": "settled",
+            "settled_at": "2026-06-24T01:00:00"
+          },
+          {
+            "line_id": 2,
+            "order_id": 2,
+            "amount": 10,
+            "status": "settled",
+            "settled_at": "2026-06-24T02:00:00"
+          },
+          {
+            "line_id": 3,
+            "order_id": 3,
+            "amount": -3,
+            "status": "settled",
+            "settled_at": "2026-06-24T03:00:00"
+          },
+          {
+            "line_id": 4,
+            "order_id": 3,
+            "amount": -3,
+            "status": "settled",
+            "settled_at": "2026-06-24T04:00:00"
+          },
+          {
+            "line_id": 5,
+            "order_id": 3,
+            "amount": 10,
+            "status": "cancelled",
+            "settled_at": "2026-06-24T05:00:00"
+          }
+        ]
+      },
+      "candidate_sql": "SELECT COALESCE(orders.channel, 'Other'), SUM(DISTINCT order_lines.amount)\nFROM orders INNER JOIN order_lines ON orders.order_id = order_lines.order_id\nWHERE order_lines.status = 'settled'\n AND order_lines.settled_at >= '2026-06-24T00:00:00'\n AND order_lines.settled_at < '2026-06-25T00:00:00'\nGROUP BY COALESCE(orders.channel, 'Other')",
+      "expected_rows": [
+        [
+          "Other",
+          20
+        ],
+        [
+          "web",
+          -6
+        ]
+      ],
+      "reason": "聚合DISTINCT被明确排除；同额明细是不同合法记录，去重还会破坏净额。"
+    }
+  ],
+  "natural_probe_ids": [
+    "h01",
+    "h04",
+    "h06",
+    "h08"
+  ]
+}
