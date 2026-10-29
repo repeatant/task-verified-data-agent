@@ -15,8 +15,8 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
-from .dbgpt_qwen import QwenClientError
 from .probe_cost_budget import MonetaryRequestBudget
+from .qwen_config import QwenClientError
 
 JsonObject = dict[str, Any]
 _TOKEN_FIELDS = ("prompt_tokens", "completion_tokens", "total_tokens")

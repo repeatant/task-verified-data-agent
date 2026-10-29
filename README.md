@@ -2,7 +2,7 @@
 
 **为 SQL 数据分析 Agent 提供任务核验、反例诊断与反馈修复。**
 
-项目基于 DB-GPT，将查询执行、任务约束、自动测试和修复回归接成闭环。调用方确认指标与统计范围，Agent 生成 SQL，核验器检查候选并返回可重放的失败证据。
+项目提供 LangGraph 与 DB-GPT 两条独立执行路径，共用任务核验、反例测试和反馈修复组件。调用方确认指标与统计范围，Agent 生成 SQL，核验器检查候选并返回可重放的失败证据。
 
 [快速开始](#快速开始) · [使用指南](docs/USAGE.md) · [架构](docs/ARCHITECTURE.md) · [反馈策略](docs/FEEDBACK.md) · [评测](docs/EVALUATION.md)
 
@@ -27,7 +27,7 @@ WHERE l.status = 'settled'
 - **任务级核验**：检查时间、状态、金额来源、筛选范围和分组成员，区分合法零值与外连接产生的伪分组。
 - **反例生成与缩减**：生成满足主外键和类型约束的数据，用变形关系诊断候选；保留失败性质，缩减反例数据。
 - **反馈修复与回归**：组织结构化修复指导；连续失败时可从紧凑反例升级到完整证据，修复后回归原要求与历史反例。
-- **受控执行**：通过 AST 白名单、只读 SQLite、查询与模型调用预算约束执行，由核验器持有并发布最终结果。
+- **受控执行与恢复**：AST 白名单、只读 SQLite 和调用预算约束执行；LangGraph 保存执行状态、历史反例与反馈进度，恢复后重新核验再发布结果。
 
 ## 工作流程
 
@@ -42,7 +42,7 @@ flowchart LR
     F -->|预算耗尽| G[返回未完成]
 ```
 
-生成、记忆和重试使用 DB-GPT 原生循环；核验与反馈通过 Action 接口接入。实现细节见 [架构文档](docs/ARCHITECTURE.md)。
+LangGraph 路径用显式节点管理生成、核验、反馈和发布，支持 SQLite 断点恢复；DB-GPT 路径通过 Action 接入原生循环。两条路径分别拥有自己的重试循环。实现细节见 [架构文档](docs/ARCHITECTURE.md)。
 
 ## 快速开始
 
@@ -66,10 +66,19 @@ python -m venv .venv
 }
 ```
 
-此命令在本地重放失败性质，不调用模型 API。完整 Agent 闭环、真实模型配置和测试命令见 [使用指南](docs/USAGE.md)。
+此命令在本地重放失败性质，不调用模型 API。
+
+运行 LangGraph 离线闭环：
+
+```powershell
+.\.venv\Scripts\python.exe tools/run_graph.py --case d06 --thread boundary-demo
+```
+
+脚本依次提供错误候选和修复候选，检查反例、反馈、回归及结果发布，不调用 API。真实千问、断点恢复和 DB-GPT 路径见 [使用指南](docs/USAGE.md)。
 
 ## 验证结果
 
+- **LangGraph 闭环**：两条受控错误各用一次真实调用修复，一个自然任务生成后跨进程恢复发布；三项均通过源数据与附加边界评分，恢复阶段没有新增模型请求。
 - **反馈压缩**：`legacy_v1` 的 16 组受控反例配对中，两种反馈均修复 14/16，紧凑反馈的实际输入 Token 减少 **7.0%**；另 3 项自然任务中，完整反馈完成 3/3，紧凑反馈完成 2/3。
 - **反馈消融**：四种配置在两个受控错误上均修复成功；LEFT JOIN 案例的真实修复调用由 **2 次减至 1 次**，另一案例轮次不变。
 - **状态升级**：完整、紧凑、自适应策略在三个开发任务上均 3/3 正确；本轮未触发升级，自适应效果仍待连续失败任务验证。
@@ -91,11 +100,13 @@ python -m venv .venv
 - [评测说明](docs/EVALUATION.md)：真实调用对照、独立挑战、回归与版本回放。
 - [核验入口](dataverify/probe_guard.py)：任务保持、候选验收和发布结果。
 - [Agent 接入](dataverify/probe_agent_bridge.py)：资源、Action 与反馈循环。
+- [LangGraph 执行器](dataverify/probe_langgraph.py)：节点、条件路由、检查点和恢复校验。
+- [断点恢复指南](docs/LANGGRAPH.md)：离线重放、真实模型、调用记账及恢复边界。
 - [源码阅读指南](docs/CODE_GUIDE.md)：从任务入口追踪验收、反馈、实验与预算。
 - [开发约定](CONTRIBUTING.md)：格式、静态检查和修改后的验证步骤。
 
 ## 依赖与参考
 
-[DB-GPT](https://github.com/eosphoros-ai/DB-GPT) 提供 Agent 循环，[SQLGlot](https://github.com/tobymao/sqlglot) 提供 SQL AST，[Hypothesis](https://github.com/HypothesisWorks/hypothesis) 提供数据生成与缩减工具。测试方法参考 [SQLDriller](https://github.com/SJTU-IPADS/SQLDriller) 和 [SQLancer](https://github.com/sqlancer/sqlancer)。
+[LangGraph](https://github.com/langchain-ai/langgraph) 提供状态图和检查点，[DB-GPT](https://github.com/eosphoros-ai/DB-GPT) 提供另一条原生 Agent 路径，[SQLGlot](https://github.com/tobymao/sqlglot) 提供 SQL AST，[Hypothesis](https://github.com/HypothesisWorks/hypothesis) 提供数据生成与缩减工具。测试方法参考 [SQLDriller](https://github.com/SJTU-IPADS/SQLDriller) 和 [SQLancer](https://github.com/sqlancer/sqlancer)。
 
 第三方版本与许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。本仓库代码的许可证尚未指定。

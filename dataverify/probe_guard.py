@@ -120,6 +120,49 @@ class ProbeGuard:
     def last_result(self) -> dict:
         return deepcopy(self._last)
 
+    def _checkpoint_binding(self) -> dict[str, Any]:
+        return {
+            "source_sha256": self._source_digest,
+            "mode": self.mode,
+            "seed": self.seed,
+            "feedback_policy": self.feedback_policy,
+        }
+
+    def checkpoint_state(self) -> dict[str, Any]:
+        """Retain exact witnesses and feedback progress, never accepted values."""
+        from .graph_guard import validate_guard_state
+
+        if source_digest(self.task, self.data) != self._source_digest:
+            raise ValueError("Cannot checkpoint a changed task source")
+        state = {
+            "version": 1,
+            "binding": self._checkpoint_binding(),
+            "regressions": [pair.payload() for pair in self._regressions.values()],
+            "feedback_strategy": self._feedback_strategy.checkpoint_state(),
+            "terminal_code": self._terminal_code,
+        }
+        # JSON roundtrip removes tuple/class identity; the loader validates the
+        # same representation that a durable checkpointer will later supply.
+        payload = json.loads(json.dumps(state, ensure_ascii=False, allow_nan=False))
+        validate_guard_state(payload, self._checkpoint_binding(), self.task)
+        return payload
+
+    def restore_checkpoint_state(self, state: dict[str, Any]) -> None:
+        """Restore into a fresh guard; callers must recheck SQL before publish."""
+        from .graph_guard import validate_guard_state
+
+        if self._audit or self._regressions or self._last or self._accepted is not None:
+            raise ValueError("Guard continuation requires a fresh instance")
+        if source_digest(self.task, self.data) != self._source_digest:
+            raise ValueError("Cannot restore into a changed task source")
+        continuation = validate_guard_state(state, self._checkpoint_binding(), self.task)
+        self._regressions = {
+            json.dumps(pair.payload(), sort_keys=True, ensure_ascii=False): pair
+            for pair in continuation.witnesses
+        }
+        self._feedback_strategy = continuation.strategy
+        self._terminal_code = continuation.terminal_code
+
     @staticmethod
     def _candidate_fingerprint(sql: str | None) -> str | None:
         """Compatibility entry point for the task-local strategy's identity."""

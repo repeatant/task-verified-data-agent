@@ -34,12 +34,15 @@ sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(snapshot))
 
-from evaluate_independent_holdout import load_challenges, score
-
+# Bind the package to the frozen snapshot before the evaluator adds its own
+# project root to sys.path. Otherwise it can silently select the current code.
 from dataverify.probe_guard import ProbeGuard
 
 if not Path(inspect.getfile(ProbeGuard)).resolve().is_relative_to(snapshot.resolve()):
     raise RuntimeError("Initial replay imported the current verifier instead of frozen source")
+
+from evaluate_independent_holdout import load_challenges, score
+
 challenges = load_challenges(json.loads(dataset.read_text(encoding="utf-8")))
 rows = [score(item) for item in challenges]
 result = {

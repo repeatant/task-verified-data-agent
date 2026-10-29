@@ -223,6 +223,18 @@ def _precondition(pair: ProbePair, task: ProbeTask) -> bool:
     return True
 
 
+def pair_is_applicable(task: ProbeTask, pair: ProbePair) -> bool:
+    """Check a retained witness's transformation before checkpoint loading.
+
+    Structural validity alone does not establish the intended boundary: for
+    example, an ``exclude_end`` witness must insert a line exactly at task.end.
+    This shares the execution/reduction preconditions and performs no queries.
+    """
+    if not isinstance(task, ProbeTask) or not isinstance(pair, ProbePair):
+        raise ValueError("Applicability requires a confirmed task and legal probe pair")
+    return _precondition(pair, task)
+
+
 def _scalar(result: dict) -> int | float:
     rows = result["rows"]
     if len(rows) != 1 or len(rows[0]) != 1:

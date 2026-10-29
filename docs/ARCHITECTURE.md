@@ -2,7 +2,7 @@
 
 ## 一次任务如何执行
 
-调用方先确认指标、时间、状态、输出形式和任务性质。DB-GPT 生成候选 SQL，核验组件返回结构化结果；失败反馈进入原生重试，修复候选继续接受同一任务和已发现反例的检查。
+调用方先确认指标、时间、状态、输出形式和任务性质。执行器生成候选 SQL，核验组件返回结构化结果；失败反馈进入预算内修复，后续候选继续接受同一任务和已发现反例的检查。
 
 ```mermaid
 flowchart LR
@@ -16,7 +16,22 @@ flowchart LR
     G -->|预算耗尽| H[返回未完成]
 ```
 
-执行动作扩展自 DB-GPT 的 `Action` 接口，复用原生生成、记忆和重试循环。模型输出文本 JSON Action，查询由核验器执行，公开结果也由核验器持有。
+两条执行路径共用核验核心，分别拥有一个生成／修复循环：
+
+- **LangGraph**：`prepare_call → generate → verify → feedback/publish`。SQLite 检查点保存消息、候选、反例和自适应反馈状态，模型由独立适配器调用。
+- **DB-GPT**：执行动作扩展自 `Action`，复用原生生成、记忆和重试循环，上游源码保持原样。
+
+两条路径均使用文本 JSON Action；查询和最终结果由核验器持有。LangGraph 不包裹 DB-GPT 循环，当前实验也不主张换框架本身提高了修复率。
+
+## LangGraph 状态与恢复
+
+`GraphState` 只保存可序列化数据，模型客户端、凭据、锁和活动 Guard 均在状态之外。恢复先比对任务／数据摘要、执行选项及运行时代码与依赖版本；不一致时要求新建线程。
+
+Guard 检查点保留实际反例及反馈升级进度，不恢复已接受结果。候选必须在当前来源及已存反例上重新执行，才有发布资格。已完成线程再次读取时也重新核验，避免把缓存数值当作当前结果。
+
+模型调用前，独立节点先同步保存待调用标记；实际 POST 前，费用代理将预留额落盘。重启后使用最新完整账本，不回退到较旧图状态里的预算。存在未决调用、未知 usage 或未完成节点时拒绝自动重试。这里不提供付费请求的 exactly-once 保证；已完成 HTTP 但图节点未保存结果时也需要人工检查。
+
+本地文件锁串行化检查点与共享预算的写入。SQLite 方案面向本地演示和开发；运行命令、断点示例和边界见 [LangGraph 指南](LANGGRAPH.md)。
 
 ## 核验组件
 
@@ -51,6 +66,10 @@ LEFT JOIN 按驱动表、过滤位置和可选侧匹配关系核验。`line_id>0
 - [probe_testing.py](../dataverify/probe_testing.py)：性质选择、合法数据生成、成对执行、反例缩减。
 - [probe_guard.py](../dataverify/probe_guard.py)：任务保持、输出检查、旧反例回归和发布结果。
 - [probe_agent_bridge.py](../dataverify/probe_agent_bridge.py)：DB-GPT资源、Action、反馈及最终发布接口。
+- [probe_langgraph.py](../dataverify/probe_langgraph.py)：LangGraph 节点、条件路由和恢复约束。
+- [graph_guard.py](../dataverify/graph_guard.py)：反例与反馈状态的 JSON 编解码，不恢复接受状态。
+- [graph_model.py](../dataverify/graph_model.py)：单次生成接口、离线脚本与千问 HTTP 适配。
+- [graph_checkpoint.py](../dataverify/graph_checkpoint.py)：本地写入锁与持久费用账本。
 - [probe_live_benchmark.py](../dataverify/probe_live_benchmark.py)：真实模型和脚本客户端对照、独立评分、调用审计。
 - [probe_cost_budget.py](../dataverify/probe_cost_budget.py)：调用前预留、usage和估算费用账本。
 - [feedback_experiment.py](../dataverify/feedback_experiment.py)：信息开关消融、固定与自适应反馈对照、累计预算续接。
@@ -61,4 +80,4 @@ LEFT JOIN 按驱动表、过滤位置和可选侧匹配关系核验。`line_id>0
 
 [DB-GPT](https://github.com/eosphoros-ai/DB-GPT) 提供原生 Agent 循环；[SQLGlot](https://github.com/tobymao/sqlglot) 提供 AST；[Hypothesis](https://github.com/HypothesisWorks/hypothesis) 提供生成与缩减工具。固定上游提交及关键源码摘要保存在 [版本记录](research/dbgpt_pin.json)。
 
-早期 LangGraph/FastAPI 实现保留在仓库中，其环境与当前 DB-GPT 路线分开。测试和安装入口见 [使用指南](USAGE.md)。
+早期 `engine.py`／FastAPI 示例仍保留，使用旧任务模型；当前共享核验核心的 LangGraph 路径位于 `probe_langgraph.py`，两者不是同一个执行器。测试和安装入口见 [使用指南](USAGE.md)。

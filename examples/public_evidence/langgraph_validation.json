@@ -1,0 +1,416 @@
+{
+  "runtime": "langgraph",
+  "runtime_fingerprints": [
+    "e670278fefe4450cae55d8801e8588a3ded205f3769575db13ee267ca68d2f02"
+  ],
+  "scope": "Fixed synthetic schema; disclosed development smoke, not an unseen benchmark or a framework comparison.",
+  "completed_threads": 3,
+  "correct_threads": 3,
+  "wrong_releases": 0,
+  "process_reports": 4,
+  "resume_processes": 1,
+  "resume_http_attempts": 0,
+  "real_model_used": true,
+  "usage": {
+    "prompt_tokens_known": 2974,
+    "completion_tokens_known": 505,
+    "total_tokens_known": 3479,
+    "event_count": 3,
+    "unknown_usage_events": 0,
+    "usage_complete": true
+  },
+  "this_run_http_attempts": 3,
+  "source_integrity_ok": true,
+  "audit_ledger_complete": true,
+  "limitation": "Controlled initial SQL is injected. Paused/resumed process reports are one task. Old DB-GPT compression percentages are not LangGraph results.",
+  "rows": [
+    {
+      "case_id": "d06",
+      "track": "controlled",
+      "status": "completed",
+      "model_attempts": 2,
+      "grade": {
+        "accepted": true,
+        "task_preserved": true,
+        "operational_failure": false,
+        "correct_task": true,
+        "source_correct": true,
+        "boundary_correct": true,
+        "publication_matches_sql": true,
+        "wrong_release": false,
+        "unscorable": false,
+        "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+        "source_grade": {
+          "correct": true,
+          "code": "MATCH"
+        },
+        "boundary_grade": {
+          "correct": true,
+          "code": "MATCH"
+        }
+      },
+      "publication": {
+        "status": "verified",
+        "task_id": "p01",
+        "rows": [
+          [
+            35000
+          ]
+        ],
+        "verified_sql": "SELECT COALESCE(SUM(l.amount), 0) AS revenue FROM order_lines l WHERE l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at < '2026-10-01T00:00:00'",
+        "error_code": null,
+        "scope": "registered necessary properties only; complete correctness independently evaluated"
+      },
+      "actions": [
+        {
+          "sql": "SELECT COALESCE(SUM(l.amount), 0) AS revenue FROM order_lines l WHERE l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at <= '2026-10-01T00:00:00'",
+          "feedback": {
+            "task_id": "p01",
+            "status": "unverified",
+            "verification_status": "rejected",
+            "execution_status": "not_accepted",
+            "error_code": "TIME_BOUNDARY_MISMATCH",
+            "feedback": "Task requires start-inclusive, end-exclusive bounds",
+            "rows": null,
+            "scope": "registered task properties and bounded tests; not a complete semantic proof",
+            "diagnostic_evidence": "{\"task_id\":\"p01\",\"confirmed_property\":\"exclude_end\",\"property_violation\":\"PROPERTY_EXCLUDE_END\",\"data\":{\"property_id\":\"exclude_end\",\"base\":{\"orders\":[[1,1,\"其他\"]],\"lines\":[[1,1,1,\"settled\",\"2026-09-16T00:00:00\"]]},\"added_orders\":[[4,1,\"web\"]],\"added_lines\":[[4,4,1,\"settled\",\"2026-10-01T00:00:00\"]],\"record_count\":4},\"before\":[[1]],\"after\":[[2]],\"instruction\":\"修正候选实现以满足已确认性质，并保留原任务其他要求；此处不提供正确SQL。\"}",
+            "feedback_strategy": {
+              "selected_mode": "compact",
+              "escalation_reason": null,
+              "evidence_available": true
+            }
+          },
+          "source_output_check": null,
+          "regression_checks": [
+            {
+              "status": "violation",
+              "property_id": "exclude_end",
+              "failure_type": "PROPERTY_EXCLUDE_END",
+              "before": [
+                [
+                  1
+                ]
+              ],
+              "after": [
+                [
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "sql": "SELECT COALESCE(SUM(l.amount), 0) AS revenue FROM order_lines l WHERE l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at < '2026-10-01T00:00:00'",
+          "feedback": {
+            "task_id": "p01",
+            "status": "verified",
+            "verification_status": "verified",
+            "execution_status": "executed",
+            "error_code": null,
+            "feedback": "Registered checks passed on source and stored counterexamples.",
+            "rows": [
+              [
+                35000
+              ]
+            ],
+            "scope": "registered task properties and bounded tests; not a complete semantic proof",
+            "feedback_strategy": {
+              "selected_mode": "compact",
+              "escalation_reason": null,
+              "evidence_available": false
+            }
+          },
+          "source_output_check": {
+            "valid": true,
+            "code": null,
+            "scope": "Numeric result shape and unique typed keys only; not an answer oracle."
+          },
+          "regression_checks": [
+            {
+              "status": "passed",
+              "property_id": "exclude_end",
+              "failure_type": null,
+              "before": [
+                [
+                  1
+                ]
+              ],
+              "after": [
+                [
+                  1
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "d10",
+      "track": "controlled",
+      "status": "completed",
+      "model_attempts": 2,
+      "grade": {
+        "accepted": true,
+        "task_preserved": true,
+        "operational_failure": false,
+        "correct_task": true,
+        "source_correct": true,
+        "boundary_correct": true,
+        "publication_matches_sql": true,
+        "wrong_release": false,
+        "unscorable": false,
+        "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+        "source_grade": {
+          "correct": true,
+          "code": "MATCH"
+        },
+        "boundary_grade": {
+          "correct": true,
+          "code": "MATCH"
+        }
+      },
+      "publication": {
+        "status": "verified",
+        "task_id": "p02",
+        "rows": [
+          [
+            1,
+            20000
+          ],
+          [
+            2,
+            15000
+          ]
+        ],
+        "verified_sql": "SELECT o.order_id, COALESCE(SUM(l.amount), 0) AS revenue FROM orders o LEFT JOIN order_lines l ON o.order_id = l.order_id AND l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at < '2026-10-01T00:00:00' GROUP BY o.order_id",
+        "error_code": null,
+        "scope": "registered necessary properties only; complete correctness independently evaluated"
+      },
+      "actions": [
+        {
+          "sql": "SELECT o.order_id, COALESCE(SUM(l.amount), 0) AS revenue FROM orders o LEFT JOIN order_lines l ON o.order_id = l.order_id WHERE l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at < '2026-10-01T00:00:00' GROUP BY o.order_id",
+          "feedback": {
+            "task_id": "p02",
+            "status": "unverified",
+            "verification_status": "rejected",
+            "execution_status": "not_accepted",
+            "error_code": "ZERO_ORDER_WHERE_FILTER",
+            "feedback": "WHERE filtering may remove required zero orders",
+            "rows": null,
+            "scope": "registered task properties and bounded tests; not a complete semantic proof",
+            "diagnostic_evidence": "{\"task_id\":\"p02\",\"confirmed_property\":\"preserve_zero_orders\",\"property_violation\":\"PROPERTY_PRESERVE_ZERO_ORDERS\",\"data\":{\"property_id\":\"preserve_zero_orders\",\"base\":{\"orders\":[[1,1,\"其他\"]],\"lines\":[[1,1,1,\"settled\",\"2026-09-16T00:00:00\"]]},\"added_orders\":[[4,1,\"web\"]],\"added_lines\":[[4,4,1,\"pending\",\"2026-09-16T00:00:00\"]],\"record_count\":4},\"before\":[[1,1]],\"after\":[[1,1]],\"instruction\":\"修正候选实现以满足已确认性质，并保留原任务其他要求；此处不提供正确SQL。\"}",
+            "repair_guidance": {
+              "classification": "task_requirement",
+              "capability_version": "probe-sql-v1",
+              "allowed_alternatives": [
+                "For LEFT JOIN tasks that retain unmatched orders, use JOIN_ON for right-table eligibility filters; WHERE on right-table columns can remove those orders.",
+                "Aggregate the direct registered amount column and use the supported zero wrapper for empty matches. CASE aggregation is outside the execution grammar."
+              ],
+              "preserve_requirements": [
+                "Confirmed task_id=p02",
+                "Measure remains order_lines.amount; include legal negative amounts.",
+                "Confirmed status=settled; time range [2026-09-01T00:00:00, 2026-10-01T00:00:00).",
+                "Keep output_kind=orders and every caller-confirmed property: preserve_zero_orders"
+              ],
+              "retryable": true
+            },
+            "feedback_strategy": {
+              "selected_mode": "compact",
+              "escalation_reason": null,
+              "evidence_available": true
+            }
+          },
+          "source_output_check": null,
+          "regression_checks": [
+            {
+              "status": "violation",
+              "property_id": "preserve_zero_orders",
+              "failure_type": "PROPERTY_PRESERVE_ZERO_ORDERS",
+              "before": [
+                [
+                  1,
+                  1
+                ]
+              ],
+              "after": [
+                [
+                  1,
+                  1
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "sql": "SELECT o.order_id, COALESCE(SUM(l.amount), 0) AS revenue FROM orders o LEFT JOIN order_lines l ON o.order_id = l.order_id AND l.status = 'settled' AND l.settled_at >= '2026-09-01T00:00:00' AND l.settled_at < '2026-10-01T00:00:00' GROUP BY o.order_id",
+          "feedback": {
+            "task_id": "p02",
+            "status": "verified",
+            "verification_status": "verified",
+            "execution_status": "executed",
+            "error_code": null,
+            "feedback": "Registered checks passed on source and stored counterexamples.",
+            "rows": [
+              [
+                1,
+                20000
+              ],
+              [
+                2,
+                15000
+              ]
+            ],
+            "scope": "registered task properties and bounded tests; not a complete semantic proof",
+            "feedback_strategy": {
+              "selected_mode": "compact",
+              "escalation_reason": null,
+              "evidence_available": false
+            }
+          },
+          "source_output_check": {
+            "valid": true,
+            "code": null,
+            "scope": "Numeric result shape and unique typed keys only; not an answer oracle."
+          },
+          "regression_checks": [
+            {
+              "status": "passed",
+              "property_id": "preserve_zero_orders",
+              "failure_type": null,
+              "before": [
+                [
+                  1,
+                  1
+                ]
+              ],
+              "after": [
+                [
+                  1,
+                  1
+                ],
+                [
+                  4,
+                  0
+                ]
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "d03",
+      "track": "natural",
+      "status": "completed",
+      "model_attempts": 1,
+      "grade": {
+        "accepted": true,
+        "task_preserved": true,
+        "operational_failure": false,
+        "correct_task": true,
+        "source_correct": true,
+        "boundary_correct": true,
+        "publication_matches_sql": true,
+        "wrong_release": false,
+        "unscorable": false,
+        "scope": "source and additional disclosed-family boundary fixture, not arbitrary SQL proof",
+        "source_grade": {
+          "correct": true,
+          "code": "MATCH"
+        },
+        "boundary_grade": {
+          "correct": true,
+          "code": "MATCH"
+        }
+      },
+      "publication": {
+        "status": "verified",
+        "task_id": "p02",
+        "rows": [
+          [
+            1,
+            20000
+          ],
+          [
+            2,
+            15000
+          ]
+        ],
+        "verified_sql": "SELECT orders.order_id, COALESCE(SUM(order_lines.amount), 0) FROM orders LEFT JOIN order_lines ON orders.order_id = order_lines.order_id AND order_lines.status = 'settled' AND order_lines.settled_at >= '2026-09-01T00:00:00' AND order_lines.settled_at < '2026-10-01T00:00:00' GROUP BY orders.order_id",
+        "error_code": null,
+        "scope": "registered necessary properties only; complete correctness independently evaluated"
+      },
+      "actions": [
+        {
+          "sql": "SELECT orders.order_id, COALESCE(SUM(order_lines.amount), 0) FROM orders LEFT JOIN order_lines ON orders.order_id = order_lines.order_id AND order_lines.status = 'settled' AND order_lines.settled_at >= '2026-09-01T00:00:00' AND order_lines.settled_at < '2026-10-01T00:00:00' GROUP BY orders.order_id",
+          "feedback": {
+            "task_id": "p02",
+            "status": "verified",
+            "verification_status": "verified",
+            "execution_status": "executed",
+            "error_code": null,
+            "feedback": "Registered checks passed on source and stored counterexamples.",
+            "rows": [
+              [
+                1,
+                20000
+              ],
+              [
+                2,
+                15000
+              ]
+            ],
+            "scope": "registered task properties and bounded tests; not a complete semantic proof",
+            "feedback_strategy": {
+              "selected_mode": "compact",
+              "escalation_reason": null,
+              "evidence_available": false
+            }
+          },
+          "source_output_check": {
+            "valid": true,
+            "code": null,
+            "scope": "Numeric result shape and unique typed keys only; not an answer oracle."
+          },
+          "regression_checks": []
+        }
+      ]
+    }
+  ],
+  "http_outcomes": [
+    {
+      "status": "completed",
+      "http_status": 200,
+      "usage": {
+        "prompt_tokens": 1057,
+        "completion_tokens": 105,
+        "total_tokens": 1162
+      },
+      "usage_complete": true,
+      "finish_reason": "stop"
+    },
+    {
+      "status": "completed",
+      "http_status": 200,
+      "usage": {
+        "prompt_tokens": 1263,
+        "completion_tokens": 117,
+        "total_tokens": 1380
+      },
+      "usage_complete": true,
+      "finish_reason": "stop"
+    },
+    {
+      "status": "completed",
+      "http_status": 200,
+      "usage": {
+        "prompt_tokens": 654,
+        "completion_tokens": 283,
+        "total_tokens": 937
+      },
+      "usage_complete": true,
+      "finish_reason": "stop"
+    }
+  ]
+}

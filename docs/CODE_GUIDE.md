@@ -14,6 +14,14 @@
 
 每次候选更新先清除旧接受状态。`publish()` 只返回当前仍有效的核验结果。`_RegressionRun` 将回归判定和查询消耗放在一起，避免汇总时丢失预算信息。
 
+## LangGraph 如何编排与恢复
+
+从 [run_graph_case](../dataverify/probe_langgraph.py) 开始：验证线程绑定 → 加载检查点 → 执行状态图 → 整理结果。`_GraphNodes` 把节点与路由放在一起，模型及数据作为运行依赖传入，避免把活动客户端放进检查点。
+
+`prepare_call` 保存调用意图，`generate` 只生成一次候选，`verify` 委托同一个 Guard，`feedback` 追加本轮诊断，`publish` 再次核验并获取结果。
+
+[graph_guard.py](../dataverify/graph_guard.py) 校验并恢复反例与策略状态；接受状态不参与恢复。[graph_checkpoint.py](../dataverify/graph_checkpoint.py) 管理本地写入锁和费用落盘；[graph_model.py](../dataverify/graph_model.py) 只负责单次文本 JSON 调用，不包含另一个 Agent 循环。恢复测试关注请求重复、反例丢失、来源变化与旧结果泄漏，见 [LangGraph 指南](LANGGRAPH.md)。
+
 ## SQL 如何检查
 
 [probe_runtime.py](../dataverify/probe_runtime.py) 的 `_analyse` 分为四个阶段：

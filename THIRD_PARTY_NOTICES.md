@@ -12,7 +12,8 @@ evaluation code are distinguished from upstream capabilities in the README.
 - **Hypothesis** — MPL-2.0; https://github.com/HypothesisWorks/hypothesis . Data
   generation and shrinking dependency; its code has not been copied or modified.
 - **LangGraph** — MIT; https://github.com/langchain-ai/langgraph . Used by the
-  earlier local prototype, not as a second loop around the DB-GPT integration.
+  checkpointed executor and earlier local prototype. Its SQLite checkpoint
+  package is installed separately; neither graph wraps the DB-GPT agent loop.
 - **FastAPI** — MIT; https://github.com/fastapi/fastapi . Earlier local API.
 - **SQLDriller** — Apache-2.0; https://github.com/SJTU-IPADS/SQLDriller . Research
   reference for counterexample-oriented SQL diagnosis, not a runtime dependency.

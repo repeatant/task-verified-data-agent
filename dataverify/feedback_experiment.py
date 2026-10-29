@@ -61,6 +61,8 @@ SOURCE_FILES = (
     "dataverify/experiment_budget.py",
     "dataverify/reporting.py",
     "dataverify/feedback_strategy.py",
+    "dataverify/qwen_config.py",
+    "dataverify/probe_grading.py",
 )
 
 

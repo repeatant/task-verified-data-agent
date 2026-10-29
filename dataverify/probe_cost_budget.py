@@ -20,7 +20,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 from urllib.parse import urlsplit
 
-from .dbgpt_qwen import QwenClientError, QwenConfig, RequestBudget
+from .qwen_config import QwenClientError, QwenConfig, RequestBudget
 
 PRICE_SOURCE = "https://help.aliyun.com/zh/model-studio/qwen3-8-flash"
 PRICE_CHECKED_DATE = "2026-10-29"

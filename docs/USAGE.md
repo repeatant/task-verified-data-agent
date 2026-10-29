@@ -2,7 +2,7 @@
 
 ## 环境
 
-已验证环境为 Windows、Python 3.12。核验组件与完整 Agent 使用独立环境，安装命令在仓库根目录执行。
+已验证环境为 Windows、Python 3.12。核验组件与 LangGraph 路径使用基础环境，DB-GPT 路径另有原生环境。安装命令在仓库根目录执行。
 
 ## 重放一个反例
 
@@ -16,7 +16,17 @@ python -m venv .venv
 
 输出中 `before=[[1]]`、`after=[[2]]` 表示日期上界错误把新记录计入。`record_count=4` 是原数据和新增数据的去重记录总数：两个订单、两条明细。
 
-## 运行完整 Agent 闭环
+## 运行 LangGraph 闭环
+
+完成上面的基础依赖安装后：
+
+```powershell
+.\.venv\Scripts\python.exe tools/run_graph.py --case d06 --thread boundary-demo
+```
+
+该命令用离线响应走完整生成、核验、反馈、回归与发布链路。检查点保存在本地 SQLite，命令输出结果状态和报告位置。断点恢复与真实模型命令见 [LangGraph 指南](LANGGRAPH.md)。
+
+## 运行 DB-GPT 闭环
 
 另需 Git 和带 pip 的 Python 3.12：
 
@@ -86,7 +96,7 @@ $env:DASHSCOPE_MODEL = "qwen3.8-flash"
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-原生 Agent 环境不安装早期 LangGraph/FastAPI 服务，运行对应模块：
+原生 Agent 环境未安装 LangGraph 时，其专属集成测试会跳过；不安装早期 FastAPI 服务时，运行对应模块：
 
 ```powershell
 .\.venv-dbgpt\Scripts\python.exe -m pytest -q --ignore=tests/test_engine.py --ignore=tests/test_interfaces.py --ignore=tests/test_source_consistency.py
