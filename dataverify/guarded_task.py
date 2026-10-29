@@ -115,19 +115,23 @@ class GuardedTaskExecutor:
         self._accepted = None
         if proposed_metric_id != self.task.metric_id:
             result = self._blocked_result(
-                sql, "METRIC_DRIFT",
+                sql,
+                "METRIC_DRIFT",
                 "The proposed metric differs from the caller-confirmed task; "
                 "repair the SQL without changing the confirmed metric.",
             )
             result["proposed_metric_id"] = proposed_metric_id
-            result["evidence"] = [{
-                "kind": "metric_identity_mismatch",
-                "confirmed_metric_id": self.task.metric_id,
-                "proposed_metric_id": proposed_metric_id,
-            }]
+            result["evidence"] = [
+                {
+                    "kind": "metric_identity_mismatch",
+                    "confirmed_metric_id": self.task.metric_id,
+                    "proposed_metric_id": proposed_metric_id,
+                }
+            ]
         elif not self._source_is_unchanged():
             result = self._blocked_result(
-                sql, self._source_error or "SOURCE_UNAVAILABLE",
+                sql,
+                self._source_error or "SOURCE_UNAVAILABLE",
                 "The task's source snapshot changed or is unavailable; "
                 "start a newly confirmed task before publishing a result.",
             )
@@ -137,7 +141,8 @@ class GuardedTaskExecutor:
             # Preserve diagnostic evidence, but never accept it after source drift.
             if not self._source_is_unchanged():
                 result.update(
-                    verification_status="rejected", accepted_value=None,
+                    verification_status="rejected",
+                    accepted_value=None,
                     error_code=self._source_error,
                     feedback="Source changed during execution; result not accepted.",
                 )

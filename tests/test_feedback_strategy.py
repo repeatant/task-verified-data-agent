@@ -18,12 +18,15 @@ from dataverify.probe_cases import get_case
 from dataverify.probe_guard import ProbeGuard, source_digest
 
 
-@pytest.mark.parametrize("policy,capability,guidance", [
-    ("legacy_v1", False, False),
-    ("capability_v2", True, True),
-    ("capability_only", True, False),
-    ("guidance_only", False, True),
-])
+@pytest.mark.parametrize(
+    "policy,capability,guidance",
+    [
+        ("legacy_v1", False, False),
+        ("capability_v2", True, True),
+        ("capability_only", True, False),
+        ("guidance_only", False, True),
+    ],
+)
 def test_ablation_flags_are_independent_and_isolated(policy, capability, guidance):
     flags = policy_features(policy)
     assert flags == {"capability_description": capability, "classified_guidance": guidance}
@@ -76,9 +79,14 @@ def test_adaptive_starts_compact_then_normalized_repeat_uses_full():
     evidence = guard.last_result["probe_report"]["counterexample"]
     assert first["diagnostic_evidence"] == evidence["compact_feedback"]
     assert first["feedback_strategy"] == {
-        "selected_mode": "compact", "escalation_reason": None, "evidence_available": True,
+        "selected_mode": "compact",
+        "escalation_reason": None,
+        "evidence_available": True,
     }
-    equivalent = case.candidate_sql.replace("SELECT", "select").replace(" FROM ", "\nFROM ") + " /*same candidate*/"
+    equivalent = (
+        case.candidate_sql.replace("SELECT", "select").replace(" FROM ", "\nFROM ")
+        + " /*same candidate*/"
+    )
     second = guard.execute(equivalent, case.task.task_id)
     evidence = guard.last_result["probe_report"]["counterexample"]
     assert second["diagnostic_evidence"] == evidence["full_feedback"]

@@ -12,9 +12,9 @@ expected value, or suggested repair.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from functools import lru_cache
-import math
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -35,13 +35,13 @@ _SCALAR_JOIN = (
 )
 _ORDER = (
     "SELECT o.order_id, COALESCE(SUM(l.amount), 0) AS revenue FROM orders o "
-    "LEFT JOIN order_lines l ON o.order_id = l.order_id AND " + _PERIOD
-    + " GROUP BY o.order_id"
+    "LEFT JOIN order_lines l ON o.order_id = l.order_id AND " + _PERIOD + " GROUP BY o.order_id"
 )
 _CHANNEL = (
     "SELECT COALESCE(o.channel, '其他') AS channel, SUM(l.amount) AS revenue "
     "FROM orders o INNER JOIN order_lines l ON o.order_id = l.order_id"
-    + _WHERE + " GROUP BY COALESCE(o.channel, '其他')"
+    + _WHERE
+    + " GROUP BY COALESCE(o.channel, '其他')"
 )
 
 
@@ -91,68 +91,151 @@ def get_cases() -> tuple[Case, ...]:
     from .probe_runtime import ProbeData, ProbeTask
 
     scalar = ProbeTask(
-        "p01", "统计九月已结算明细的净收入；包括合法负金额退款。",
+        "p01",
+        "统计九月已结算明细的净收入；包括合法负金额退款。",
         ("exclude_end", "exclude_status", "include_start", "include_negative"),
         output_kind="scalar",
     )
     orders = ProbeTask(
-        "p02", "按订单列出九月已结算明细的净收入；没有有效明细的订单也保留零值。",
-        ("preserve_zero_orders",), output_kind="orders",
+        "p02",
+        "按订单列出九月已结算明细的净收入；没有有效明细的订单也保留零值。",
+        ("preserve_zero_orders",),
+        output_kind="orders",
     )
     channels = ProbeTask(
-        "p03", "按渠道统计九月已结算明细净收入；NULL 渠道归入其他并与其他合并。",
-        ("merge_other_channels",), output_kind="channels",
+        "p03",
+        "按渠道统计九月已结算明细净收入；NULL 渠道归入其他并与其他合并。",
+        ("merge_other_channels",),
+        output_kind="channels",
     )
     # All timestamps are interior and all rows are settled. Several bad SQLs
     # intentionally look correct here; follow-up inputs must expose the defect.
     normal = ProbeData(
         ((1, 50_000, "其他"), (2, 22_000, "线下")),
-        ((11, 1, 10_000, "settled", "2026-09-15T12:00:00"),
-         (12, 1, 10_000, "settled", "2026-09-16T12:00:00"),
-         (21, 2, 15_000, "settled", "2026-09-17T12:00:00")),
+        (
+            (11, 1, 10_000, "settled", "2026-09-15T12:00:00"),
+            (12, 1, 10_000, "settled", "2026-09-16T12:00:00"),
+            (21, 2, 15_000, "settled", "2026-09-17T12:00:00"),
+        ),
     )
     # This diagnostic fixture tests the independent target evaluator as well as
     # active probes. It is deliberately labelled and is not a natural error.
     mixed = ProbeData(
         ((1, 50_000, "其他"), (2, 22_000, None), (3, 0, "线下")),
-        ((11, 1, 10_000, "settled", START),
-         (12, 1, -3_700, "settled", "2026-09-15T12:00:00"),
-         (21, 2, 15_000, "pending", "2026-09-17T12:00:00"),
-         (22, 2, 20_000, "settled", END)),
+        (
+            (11, 1, 10_000, "settled", START),
+            (12, 1, -3_700, "settled", "2026-09-15T12:00:00"),
+            (21, 2, 15_000, "pending", "2026-09-17T12:00:00"),
+            (22, 2, 20_000, "settled", END),
+        ),
     )
     data = (
         ("d01", scalar, normal, _SCALAR, _SCALAR, None, "正确标量查询。"),
         ("d02", scalar, normal, _SCALAR_JOIN, _SCALAR, None, "正确登记关联查询。"),
         ("d03", orders, normal, _ORDER, _ORDER, None, "正确保留零值订单的左关联。"),
         ("d04", channels, normal, _CHANNEL, _CHANNEL, None, "正确归一化渠道分组。"),
-        ("d05", scalar, normal,
-         "SELECT COALESCE(SUM(l.amount), 0) FROM order_lines l "
-         "WHERE l.settled_at >= '2026-09-01T00:00:00' "
-         "AND l.settled_at < '2026-10-01T00:00:00'",
-         _SCALAR, "missing_status", "当前均为已结算；漏状态可能暂时数值相同。"),
-        ("d06", scalar, normal, _SCALAR.replace("l.settled_at <", "l.settled_at <="),
-         _SCALAR, "inclusive_end", "当前无上界记录；十月一日零点不得计入九月。"),
-        ("d07", scalar, normal, _SCALAR.replace("l.settled_at >=", "l.settled_at >"),
-         _SCALAR, "exclusive_start", "当前无下界记录；九月一日零点应计入。"),
-        ("d08", scalar, normal, _SCALAR.replace("SUM(l.amount)", "SUM(DISTINCT l.amount)"),
-         _SCALAR, "amount_distinct", "同额不同明细不可合并；已有静态规则应拦截。"),
-        ("d09", scalar, normal, _SCALAR_JOIN.replace("SUM(l.amount)", "SUM(o.total)"),
-         _SCALAR, "wrong_measure_source", "订单总额不是本任务的明细度量。"),
-        ("d10", orders, normal,
-         "SELECT o.order_id, COALESCE(SUM(l.amount), 0) AS revenue FROM orders o "
-         "LEFT JOIN order_lines l ON o.order_id = l.order_id" + _WHERE
-         + " GROUP BY o.order_id",
-         _ORDER, "left_join_filtered_in_where", "当前每单有有效明细；新增零值订单会消失。"),
-        ("d11", channels, normal, _CHANNEL.replace("GROUP BY COALESCE(o.channel, '其他')", "GROUP BY o.channel"),
-         _CHANNEL, "display_group_collision", "NULL 与字面其他并存时产生相同展示键。"),
-        ("d12", scalar, normal, _SCALAR + " AND l.amount > 0",
-         _SCALAR, "positive_only", "额外排除退款；是否已被静态检查抓到由实测决定。"),
-        ("d13", scalar, normal, _SCALAR + " AND l.amount >= 10000",
-         _SCALAR, "undeclared_amount_floor", "额外金额门槛；当前每条恰好不低于门槛。"),
-        ("d14", scalar, normal, _SCALAR.replace("l.status = 'settled'", "l.status != 'pending'"),
-         _SCALAR, "wrong_status_predicate", "pending 被排除但 cancelled 仍会被计入。"),
-        ("d15", scalar, mixed, _SCALAR + " AND l.amount > 0",
-         _SCALAR, "positive_only_observed", "已有负金额，独立评分在源库就能发现差异。"),
+        (
+            "d05",
+            scalar,
+            normal,
+            "SELECT COALESCE(SUM(l.amount), 0) FROM order_lines l "
+            "WHERE l.settled_at >= '2026-09-01T00:00:00' "
+            "AND l.settled_at < '2026-10-01T00:00:00'",
+            _SCALAR,
+            "missing_status",
+            "当前均为已结算；漏状态可能暂时数值相同。",
+        ),
+        (
+            "d06",
+            scalar,
+            normal,
+            _SCALAR.replace("l.settled_at <", "l.settled_at <="),
+            _SCALAR,
+            "inclusive_end",
+            "当前无上界记录；十月一日零点不得计入九月。",
+        ),
+        (
+            "d07",
+            scalar,
+            normal,
+            _SCALAR.replace("l.settled_at >=", "l.settled_at >"),
+            _SCALAR,
+            "exclusive_start",
+            "当前无下界记录；九月一日零点应计入。",
+        ),
+        (
+            "d08",
+            scalar,
+            normal,
+            _SCALAR.replace("SUM(l.amount)", "SUM(DISTINCT l.amount)"),
+            _SCALAR,
+            "amount_distinct",
+            "同额不同明细不可合并；已有静态规则应拦截。",
+        ),
+        (
+            "d09",
+            scalar,
+            normal,
+            _SCALAR_JOIN.replace("SUM(l.amount)", "SUM(o.total)"),
+            _SCALAR,
+            "wrong_measure_source",
+            "订单总额不是本任务的明细度量。",
+        ),
+        (
+            "d10",
+            orders,
+            normal,
+            "SELECT o.order_id, COALESCE(SUM(l.amount), 0) AS revenue FROM orders o "
+            "LEFT JOIN order_lines l ON o.order_id = l.order_id" + _WHERE + " GROUP BY o.order_id",
+            _ORDER,
+            "left_join_filtered_in_where",
+            "当前每单有有效明细；新增零值订单会消失。",
+        ),
+        (
+            "d11",
+            channels,
+            normal,
+            _CHANNEL.replace("GROUP BY COALESCE(o.channel, '其他')", "GROUP BY o.channel"),
+            _CHANNEL,
+            "display_group_collision",
+            "NULL 与字面其他并存时产生相同展示键。",
+        ),
+        (
+            "d12",
+            scalar,
+            normal,
+            _SCALAR + " AND l.amount > 0",
+            _SCALAR,
+            "positive_only",
+            "额外排除退款；是否已被静态检查抓到由实测决定。",
+        ),
+        (
+            "d13",
+            scalar,
+            normal,
+            _SCALAR + " AND l.amount >= 10000",
+            _SCALAR,
+            "undeclared_amount_floor",
+            "额外金额门槛；当前每条恰好不低于门槛。",
+        ),
+        (
+            "d14",
+            scalar,
+            normal,
+            _SCALAR.replace("l.status = 'settled'", "l.status != 'pending'"),
+            _SCALAR,
+            "wrong_status_predicate",
+            "pending 被排除但 cancelled 仍会被计入。",
+        ),
+        (
+            "d15",
+            scalar,
+            mixed,
+            _SCALAR + " AND l.amount > 0",
+            _SCALAR,
+            "positive_only_observed",
+            "已有负金额，独立评分在源库就能发现差异。",
+        ),
         ("d16", scalar, mixed, _SCALAR, _SCALAR, None, "正确混合状态／边界／退款查询。"),
     )
     return tuple(Case(*entry) for entry in data)
@@ -174,8 +257,7 @@ def reference_result(case: Case) -> list[list[Any]]:
     """
     task, data = case.task, case.source
     eligible = [
-        row for row in data.lines
-        if row[3] == task.status and task.start <= row[4] < task.end
+        row for row in data.lines if row[3] == task.status and task.start <= row[4] < task.end
     ]
     if task.output_kind == "scalar":
         return [[sum(row[2] for row in eligible)]]

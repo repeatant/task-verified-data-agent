@@ -1,20 +1,28 @@
 """独立oracle与受控对照：金额相同也不能掩盖错误统计粒度。"""
 
 import json
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
-from dataverify.evaluation import CANDIDATES, FAMILIES, expected_result, make_fixture, run_evaluation
+from dataverify.evaluation import (
+    CANDIDATES,
+    FAMILIES,
+    expected_result,
+    make_fixture,
+    run_evaluation,
+)
 
 
 def test_cancelled_error_is_invalid_even_when_total_matches():
     fixture = make_fixture("cancelled_error", 101)
     candidate = next(item for item in CANDIDATES if item.name == "order_join")
     expected = expected_result(fixture, candidate)
-    joined_total = sum(order[1] for order in fixture.orders for line in fixture.lines if order[0] == line[1])
+    joined_total = sum(
+        order[1] for order in fixture.orders for line in fixture.lines if order[0] == line[1]
+    )
     assert joined_total == pytest.approx(sum(order[1] for order in fixture.orders))
     assert expected["metric_value"] == pytest.approx(joined_total)
     assert expected["should_accept"] is False
@@ -52,7 +60,9 @@ def test_comparison_measures_false_accepts_and_valid_query_rejections(tmp_path):
     json.dumps(report, allow_nan=False)
 
 
-@pytest.mark.parametrize("seeds,families", [((1, 1), FAMILIES), ((), FAMILIES), ((1,), ()), ((1,), ("unknown",))])
+@pytest.mark.parametrize(
+    "seeds,families", [((1, 1), FAMILIES), ((), FAMILIES), ((1,), ()), ((1,), ("unknown",))]
+)
 def test_invalid_configuration_is_rejected(tmp_path, seeds, families):
     with pytest.raises(ValueError):
         run_evaluation(seeds=seeds, families=families, work_dir=tmp_path)
@@ -62,8 +72,22 @@ def test_entry_point_writes_report_without_api(tmp_path):
     root = Path(__file__).resolve().parents[1]
     output = tmp_path / "evaluation.json"
     process = subprocess.run(
-        [sys.executable, str(root / "tools/evaluate_checker.py"), "--seeds", "907", "--families", "fanout", "orphan_line", "--output", str(output)],
-        cwd=root, capture_output=True, text=True, encoding="utf-8", timeout=30,
+        [
+            sys.executable,
+            str(root / "tools/evaluate_checker.py"),
+            "--seeds",
+            "907",
+            "--families",
+            "fanout",
+            "orphan_line",
+            "--output",
+            str(output),
+        ],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=30,
     )
     assert process.returncode == 0, process.stderr + process.stdout
     report = json.loads(output.read_text(encoding="utf-8"))

@@ -9,13 +9,13 @@ Each run owns a fresh task guard, agent, LLM client and conversation.
 from __future__ import annotations
 
 import asyncio
-from copy import deepcopy
 import hashlib
 import inspect
 import json
-from pathlib import Path
 import sqlite3
 import time
+from copy import deepcopy
+from pathlib import Path
 from typing import Any, Literal
 from uuid import uuid4
 
@@ -29,7 +29,6 @@ from dbgpt.core import LLMClient, ModelMetadata, ModelOutput
 
 from .contracts import TABLE_COLUMNS, describe_contracts
 from .guarded_task import ConfirmedMetricTask, GuardedTaskExecutor
-
 
 UPSTREAM_COMMIT = "06a46eea2d248a0f2b3e9096035424df4f2dc2eb"
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -53,7 +52,9 @@ def verify_upstream_files(manifest_path: Path | None = None) -> dict:
     manifest_path = manifest_path or PROJECT_ROOT / "docs/research/dbgpt_pin.json"
     manifest = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
     upstream = PROJECT_ROOT / ".upstream/DB-GPT"
-    expected_module = upstream / "packages/dbgpt-core/src/dbgpt/agent/expand/data_scientist_agent.py"
+    expected_module = (
+        upstream / "packages/dbgpt-core/src/dbgpt/agent/expand/data_scientist_agent.py"
+    )
     if Path(inspect.getfile(DataScientistAgent)).resolve() != expected_module.resolve():
         raise RuntimeError("DB-GPT was not imported from the pinned local checkout")
     if manifest["commit"] != UPSTREAM_COMMIT:
@@ -65,7 +66,8 @@ def verify_upstream_files(manifest_path: Path | None = None) -> dict:
         if hashlib.sha256(path.read_bytes()).hexdigest() != expected_hash:
             raise RuntimeError(f"Pinned upstream source changed: {relative}")
     return {
-        "commit": UPSTREAM_COMMIT, "checked_files": len(manifest["sha256"]),
+        "commit": UPSTREAM_COMMIT,
+        "checked_files": len(manifest["sha256"]),
         "module": str(expected_module.relative_to(PROJECT_ROOT)),
     }
 
@@ -82,8 +84,10 @@ class ReadOnlyDemoResource(DBResource):
         self.path = Path(path).resolve()
         self.queries: list[str] = []
         super().__init__(
-            name=f"synthetic-{uuid4().hex}", db_name=str(self.path),
-            db_type="sqlite", dialect="sqlite",
+            name=f"synthetic-{uuid4().hex}",
+            db_name=str(self.path),
+            db_type="sqlite",
+            dialect="sqlite",
         )
 
     def get_schema_link(self, db: str, question: str | None = None):
@@ -97,6 +101,7 @@ class ReadOnlyDemoResource(DBResource):
         deadline = time.monotonic() + 2
         try:
             connection.execute("PRAGMA query_only=ON")
+
             # The original comparator needs execution safety without semantic
             # grain checks. SQLite read-only mode alone still allows ATTACH and
             # some PRAGMA operations, so keep its resource on registered reads.
@@ -104,11 +109,16 @@ class ReadOnlyDemoResource(DBResource):
                 if action == sqlite3.SQLITE_SELECT:
                     return sqlite3.SQLITE_OK
                 if action == sqlite3.SQLITE_READ:
-                    allowed = database == "main" and table in TABLE_COLUMNS and (column in TABLE_COLUMNS[table] or column == "")
+                    allowed = (
+                        database == "main"
+                        and table in TABLE_COLUMNS
+                        and (column in TABLE_COLUMNS[table] or column == "")
+                    )
                     return sqlite3.SQLITE_OK if allowed else sqlite3.SQLITE_DENY
                 if action == sqlite3.SQLITE_FUNCTION and (column or "").lower() == "sum":
                     return sqlite3.SQLITE_OK
                 return sqlite3.SQLITE_DENY
+
             connection.set_authorizer(authorize)
             connection.set_progress_handler(lambda: time.monotonic() > deadline, 1000)
             cursor = connection.execute(sql)
@@ -148,7 +158,9 @@ class ScriptedLLMClient(LLMClient):
         return max(1, len(prompt) // 3)
 
     def _respond(self, request):
-        self.requests.append([message.model_dump(mode="json") for message in request.get_messages()])
+        self.requests.append(
+            [message.model_dump(mode="json") for message in request.get_messages()]
+        )
         index = len(self.requests) - 1
         if index >= len(self.responses):
             raise AssertionError("Unexpected extra upstream LLM request")
@@ -199,12 +211,16 @@ class GuardedChartAction(ChartAction):
             }
             self.audit.append(deepcopy(feedback))
             return ActionOutput(
-                is_exe_success=False, content=json.dumps(feedback), view=None,
+                is_exe_success=False,
+                content=json.dumps(feedback),
+                view=None,
             )
 
         # Existing checker owns the read transaction for query and probes.
         feedback = await asyncio.to_thread(
-            self.guard.execute, candidate.sql, candidate.metric_id,
+            self.guard.execute,
+            candidate.sql,
+            candidate.metric_id,
         )
         audit = self.guard.last_result
         publication = self.guard.publish()
@@ -212,7 +228,8 @@ class GuardedChartAction(ChartAction):
             # Source can change between execute() and this rendering boundary.
             # Keep the action content/view/retry decision consistent, too.
             terminal = {
-                "verification_status": "rejected", "accepted_value": None,
+                "verification_status": "rejected",
+                "accepted_value": None,
                 "error_code": publication["error_code"],
                 "feedback": "Source snapshot changed or is unavailable; start a new confirmed task.",
             }
@@ -234,8 +251,10 @@ class GuardedChartAction(ChartAction):
             view=json.dumps(publication, ensure_ascii=False) if accepted else None,
             resource_type="database",
             resource_value="caller-confirmed-sqlite-snapshot",
-            have_retry=feedback["error_code"] not in {
-                "SOURCE_CHANGED_DURING_TASK", "SOURCE_UNAVAILABLE",
+            have_retry=feedback["error_code"]
+            not in {
+                "SOURCE_CHANGED_DURING_TASK",
+                "SOURCE_UNAVAILABLE",
             },
         )
 
@@ -266,7 +285,9 @@ class GuardedDataScientistAgent(DataScientistAgent):
         reply_message.content = json.dumps(publication, ensure_ascii=False)
         if reply_message.action_report:
             reply_message.action_report.content = reply_message.content
-            reply_message.action_report.view = reply_message.content if reply_message.success else None
+            reply_message.action_report.view = (
+                reply_message.content if reply_message.success else None
+            )
             reply_message.action_report.is_exe_success = reply_message.success
 
 
@@ -275,7 +296,10 @@ def gated_publication(guard: GuardedTaskExecutor, upstream_success: bool) -> dic
     publication = guard.publish()
     if not upstream_success:
         publication.update(
-            status="unverified", value=None, accepted_value=None, verified_sql=None,
+            status="unverified",
+            value=None,
+            accepted_value=None,
+            verified_sql=None,
             error_code=publication["error_code"] or "UPSTREAM_DID_NOT_FINISH",
         )
     return publication
@@ -283,7 +307,9 @@ def gated_publication(guard: GuardedTaskExecutor, upstream_success: bool) -> dic
 
 def sql_candidate(sql: str, metric_id: str = "order_revenue") -> dict:
     return {
-        "display_type": "response_table", "sql": sql, "metric_id": metric_id,
+        "display_type": "response_table",
+        "sql": sql,
+        "metric_id": metric_id,
         "thought": "Controlled integration candidate; not a real model prediction.",
     }
 
@@ -319,13 +345,18 @@ async def run_native_case(
     resource = ReadOnlyDemoResource(db_path)
     guard = None if mode == "original" else GuardedTaskExecutor(db_path, task, feedback_mode=mode)
     context = AgentContext(
-        conv_id=f"dataverify-{uuid4().hex}", language="en", output_dir=str(output_dir),
-        temperature=0, verbose=False,
+        conv_id=f"dataverify-{uuid4().hex}",
+        language="en",
+        output_dir=str(output_dir),
+        temperature=0,
+        verbose=False,
     )
     agent = (
         DataScientistAgent(max_retry_count=max_attempts, max_timeout=120, stream_out=False)
-        if guard is None else
-        GuardedDataScientistAgent(guard=guard, max_retry_count=max_attempts, max_timeout=120, stream_out=False)
+        if guard is None
+        else GuardedDataScientistAgent(
+            guard=guard, max_retry_count=max_attempts, max_timeout=120, stream_out=False
+        )
     )
     sender = UserProxyAgent()
     events: list[dict] = []
@@ -338,18 +369,24 @@ async def run_native_case(
         sender = await sender.bind(context).build()
         # The same confirmed task text is supplied in all comparison groups.
         question = (
-            task.question + "\nCaller-confirmed metric_id=" + task.metric_id +
-            ". Preserve this metric during repairs."
+            task.question
+            + "\nCaller-confirmed metric_id="
+            + task.metric_id
+            + ". Preserve this metric during repairs."
         )
         reply = await agent.generate_reply(
-            AgentMessage(content=question, current_goal=question), sender=sender,
+            AgentMessage(content=question, current_goal=question),
+            sender=sender,
             stream_callback=capture_event,
         )
         publication = gated_publication(guard, bool(reply.success)) if guard else None
         return {
-            "mode": mode, "upstream_commit": UPSTREAM_COMMIT,
+            "mode": mode,
+            "upstream_commit": UPSTREAM_COMMIT,
             "upstream_file_check": upstream_check,
-            "client_kind": getattr(client, "client_kind", "deterministic_offline_script_not_real_model"),
+            "client_kind": getattr(
+                client, "client_kind", "deterministic_offline_script_not_real_model"
+            ),
             "native_loop": "DataScientistAgent.generate_reply (inherited)",
             "upstream_success": bool(reply.success),
             "publication": publication,

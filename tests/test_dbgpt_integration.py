@@ -1,10 +1,10 @@
 """Optional real upstream loop regressions; run in .venv-dbgpt, never a fake loop."""
 
 import asyncio
-from contextlib import closing
 import importlib.util
 import json
 import sqlite3
+from contextlib import closing
 
 import pytest
 
@@ -12,10 +12,17 @@ if importlib.util.find_spec("dbgpt") is None:
     pytest.skip("Optional pinned DB-GPT runtime is not installed", allow_module_level=True)
 
 from dbgpt.agent.expand.data_scientist_agent import DataScientistAgent
+
 from dataverify.dbgpt_bridge import (
-    BAD_ORDER_SUM, GOOD_LINE_JOIN, GOOD_ORDER_SUM,
-    GuardedDataScientistAgent, PROJECT_ROOT, gated_publication,
-    run_native_case, sql_candidate, verify_upstream_files,
+    BAD_ORDER_SUM,
+    GOOD_LINE_JOIN,
+    GOOD_ORDER_SUM,
+    PROJECT_ROOT,
+    GuardedDataScientistAgent,
+    gated_publication,
+    run_native_case,
+    sql_candidate,
+    verify_upstream_files,
 )
 from dataverify.guarded_task import ConfirmedMetricTask, GuardedTaskExecutor
 
@@ -35,9 +42,15 @@ def database(tmp_path):
 
 def run(database, tmp_path, candidates, **kwargs):
     task = kwargs.pop("task", ConfirmedMetricTask("Total order revenue", "order_revenue"))
-    return asyncio.run(run_native_case(
-        database, task, candidates, output_dir=tmp_path / "runtime", **kwargs,
-    ))
+    return asyncio.run(
+        run_native_case(
+            database,
+            task,
+            candidates,
+            output_dir=tmp_path / "runtime",
+            **kwargs,
+        )
+    )
 
 
 def test_uses_upstream_generate_reply_and_verify_unchanged():
@@ -48,7 +61,9 @@ def test_uses_upstream_generate_reply_and_verify_unchanged():
 
 
 def test_changed_upstream_file_manifest_fails_closed(tmp_path):
-    manifest = json.loads((PROJECT_ROOT / "docs/research/dbgpt_pin.json").read_text(encoding="utf-8"))
+    manifest = json.loads(
+        (PROJECT_ROOT / "docs/research/dbgpt_pin.json").read_text(encoding="utf-8")
+    )
     key = next(iter(manifest["sha256"]))
     manifest["sha256"][key] = "0" * 64
     path = tmp_path / "incorrect_pin.json"
@@ -68,7 +83,9 @@ def test_original_upstream_really_accepts_wrong_fanout(database, tmp_path):
 
 @pytest.mark.parametrize("mode", ["code", "evidence"])
 def test_native_retry_receives_rejection_and_repairs(database, tmp_path, mode):
-    record = run(database, tmp_path, [sql_candidate(BAD_ORDER_SUM), sql_candidate(GOOD_ORDER_SUM)], mode=mode)
+    record = run(
+        database, tmp_path, [sql_candidate(BAD_ORDER_SUM), sql_candidate(GOOD_ORDER_SUM)], mode=mode
+    )
     assert record["upstream_success"]
     assert record["llm_calls"] == 2
     assert record["publication"]["accepted_value"] == 280
@@ -80,7 +97,9 @@ def test_native_retry_receives_rejection_and_repairs(database, tmp_path, mode):
     assert "GRAIN_MULTIPLICATION" in second_request
     for witness_fact in ("duplicate_grain", "max_multiplicity", "order_id=3"):
         assert (witness_fact in second_request) == (mode == "evidence")
-    events = [e["payload"]["action_output"] for e in record["stream_events"] if e["event_type"] == "act"]
+    events = [
+        e["payload"]["action_output"] for e in record["stream_events"] if e["event_type"] == "act"
+    ]
     assert events[0]["view"] is None
     assert json.loads(events[0]["content"])["value"] is None
     assert json.loads(events[0]["content"])["accepted_value"] is None
@@ -89,7 +108,9 @@ def test_native_retry_receives_rejection_and_repairs(database, tmp_path, mode):
 
 def test_legal_detail_join_not_rejected_just_for_one_to_many(database, tmp_path):
     record = run(
-        database, tmp_path, [sql_candidate(GOOD_LINE_JOIN, "line_revenue")],
+        database,
+        tmp_path,
+        [sql_candidate(GOOD_LINE_JOIN, "line_revenue")],
         task=ConfirmedMetricTask("Total line revenue", "line_revenue"),
     )
     assert record["upstream_success"]
@@ -98,18 +119,25 @@ def test_legal_detail_join_not_rejected_just_for_one_to_many(database, tmp_path)
 
 
 def test_metric_drift_blocked_even_when_numeric_values_happen_to_match(database, tmp_path):
-    record = run(database, tmp_path, [sql_candidate(GOOD_LINE_JOIN, "line_revenue"), sql_candidate(GOOD_ORDER_SUM)])
+    record = run(
+        database,
+        tmp_path,
+        [sql_candidate(GOOD_LINE_JOIN, "line_revenue"), sql_candidate(GOOD_ORDER_SUM)],
+    )
     assert record["actions"][0]["error_code"] == "METRIC_DRIFT"
     assert record["actions"][0]["execution_status"] == "blocked"
     assert record["publication"]["metric_id"] == "order_revenue"
     assert record["publication"]["accepted_value"] == 280
 
 
-@pytest.mark.parametrize("responses", [
-    [sql_candidate(BAD_ORDER_SUM), sql_candidate(BAD_ORDER_SUM)],
-    ["not JSON", "not JSON"],
-    [sql_candidate(BAD_ORDER_SUM), "not JSON"],
-])
+@pytest.mark.parametrize(
+    "responses",
+    [
+        [sql_candidate(BAD_ORDER_SUM), sql_candidate(BAD_ORDER_SUM)],
+        ["not JSON", "not JSON"],
+        [sql_candidate(BAD_ORDER_SUM), "not JSON"],
+    ],
+)
 def test_no_unverified_value_after_final_attempt(database, tmp_path, responses):
     record = run(database, tmp_path, responses)
     assert not record["upstream_success"]
@@ -126,7 +154,9 @@ def test_bad_format_is_observed_by_real_retry(database, tmp_path):
     assert record["publication"]["accepted_value"] == 280
 
 
-def test_source_change_between_check_and_final_publication_is_refused(database, tmp_path, monkeypatch):
+def test_source_change_between_check_and_final_publication_is_refused(
+    database, tmp_path, monkeypatch
+):
     native_hook = GuardedDataScientistAgent.adjust_final_message
 
     async def change_source_then_finalize(self, success, reply):
@@ -135,7 +165,9 @@ def test_source_change_between_check_and_final_publication_is_refused(database, 
             connection.commit()
         return await native_hook(self, success, reply)
 
-    monkeypatch.setattr(GuardedDataScientistAgent, "adjust_final_message", change_source_then_finalize)
+    monkeypatch.setattr(
+        GuardedDataScientistAgent, "adjust_final_message", change_source_then_finalize
+    )
     record = run(database, tmp_path, [sql_candidate(GOOD_ORDER_SUM)])
     assert not record["upstream_success"]
     assert record["publication"]["error_code"] == "SOURCE_CHANGED_DURING_TASK"
@@ -143,7 +175,9 @@ def test_source_change_between_check_and_final_publication_is_refused(database, 
     assert record["native_reply"]["action_report"]["view"] is None
 
 
-def test_source_change_before_action_view_is_terminal_and_feedback_consistent(database, tmp_path, monkeypatch):
+def test_source_change_before_action_view_is_terminal_and_feedback_consistent(
+    database, tmp_path, monkeypatch
+):
     execute = GuardedTaskExecutor.execute
 
     def change_after_execute(self, sql, metric_id):
@@ -159,7 +193,9 @@ def test_source_change_before_action_view_is_terminal_and_feedback_consistent(da
     assert record["publication"]["accepted_value"] is None
     assert record["actions"][0]["verification_status"] == "rejected"
     assert record["actions"][0]["error_code"] == "SOURCE_CHANGED_DURING_TASK"
-    first_act = next(e["payload"]["action_output"] for e in record["stream_events"] if e["event_type"] == "act")
+    first_act = next(
+        e["payload"]["action_output"] for e in record["stream_events"] if e["event_type"] == "act"
+    )
     assert first_act["view"] is None
     assert first_act["have_retry"] is False
     assert json.loads(first_act["content"])["verification_status"] == "rejected"

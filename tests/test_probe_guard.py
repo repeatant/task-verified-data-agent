@@ -28,7 +28,10 @@ def test_feedback_modes_change_only_selected_evidence():
     l_text, r_text = left.pop("diagnostic_evidence"), right.pop("diagnostic_evidence")
     assert left == right
     assert len(r_text) < len(l_text)
-    assert full.last_result["probe_report"]["counterexample"] == compact.last_result["probe_report"]["counterexample"]
+    assert (
+        full.last_result["probe_report"]["counterexample"]
+        == compact.last_result["probe_report"]["counterexample"]
+    )
     assert "reference_sql" not in json.dumps(right)
 
 

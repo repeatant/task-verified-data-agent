@@ -3,8 +3,8 @@
 import json
 from pathlib import Path
 
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
 
 from dataverify import __main__ as cli
 from dataverify.api import create_app
@@ -153,7 +153,9 @@ def test_cli_evaluation_is_explicitly_not_an_llm_benchmark(tmp_path, monkeypatch
     assert {item["case"] for item in report["results"]} == set(cli.CASES)
     unsupported = next(item for item in report["results"] if item["case"] == "unsupported")
     assert unsupported["status"] == "unverified"
-    stored = json.loads((tmp_path / "reports" / "offline_evaluation.json").read_text(encoding="utf-8"))
+    stored = json.loads(
+        (tmp_path / "reports" / "offline_evaluation.json").read_text(encoding="utf-8")
+    )
     assert stored == report
 
 

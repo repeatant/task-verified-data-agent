@@ -7,18 +7,18 @@ No model, reference SQL, evaluation label, source file or credential is read.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
 import json
 import math
 import random
 import time
+from dataclasses import asdict, dataclass
+from datetime import datetime
 from typing import Any
 
+import sqlglot
 from hypothesis import HealthCheck, Phase, find, settings
 from hypothesis import strategies as st
 from hypothesis.errors import NoSuchExample, Unsatisfiable
-import sqlglot
 from sqlglot import expressions as exp
 
 from .probe_runtime import PROPERTY_IDS, ProbeData, ProbeTask, execute_sql, static_check
@@ -38,7 +38,11 @@ class ExecutionBudget:
     def __post_init__(self) -> None:
         if type(self.max_queries) is not int or not 2 <= self.max_queries <= 2000:
             raise ValueError("max_queries must be an integer between 2 and 2000")
-        if type(self.max_seconds) not in (int, float) or not math.isfinite(self.max_seconds) or self.max_seconds <= 0:
+        if (
+            type(self.max_seconds) not in (int, float)
+            or not math.isfinite(self.max_seconds)
+            or self.max_seconds <= 0
+        ):
             raise ValueError("max_seconds must be positive and finite")
         self.started = time.monotonic()
 
@@ -73,7 +77,12 @@ class ProbePair:
     @property
     def record_count(self) -> int:
         # Count unique base+inserted records, not two copies of the base.
-        return len(self.base.orders) + len(self.base.lines) + len(self.added_orders) + len(self.added_lines)
+        return (
+            len(self.base.orders)
+            + len(self.base.lines)
+            + len(self.added_orders)
+            + len(self.added_lines)
+        )
 
     def payload(self) -> dict[str, Any]:
         return {
@@ -135,7 +144,11 @@ def pair_strategy(draw: Any, task: ProbeTask, property_id: str) -> ProbePair:
     orders, lines = [], []
     interior = _interior(task)
     for order_id in range(1, count + 1):
-        channel = task.other_label if order_id == 1 else draw(st.sampled_from(("web", "store", task.other_label)))
+        channel = (
+            task.other_label
+            if order_id == 1
+            else draw(st.sampled_from(("web", "store", task.other_label)))
+        )
         amounts = draw(st.lists(st.integers(min_value=1, max_value=900), min_size=1, max_size=3))
         orders.append((order_id, sum(amounts), channel))
         for amount in amounts:
@@ -147,7 +160,13 @@ def pair_strategy(draw: Any, task: ProbeTask, property_id: str) -> ProbePair:
     if property_id == "exclude_end":
         date = task.end
     elif property_id == "exclude_status":
-        status = draw(st.sampled_from(tuple(value for value in ("pending", "cancelled", "settled") if value != task.status)))
+        status = draw(
+            st.sampled_from(
+                tuple(
+                    value for value in ("pending", "cancelled", "settled") if value != task.status
+                )
+            )
+        )
     elif property_id == "include_start":
         date = task.start
     elif property_id == "include_negative":
@@ -159,7 +178,8 @@ def pair_strategy(draw: Any, task: ProbeTask, property_id: str) -> ProbePair:
     else:
         raise ValueError("unknown property")
     return ProbePair(
-        property_id, base,
+        property_id,
+        base,
         ((new_order, abs(amount), channel),),
         ((new_line, new_order, amount, status, date),),
     )
@@ -168,18 +188,28 @@ def pair_strategy(draw: Any, task: ProbeTask, property_id: str) -> ProbePair:
 def _precondition(pair: ProbePair, task: ProbeTask) -> bool:
     # Base witnesses prevent a reducer turning the original fault into empty
     # SUM/NULL behaviour. The inserted witnesses remain fixed throughout.
-    if pair.property_id not in task.properties or len(pair.added_orders) != 1 or len(pair.added_lines) != 1:
+    if (
+        pair.property_id not in task.properties
+        or len(pair.added_orders) != 1
+        or len(pair.added_lines) != 1
+    ):
         return False
     if not pair.base.orders or not any(_eligible(row, task) for row in pair.base.lines):
         return False
     parent, child = pair.added_orders[0], pair.added_lines[0]
     if child[1] != parent[0]:
         return False
-    if pair.property_id == "exclude_end" and not (child[4] == task.end and child[3] == task.status and child[2] > 0):
+    if pair.property_id == "exclude_end" and not (
+        child[4] == task.end and child[3] == task.status and child[2] > 0
+    ):
         return False
-    if pair.property_id == "exclude_status" and not (task.start <= child[4] < task.end and child[3] != task.status and child[2] > 0):
+    if pair.property_id == "exclude_status" and not (
+        task.start <= child[4] < task.end and child[3] != task.status and child[2] > 0
+    ):
         return False
-    if pair.property_id == "include_start" and not (child[4] == task.start and child[3] == task.status and child[2] > 0):
+    if pair.property_id == "include_start" and not (
+        child[4] == task.start and child[3] == task.status and child[2] > 0
+    ):
         return False
     if pair.property_id == "include_negative" and not (_eligible(child, task) and child[2] < 0):
         return False
@@ -234,50 +264,78 @@ def evaluate_pair(sql: str, task: ProbeTask, pair: ProbePair, budget: ExecutionB
         budget.reserve()
         result = execute_sql(sql, data, task, static_semantics=False)
         if result["status"] != "ok":
-            return {"status": "execution_error", "property_id": pair.property_id, "code": result.get("code")}
+            return {
+                "status": "execution_error",
+                "property_id": pair.property_id,
+                "code": result.get("code"),
+            }
         results.append(result)
     before, after = results
     property_id = pair.property_id
     try:
         if property_id in {"exclude_end", "exclude_status", "include_start", "include_negative"}:
-            delta = pair.added_lines[0][2] if property_id in {"include_start", "include_negative"} else 0
+            delta = (
+                pair.added_lines[0][2]
+                if property_id in {"include_start", "include_negative"}
+                else 0
+            )
             passed = _equal(_scalar(after), _scalar(before) + delta)
         elif property_id == "preserve_zero_orders":
             previous, following = _mapping(before), _mapping(after)
             expected = dict(previous)
             expected[pair.added_orders[0][0]] = 0.0
-            passed = set(expected) == set(following) and all(_equal(expected[key], following[key]) for key in expected)
+            passed = set(expected) == set(following) and all(
+                _equal(expected[key], following[key]) for key in expected
+            )
         elif property_id == "merge_other_channels":
             previous, following = _mapping(before), _mapping(after)
             expected = dict(previous)
             expected[task.other_label] = expected.get(task.other_label, 0) + pair.added_lines[0][2]
-            passed = set(expected) == set(following) and all(_equal(expected[key], following[key]) for key in expected)
+            passed = set(expected) == set(following) and all(
+                _equal(expected[key], following[key]) for key in expected
+            )
         else:
             raise ValueError("unregistered property")
     except (ValueError, TypeError, KeyError):
-        return {"status": "output_invalid", "property_id": property_id,
-                "code": "UNDEFINED_OR_INVALID_OUTPUT", "before": before["rows"], "after": after["rows"]}
+        return {
+            "status": "output_invalid",
+            "property_id": property_id,
+            "code": "UNDEFINED_OR_INVALID_OUTPUT",
+            "before": before["rows"],
+            "after": after["rows"],
+        }
     return {
         "status": "passed" if passed else "violation",
         "property_id": property_id,
         "failure_type": None if passed else "PROPERTY_" + property_id.upper(),
-        "before": before["rows"], "after": after["rows"],
+        "before": before["rows"],
+        "after": after["rows"],
     }
 
 
 @st.composite
 def _subset_strategy(draw: Any, pair: ProbePair) -> ProbePair:
-    selected_parents = draw(st.sets(st.sampled_from(tuple(row[0] for row in pair.base.orders)), min_size=1))
+    selected_parents = draw(
+        st.sets(st.sampled_from(tuple(row[0] for row in pair.base.orders)), min_size=1)
+    )
     orders = tuple(row for row in pair.base.orders if row[0] in selected_parents)
     eligible_lines = tuple(row for row in pair.base.lines if row[1] in selected_parents)
     if not eligible_lines:
-        return ProbePair(pair.property_id, ProbeData(orders, ()), pair.added_orders, pair.added_lines)
-    selected_children = draw(st.sets(st.sampled_from(tuple(row[0] for row in eligible_lines)), min_size=1))
+        return ProbePair(
+            pair.property_id, ProbeData(orders, ()), pair.added_orders, pair.added_lines
+        )
+    selected_children = draw(
+        st.sets(st.sampled_from(tuple(row[0] for row in eligible_lines)), min_size=1)
+    )
     lines = tuple(row for row in eligible_lines if row[0] in selected_children)
-    return ProbePair(pair.property_id, ProbeData(orders, lines), pair.added_orders, pair.added_lines)
+    return ProbePair(
+        pair.property_id, ProbeData(orders, lines), pair.added_orders, pair.added_lines
+    )
 
 
-def reduce_pair(sql: str, task: ProbeTask, pair: ProbePair, budget: ExecutionBudget, seed: int) -> tuple[ProbePair, str]:
+def reduce_pair(
+    sql: str, task: ProbeTask, pair: ProbePair, budget: ExecutionBudget, seed: int
+) -> tuple[ProbePair, str]:
     """Shrink base records, keeping the inserted change and same failure type.
 
     The returned witness is the best validated subset observed within budget;
@@ -298,10 +356,15 @@ def reduce_pair(sql: str, task: ProbeTask, pair: ProbePair, budget: ExecutionBud
 
     try:
         find(
-            _subset_strategy(pair), still_fails,
-            settings=settings(max_examples=24, database=None, deadline=None,
-                              phases=(Phase.generate, Phase.shrink),
-                              suppress_health_check=(HealthCheck.too_slow,)),
+            _subset_strategy(pair),
+            still_fails,
+            settings=settings(
+                max_examples=24,
+                database=None,
+                deadline=None,
+                phases=(Phase.generate, Phase.shrink),
+                suppress_health_check=(HealthCheck.too_slow,),
+            ),
             random=random.Random(seed),
         )
         return best, "completed"
@@ -312,18 +375,31 @@ def reduce_pair(sql: str, task: ProbeTask, pair: ProbePair, budget: ExecutionBud
 
 
 def evidence_text(task: ProbeTask, pair: ProbePair, verdict: dict) -> str:
-    return json.dumps({
-        "task_id": task.task_id, "confirmed_property": pair.property_id,
-        "property_violation": verdict.get("failure_type"),
-        "data": pair.payload(), "before": verdict.get("before"), "after": verdict.get("after"),
-        "instruction": "修正候选实现以满足已确认性质，并保留原任务其他要求；此处不提供正确SQL。",
-    }, ensure_ascii=False, separators=(",", ":"))
+    return json.dumps(
+        {
+            "task_id": task.task_id,
+            "confirmed_property": pair.property_id,
+            "property_violation": verdict.get("failure_type"),
+            "data": pair.payload(),
+            "before": verdict.get("before"),
+            "after": verdict.get("after"),
+            "instruction": "修正候选实现以满足已确认性质，并保留原任务其他要求；此处不提供正确SQL。",
+        },
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
 
 
 def probe_candidate(
-    sql: str, task: ProbeTask, *, mode: str = "directed", seed: int = 17,
-    max_queries: int = 160, max_seconds: float = 12.0,
-    shrink: bool = True, max_examples: int = 8,
+    sql: str,
+    task: ProbeTask,
+    *,
+    mode: str = "directed",
+    seed: int = 17,
+    max_queries: int = 160,
+    max_seconds: float = 12.0,
+    shrink: bool = True,
+    max_examples: int = 8,
 ) -> dict:
     """Probe a frozen candidate; separate diagnostics from new detections."""
     if type(max_examples) is not int or not 1 <= max_examples <= 64:
@@ -334,12 +410,19 @@ def probe_candidate(
     strong = static_check(sql, task)
     structure = static_check(sql, task, static_semantics=False)
     report: dict[str, Any] = {
-        "task_id": task.task_id, "candidate_sql": sql, "mode": mode, "seed": seed,
+        "task_id": task.task_id,
+        "candidate_sql": sql,
+        "mode": mode,
+        "seed": seed,
         "confirmed_task": task.to_dict(),
-        "static": strong, "structural": structure, "status": "not_checked",
-        "new_detection_beyond_static": False, "queries": 0,
+        "static": strong,
+        "structural": structure,
+        "status": "not_checked",
+        "new_detection_beyond_static": False,
+        "queries": 0,
         "scope": "registered necessary properties; no complete correctness proof",
-        "property_results": [], "counterexample": None,
+        "property_results": [],
+        "counterexample": None,
         "intermediate_check_errors": [],
     }
     if not structure["accepted"]:
@@ -366,15 +449,21 @@ def probe_candidate(
 
         try:
             full = find(
-                pair_strategy(task, property_id), violates,
-                settings=settings(max_examples=max_examples, database=None, deadline=None,
-                                  phases=(Phase.generate,),
-                                  suppress_health_check=(HealthCheck.too_slow,)),
+                pair_strategy(task, property_id),
+                violates,
+                settings=settings(
+                    max_examples=max_examples,
+                    database=None,
+                    deadline=None,
+                    phases=(Phase.generate,),
+                    suppress_health_check=(HealthCheck.too_slow,),
+                ),
                 random=random.Random(seed + index * 1009),
             )
             full_verdict = witnessed["verdict"]
-            compact, reduction_status = (reduce_pair(sql, task, full, budget, seed + 7919)
-                                         if shrink else (full, "disabled"))
+            compact, reduction_status = (
+                reduce_pair(sql, task, full, budget, seed + 7919) if shrink else (full, "disabled")
+            )
             # Store an independently checked compact verdict. If no execution
             # budget remains, keep the already-observed full witness instead.
             try:
@@ -388,12 +477,17 @@ def probe_candidate(
             full_text = evidence_text(task, full, full_verdict)
             compact_text = evidence_text(task, compact, compact_verdict)
             report.update(
-                status="violation", new_detection_beyond_static=bool(strong["accepted"]),
+                status="violation",
+                new_detection_beyond_static=bool(strong["accepted"]),
                 counterexample={
-                    "full": full.payload(), "compact": compact.payload(),
-                    "full_verdict": full_verdict, "compact_verdict": compact_verdict,
-                    "full_feedback": full_text, "compact_feedback": compact_text,
-                    "full_feedback_chars": len(full_text), "compact_feedback_chars": len(compact_text),
+                    "full": full.payload(),
+                    "compact": compact.payload(),
+                    "full_verdict": full_verdict,
+                    "compact_verdict": compact_verdict,
+                    "full_feedback": full_text,
+                    "compact_feedback": compact_text,
+                    "full_feedback_chars": len(full_text),
+                    "compact_feedback_chars": len(compact_text),
                     "reduction_status": reduction_status,
                 },
             )
@@ -403,9 +497,12 @@ def probe_candidate(
             report.update(status="budget_exhausted")
             break
         except (NoSuchExample, Unsatisfiable):
-            status = execution_errors[0]["status"] if execution_errors else "no_counterexample_found"
-            report["property_results"].append({"property_id": property_id, "status": status,
-                                                "execution_errors": execution_errors})
+            status = (
+                execution_errors[0]["status"] if execution_errors else "no_counterexample_found"
+            )
+            report["property_results"].append(
+                {"property_id": property_id, "status": status, "execution_errors": execution_errors}
+            )
             if execution_errors:
                 report.update(status=status)
                 break
@@ -413,5 +510,7 @@ def probe_candidate(
         report["status"] = "no_counterexample_found"
     report["queries"] = budget.queries
     report["elapsed_seconds"] = round(time.monotonic() - budget.started, 6)
-    report["acceptance"] = bool(strong["accepted"] and report["status"] == "no_counterexample_found")
+    report["acceptance"] = bool(
+        strong["accepted"] and report["status"] == "no_counterexample_found"
+    )
     return report

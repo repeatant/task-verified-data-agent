@@ -1,7 +1,6 @@
 """Harness scoring/denominator/trace regressions; never call a real model."""
 
 import asyncio
-from copy import deepcopy
 import importlib.util
 import json
 import sqlite3
@@ -17,14 +16,30 @@ from dataverify.dbgpt_bridge import ReadOnlyDemoResource, ScriptedLLMClient
 
 
 def grade(**kwargs):
-    return {"accepted": True, "target_defined": True, "correct_answer": True,
-            "correct_refusal": False, "wrong_release": False,
-            "unscorable": False, "metric_drift": False, **kwargs}
+    return {
+        "accepted": True,
+        "target_defined": True,
+        "correct_answer": True,
+        "correct_refusal": False,
+        "wrong_release": False,
+        "unscorable": False,
+        "metric_drift": False,
+        **kwargs,
+    }
 
 
 def row(**kwargs):
-    return {"task_id": "case", "mode": "evidence", "track": "natural", "status": "completed",
-            "grade": grade(), "http_attempts": 1, "native_turns": 1, "seconds": 1, **kwargs}
+    return {
+        "task_id": "case",
+        "mode": "evidence",
+        "track": "natural",
+        "status": "completed",
+        "grade": grade(),
+        "http_attempts": 1,
+        "native_turns": 1,
+        "seconds": 1,
+        **kwargs,
+    }
 
 
 def test_scheduled_denominator_keeps_unrun_and_operational_errors():
@@ -44,7 +59,13 @@ def test_unscorable_accepted_sql_is_visible_and_never_counted_as_correct():
 
 
 def test_explicit_correct_refusal_separate_from_target_answer():
-    rows = [row(grade=grade(accepted=False, target_defined=False, correct_answer=False, correct_refusal=True))]
+    rows = [
+        row(
+            grade=grade(
+                accepted=False, target_defined=False, correct_answer=False, correct_refusal=True
+            )
+        )
+    ]
     group = summarize_rows(rows, 1)["groups"]["evidence:all"]
     assert group["correct_refusals"] == 1 and group["correct_answers"] == 0
     assert group["target_outcomes_over_scheduled"] == {"numerator": 1, "denominator": 1}
@@ -59,7 +80,9 @@ def test_native_failed_run_is_counted_as_operational_error_after_grading():
 
 def test_small_actual_native_harness_and_controlled_feedback_isolation(tmp_path):
     output = tmp_path / "run"
-    report = asyncio.run(run_benchmark(output, tasks=(get_task("n01"), get_task("c02"), get_task("c05"))))
+    report = asyncio.run(
+        run_benchmark(output, tasks=(get_task("n01"), get_task("c02"), get_task("c05")))
+    )
     assert report["status"] == "completed"
     assert report["real_model_used"] is False
     assert report["budget"]["http_attempts"] == 0
@@ -74,7 +97,9 @@ def test_small_actual_native_harness_and_controlled_feedback_isolation(tmp_path)
     manifest = json.loads((output / "frozen_manifest.json").read_text(encoding="utf-8"))
     assert manifest["sha256"] == report["manifest_sha256"]
     for mode in ("code", "evidence"):
-        trace = json.loads((output / "traces" / ("c02__" + mode + ".json")).read_text(encoding="utf-8"))
+        trace = json.loads(
+            (output / "traces" / ("c02__" + mode + ".json")).read_text(encoding="utf-8")
+        )
         messages = json.dumps(trace["llm_requests"][1], ensure_ascii=False)
         assert ("duplicate_grain" in messages) == (mode == "evidence")
         assert "metric_value" not in messages
@@ -91,15 +116,30 @@ def test_harness_does_not_drop_a_crashed_scheduled_cell(tmp_path):
     def factory(task, mode, budget):
         if mode == "code":
             raise RuntimeError("A private injected diagnostic must not be copied")
-        return ScriptedLLMClient([{"display_type": "response_table", "sql": "SELECT SUM(total) FROM orders", "metric_id": "order_revenue", "thought": "candidate"}])
-    report = asyncio.run(run_benchmark(tmp_path / "run", tasks=(get_task("n01"),), client_factory=factory))
+        return ScriptedLLMClient(
+            [
+                {
+                    "display_type": "response_table",
+                    "sql": "SELECT SUM(total) FROM orders",
+                    "metric_id": "order_revenue",
+                    "thought": "candidate",
+                }
+            ]
+        )
+
+    report = asyncio.run(
+        run_benchmark(tmp_path / "run", tasks=(get_task("n01"),), client_factory=factory)
+    )
     assert report["status"] == "incomplete"
     assert len(report["rows"]) == 3
     error = next(r for r in report["rows"] if r["mode"] == "code")
     assert error["status"] == "operational_error"
     assert error["error_type"] == "RuntimeError"
     assert "private injected diagnostic" not in json.dumps(report)
-    assert report["summary"]["groups"]["code:all"]["target_outcomes_over_scheduled"] == {"numerator": 0, "denominator": 1}
+    assert report["summary"]["groups"]["code:all"]["target_outcomes_over_scheduled"] == {
+        "numerator": 0,
+        "denominator": 1,
+    }
 
 
 def test_live_mode_cannot_be_disguised_as_mock_client(tmp_path):
@@ -111,30 +151,56 @@ def test_interrupted_run_retains_full_scheduled_grid(tmp_path):
     def factory(task, mode, budget):
         if mode == "code":
             raise KeyboardInterrupt
-        return ScriptedLLMClient([{"display_type": "response_table", "sql": "SELECT SUM(total) FROM orders", "metric_id": "order_revenue", "thought": "candidate"}])
+        return ScriptedLLMClient(
+            [
+                {
+                    "display_type": "response_table",
+                    "sql": "SELECT SUM(total) FROM orders",
+                    "metric_id": "order_revenue",
+                    "thought": "candidate",
+                }
+            ]
+        )
+
     output = tmp_path / "run"
     with pytest.raises(KeyboardInterrupt):
-        asyncio.run(run_benchmark(output, tasks=(get_task("n01"), get_task("n02")), client_factory=factory))
+        asyncio.run(
+            run_benchmark(output, tasks=(get_task("n01"), get_task("n02")), client_factory=factory)
+        )
     report = json.loads((output / "summary.json").read_text(encoding="utf-8"))
     assert report["status"] == "interrupted"
     assert len(report["rows"]) == report["summary"]["scheduled_cells"] == 6
     for mode in ("original", "code", "evidence"):
-        assert report["summary"]["groups"][mode + ":all"]["target_outcomes_over_scheduled"]["denominator"] == 2
+        assert (
+            report["summary"]["groups"][mode + ":all"]["target_outcomes_over_scheduled"][
+                "denominator"
+            ]
+            == 2
+        )
 
 
-@pytest.mark.parametrize("sql", [
-    "ATTACH DATABASE '{destination}' AS side", "PRAGMA query_only=OFF",
-    "SELECT name FROM sqlite_master", "SELECT load_extension('not-an-extension')",
-    "CREATE TABLE bad(x)",
-])
+@pytest.mark.parametrize(
+    "sql",
+    [
+        "ATTACH DATABASE '{destination}' AS side",
+        "PRAGMA query_only=OFF",
+        "SELECT name FROM sqlite_master",
+        "SELECT load_extension('not-an-extension')",
+        "CREATE TABLE bad(x)",
+    ],
+)
 def test_original_resource_blocks_nonquery_operations(tmp_path, sql):
     path = write_fixture(tmp_path / "source.sqlite3", get_task("n01").fixture)
     resource = ReadOnlyDemoResource(path)
     destination = tmp_path / "unexpected.sqlite3"
     try:
         with pytest.raises(sqlite3.DatabaseError):
-            resource._sync_query(str(path.resolve()), sql.format(destination=destination.as_posix()))
+            resource._sync_query(
+                str(path.resolve()), sql.format(destination=destination.as_posix())
+            )
         assert not destination.exists()
-        assert resource._sync_query(str(path.resolve()), "SELECT SUM(total) FROM orders")[1] == [(300.0,)]
+        assert resource._sync_query(str(path.resolve()), "SELECT SUM(total) FROM orders")[1] == [
+            (300.0,)
+        ]
     finally:
         resource.close()

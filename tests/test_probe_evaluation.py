@@ -1,12 +1,12 @@
-from pathlib import Path
-
 import pytest
 
-pytest.importorskip("hypothesis", reason="optional probe experiment requires requirements-probes.txt")
-from tools.evaluate_probes import ROOT, run_evaluation
-from tools.replay_probe import replay_report
+pytest.importorskip(
+    "hypothesis", reason="optional probe experiment requires requirements-probes.txt"
+)
 from dataverify.probe_cases import get_case
 from dataverify.probe_testing import probe_candidate
+from tools.evaluate_probes import ROOT, run_evaluation
+from tools.replay_probe import replay_report
 
 
 def test_duplicate_seed_cannot_overwrite_trace_or_inflate_denominator():
@@ -39,6 +39,8 @@ def test_saved_witness_replays_without_private_evaluator_or_model():
 def test_replay_rejects_forged_change_instead_of_falsely_rejecting_correct_query():
     case = get_case("d06")
     report = probe_candidate(case.candidate_sql, case.task)
-    report["counterexample"]["compact"]["added_lines"] = ((99, 4, 1, "settled", "2026-09-20T00:00:00"),)
+    report["counterexample"]["compact"]["added_lines"] = (
+        (99, 4, 1, "settled", "2026-09-20T00:00:00"),
+    )
     report["counterexample"]["compact"]["added_orders"] = ((4, 1, "web"),)
     assert not replay_report(report)["reproduced"]

@@ -16,13 +16,34 @@ def test_qwen_transport_encodes_tools_without_leaking_key_to_body():
         requests.append(body)
         assert "test-key-only" not in request.content.decode()
         assert request.headers["Authorization"] == "Bearer test-key-only"
-        return httpx.Response(200, json={"choices": [{"message": {"content": None, "tool_calls": [{"id": "call-1", "function": {"name": "inspect_schema", "arguments": "{}"}}]}}], "usage": {"total_tokens": 10}})
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "message": {
+                            "content": None,
+                            "tool_calls": [
+                                {
+                                    "id": "call-1",
+                                    "function": {"name": "inspect_schema", "arguments": "{}"},
+                                }
+                            ],
+                        }
+                    }
+                ],
+                "usage": {"total_tokens": 10},
+            },
+        )
 
     with httpx.Client(transport=httpx.MockTransport(handler)) as client:
         planner = QwenPlanner(api_key="test-key-only", client=client)
         action = planner.choose([{"role": "user", "content": "test"}])
     assert action.tool_name == "inspect_schema" and action.arguments == {}
-    assert [tool["function"]["name"] for tool in requests[0]["tools"]] == ["inspect_schema", "query_metric"]
+    assert [tool["function"]["name"] for tool in requests[0]["tools"]] == [
+        "inspect_schema",
+        "query_metric",
+    ]
     assert requests[0]["enable_thinking"] is False
     assert requests[0]["preserve_thinking"] is False
     assert requests[0]["parallel_tool_calls"] is False
@@ -43,13 +64,24 @@ def test_qwen_error_does_not_include_credentials_or_response_body():
 
 
 def test_qwen_uses_workspace_endpoint_and_records_usage(monkeypatch):
-    monkeypatch.setenv("DASHSCOPE_BASE_URL", "https://ws-example.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/")
+    monkeypatch.setenv(
+        "DASHSCOPE_BASE_URL", "https://ws-example.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/"
+    )
     monkeypatch.setenv("DASHSCOPE_MODEL", "qwen3.8-flash")
 
     def handler(request):
-        assert str(request.url) == "https://ws-example.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions"
+        assert (
+            str(request.url)
+            == "https://ws-example.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions"
+        )
         assert json.loads(request.content)["model"] == "qwen3.8-flash"
-        return httpx.Response(200, json={"choices": [{"message": {"content": "done"}}], "usage": {"prompt_tokens": 100, "completion_tokens": 10, "total_tokens": 110}})
+        return httpx.Response(
+            200,
+            json={
+                "choices": [{"message": {"content": "done"}}],
+                "usage": {"prompt_tokens": 100, "completion_tokens": 10, "total_tokens": 110},
+            },
+        )
 
     with httpx.Client(transport=httpx.MockTransport(handler)) as client:
         planner = QwenPlanner(api_key="test-key-only", client=client)
@@ -60,7 +92,9 @@ def test_qwen_uses_workspace_endpoint_and_records_usage(monkeypatch):
 def test_qwen_refuses_multiple_tool_calls_in_one_response():
     def handler(request):
         call = {"id": "call-1", "function": {"name": "inspect_schema", "arguments": "{}"}}
-        return httpx.Response(200, json={"choices": [{"message": {"tool_calls": [call, {**call, "id": "call-2"}]}}]})
+        return httpx.Response(
+            200, json={"choices": [{"message": {"tool_calls": [call, {**call, "id": "call-2"}]}}]}
+        )
 
     with httpx.Client(transport=httpx.MockTransport(handler)) as client:
         planner = QwenPlanner(api_key="test-key-only", client=client)
@@ -68,21 +102,29 @@ def test_qwen_refuses_multiple_tool_calls_in_one_response():
             planner.choose([{"role": "user", "content": "test"}])
 
 
-@pytest.mark.parametrize("message", [
-    None,
-    "sensitive-response-sentinel",
-    [],
-    {"tool_calls": {"sensitive-response-sentinel": "not-a-list"}},
-    {"tool_calls": [None]},
-    {"tool_calls": [{"id": "call-1", "function": None}]},
-    {"tool_calls": [{"id": "", "function": {"name": "inspect_schema", "arguments": "{}"}}]},
-    {"tool_calls": [{"id": None, "function": {"name": "inspect_schema", "arguments": "{}"}}]},
-    {"tool_calls": [{"id": "call-1", "function": {"name": None, "arguments": "{}"}}]},
-    {"tool_calls": [{"id": "call-1", "function": {"name": "inspect_schema", "arguments": "[]"}}]},
-    {"content": {"sensitive-response-sentinel": "not-text"}},
-])
+@pytest.mark.parametrize(
+    "message",
+    [
+        None,
+        "sensitive-response-sentinel",
+        [],
+        {"tool_calls": {"sensitive-response-sentinel": "not-a-list"}},
+        {"tool_calls": [None]},
+        {"tool_calls": [{"id": "call-1", "function": None}]},
+        {"tool_calls": [{"id": "", "function": {"name": "inspect_schema", "arguments": "{}"}}]},
+        {"tool_calls": [{"id": None, "function": {"name": "inspect_schema", "arguments": "{}"}}]},
+        {"tool_calls": [{"id": "call-1", "function": {"name": None, "arguments": "{}"}}]},
+        {
+            "tool_calls": [
+                {"id": "call-1", "function": {"name": "inspect_schema", "arguments": "[]"}}
+            ]
+        },
+        {"content": {"sensitive-response-sentinel": "not-text"}},
+    ],
+)
 def test_malformed_qwen_messages_fail_as_sanitized_provider_errors(message):
     """Remote protocol drift must not escape the runner as AttributeError."""
+
     def handler(request):
         return httpx.Response(200, json={"choices": [{"message": message}]})
 
@@ -96,7 +138,9 @@ def test_malformed_qwen_messages_fail_as_sanitized_provider_errors(message):
 
 @pytest.mark.parametrize("body", [None, [], {"choices": None}, {"choices": [None]}])
 def test_malformed_qwen_envelopes_fail_closed(body):
-    with httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(200, json=body))) as client:
+    with httpx.Client(
+        transport=httpx.MockTransport(lambda request: httpx.Response(200, json=body))
+    ) as client:
         planner = QwenPlanner(api_key="test-key-only", client=client)
         with pytest.raises(ProviderError, match="request/response failed"):
             planner.choose([{"role": "user", "content": "test"}])

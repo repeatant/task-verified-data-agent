@@ -8,12 +8,12 @@ checker, and the older synthetic evaluation module. It does not interpret SQL.
 
 from __future__ import annotations
 
+import math
+import sqlite3
 from collections import Counter
 from contextlib import closing
 from dataclasses import dataclass
-import math
 from pathlib import Path
-import sqlite3
 from typing import Any, Iterable
 
 
@@ -44,7 +44,11 @@ class Fixture:
             rows = tuple(tuple(row) for row in getattr(self, name))
             if any(len(row) != width for row in rows):
                 raise ValueError(f"{name} rows must contain {width} cells")
-            if any(type(cell) not in (type(None), bool, int, float, str) for row in rows for cell in row):
+            if any(
+                type(cell) not in (type(None), bool, int, float, str)
+                for row in rows
+                for cell in row
+            ):
                 raise ValueError("Fixture cells must be immutable SQLite scalar values")
             object.__setattr__(self, name, rows)
 
@@ -73,7 +77,9 @@ class Task:
             raise ValueError("Only controlled tasks have an initial candidate")
         if self.initial_candidate is not None:
             required = {"display_type", "sql", "metric_id", "thought"}
-            if set(self.initial_candidate) != required or any(type(value) is not str for value in self.initial_candidate.values()):
+            if set(self.initial_candidate) != required or any(
+                type(value) is not str for value in self.initial_candidate.values()
+            ):
                 raise ValueError("Candidate must contain the four string protocol fields")
             object.__setattr__(self, "initial_candidate", _FrozenCandidate(self.initial_candidate))
 
@@ -104,17 +110,30 @@ _BAD_LINE = Fixture(_NORMAL.orders, ((11, 1, "unavailable"),) + _NORMAL.lines[1:
 
 
 def _task(
-    task_id: str, fixture: Fixture, metric_id: str, sql: str | None = None,
+    task_id: str,
+    fixture: Fixture,
+    metric_id: str,
+    sql: str | None = None,
     pair_id: str | None = None,
 ) -> Task:
-    candidate = None if sql is None else {
-        "display_type": "response_table", "sql": sql,
-        "metric_id": metric_id, "thought": _THOUGHT,
-    }
+    candidate = (
+        None
+        if sql is None
+        else {
+            "display_type": "response_table",
+            "sql": sql,
+            "metric_id": metric_id,
+            "thought": _THOUGHT,
+        }
+    )
     return Task(
-        task_id, "natural" if candidate is None else "controlled", fixture,
+        task_id,
+        "natural" if candidate is None else "controlled",
+        fixture,
         _ORDER_QUESTION if metric_id == "order_revenue" else _LINE_QUESTION,
-        metric_id, candidate, pair_id,
+        metric_id,
+        candidate,
+        pair_id,
     )
 
 
@@ -169,7 +188,9 @@ def oracle(task: Task) -> dict[str, Any]:
     answer under this experiment's contract. Missing parent/detail relations
     alone do not remove records from an all-source metric.
     """
-    records = task.fixture.orders if task.confirmed_metric_id == "order_revenue" else task.fixture.lines
+    records = (
+        task.fixture.orders if task.confirmed_metric_id == "order_revenue" else task.fixture.lines
+    )
     grains = [row[0] for row in records]
     amounts = [row[1] if task.confirmed_metric_id == "order_revenue" else row[2] for row in records]
     reason = None
@@ -190,7 +211,8 @@ def oracle(task: Task) -> dict[str, Any]:
         if reason is not None:
             total = None
     return {
-        "target_defined": reason is None, "metric_value": total,
+        "target_defined": reason is None,
+        "metric_value": total,
         "source_rows": len(records),
         "source_grains": len({grain for grain in grains if grain is not None}),
         "reason": reason,
@@ -229,7 +251,9 @@ def candidate_expectation(task: Task) -> dict[str, Any]:
         raise ValueError("Only frozen candidate templates have declared semantics")
     target = "orders" if task.confirmed_metric_id == "order_revenue" else "order_lines"
     reason = expected["reason"]
-    if reason is None and (plan.source != target or task.initial_candidate["metric_id"] != task.confirmed_metric_id):
+    if reason is None and (
+        plan.source != target or task.initial_candidate["metric_id"] != task.confirmed_metric_id
+    ):
         reason = "metric_source_mismatch"
     if reason is None and plan.value_distinct:
         reason = "value_distinct_not_grain"
@@ -271,16 +295,27 @@ def manifest(tasks: Iterable[Task] = TASKS) -> dict[str, Any]:
     if len({task.task_id for task in tasks}) != len(tasks):
         raise ValueError("Manifest task IDs must be unique")
     return {
-        "manifest_version": 1, "split": "development", "task_count": len(tasks),
+        "manifest_version": 1,
+        "split": "development",
+        "task_count": len(tasks),
         "limitation": "Small disclosed development suite; not a held-out or generalization benchmark.",
-        "tasks": [{
-            "task_id": task.task_id, "track": task.track, "split": task.split,
-            "fixture": {
-                "orders": [list(row) for row in task.fixture.orders],
-                "lines": [list(row) for row in task.fixture.lines],
-            },
-            "question": task.question, "confirmed_metric_id": task.confirmed_metric_id,
-            "initial_candidate": None if task.initial_candidate is None else dict(task.initial_candidate),
-            "pair_id": task.pair_id, "expected": candidate_expectation(task),
-        } for task in tasks],
+        "tasks": [
+            {
+                "task_id": task.task_id,
+                "track": task.track,
+                "split": task.split,
+                "fixture": {
+                    "orders": [list(row) for row in task.fixture.orders],
+                    "lines": [list(row) for row in task.fixture.lines],
+                },
+                "question": task.question,
+                "confirmed_metric_id": task.confirmed_metric_id,
+                "initial_candidate": None
+                if task.initial_candidate is None
+                else dict(task.initial_candidate),
+                "pair_id": task.pair_id,
+                "expected": candidate_expectation(task),
+            }
+            for task in tasks
+        ],
     }

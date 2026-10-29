@@ -1,15 +1,18 @@
 {
   "files": {
-    "dataverify/probe_runtime.py": "56570da386629d5a02e8ee3cdfea44b265f1c282a9a6134c572c71e8c25b6317",
-    "dataverify/probe_testing.py": "f91a792f3c503939c6cde8bcaf4ce570faf2b72fff38359af1af893a40bc5ebb",
-    "dataverify/probe_capabilities.py": "3c1dcb5946c5b4c247a946f016b1557d1cbf18c2bee7424bdbffe9ef3d23e560",
-    "dataverify/probe_guard.py": "42e680af83215ac039633c1bf3e29be7a7975cb17d9f642ba36545f733c62fe9",
-    "dataverify/probe_agent_bridge.py": "9e5ca599c6a215b2d30f2d231e20817896acacb130901cddcf819e8dc40a38d8",
-    "dataverify/dbgpt_qwen.py": "7016f72050a0c57d40533cd5a091ce89ff1e40c94876b32b11475e420481a443",
-    "dataverify/probe_cost_budget.py": "67d216f359aa5be35d8e0cad7699f1fb1aa94308e4b8793d2bcaef733f8cc6d9",
-    "dataverify/probe_live_benchmark.py": "a12c4c89e0ec3c528d48acaaac71f937a414dd405950aed20ef3c82b4e4037ef",
-    "dataverify/probe_cases.py": "423c963cca953acc5fea335e9c64bd375ab949160fe25127a463d448528ccc49",
-    "docs/research/dbgpt_pin.json": "1f78f7021ca2be647096ed5d7dec15530cdf737bafd6a2d00b33904550aacdc0"
+    "dataverify/probe_runtime.py": "103faba2de918e8ee48559a1043df9ca519cfdaaea79531c55af38f03b0058ed",
+    "dataverify/probe_testing.py": "e48ff3bb7acddacfa3afce0a23ee17f1e075425156007a1b0ca74c16fc787bdb",
+    "dataverify/probe_capabilities.py": "3b22236e6977802cabe6af298617db2122e0c3c5d6aaa112e42740316b758c4e",
+    "dataverify/probe_guard.py": "e0fd00379e1b14ef77689ab7fa8d9375d322f891117adc7545c61e2e135e3d19",
+    "dataverify/probe_agent_bridge.py": "3cc5535488e85e72b0c3e43026b228bca616c4ec662580c03b26588fa8f79432",
+    "dataverify/dbgpt_qwen.py": "e1a9ce75ca65187d0b053c51906f73d350591df40f6d0f070b55dbf1cb793692",
+    "dataverify/probe_cost_budget.py": "b82de65c8be8875304869e4f54b9c4c3dce12ebd5898e60a859330e0f23a9106",
+    "dataverify/probe_live_benchmark.py": "6bbb1892b831cf61f7a08c5b272c9fb88397e8efb9585966050d20d1ce95a776",
+    "dataverify/probe_cases.py": "b620434171bb8b44c65cff0430d8d57f5be41f069f0b650c2ca53e2ad2157e12",
+    "docs/research/dbgpt_pin.json": "1f78f7021ca2be647096ed5d7dec15530cdf737bafd6a2d00b33904550aacdc0",
+    "dataverify/feedback_strategy.py": "baa3881bebb26a1970ca6622ecb0da2982477f7a351229b3dd13d2d57c067823",
+    "dataverify/reporting.py": "8a26c1a5bc7cd8cfd922cfc22172fa705654979eaa729d8b54db3ef6ebdff886",
+    "dataverify/experiment_budget.py": "9e9d438cac9378e861bc9fd4316fd1a26e844909d8b37a80bfefb0d35f16a9b3"
   },
   "scope": "Current post-feedback verifier; known converted regression only."
 }

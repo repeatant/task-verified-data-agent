@@ -91,6 +91,8 @@ python -m venv .venv
 - [评测说明](docs/EVALUATION.md)：真实调用对照、独立挑战、回归与版本回放。
 - [核验入口](dataverify/probe_guard.py)：任务保持、候选验收和发布结果。
 - [Agent 接入](dataverify/probe_agent_bridge.py)：资源、Action 与反馈循环。
+- [源码阅读指南](docs/CODE_GUIDE.md)：从任务入口追踪验收、反馈、实验与预算。
+- [开发约定](CONTRIBUTING.md)：格式、静态检查和修改后的验证步骤。
 
 ## 依赖与参考
 

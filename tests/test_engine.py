@@ -8,7 +8,7 @@ import pytest
 
 from dataverify.database import database_sha256, seed_demo_database
 from dataverify.engine import AgentRunner
-from dataverify.providers import Action, JOIN, OfflineScriptedPlanner, QwenPlanner
+from dataverify.providers import JOIN, Action, OfflineScriptedPlanner, QwenPlanner
 
 
 @pytest.mark.parametrize("case,wrong_value", [("join_fanout", 540), ("distinct_fix", 180)])
@@ -44,7 +44,9 @@ def test_clean_line_grain_is_not_mistaken_for_bad_join(tmp_path):
 
 
 @pytest.mark.parametrize("orphan_amount,expected", [(50, 330), (0, 280)])
-def test_line_repair_preserves_requested_metric_when_join_omits_orphan(tmp_path, orphan_amount, expected):
+def test_line_repair_preserves_requested_metric_when_join_omits_orphan(
+    tmp_path, orphan_amount, expected
+):
     """Repair the missing line coverage, not the question's metric identity.
 
     A zero-valued orphan deliberately makes the line and order totals equal;
@@ -59,7 +61,9 @@ def test_line_repair_preserves_requested_metric_when_join_omits_orphan(tmp_path,
         connection.close()
     before = database_sha256(database)
     result = AgentRunner(database, tmp_path / "traces").run(
-        question="统计明细总收入", case="clean_line_total", max_repairs=1,
+        question="统计明细总收入",
+        case="clean_line_total",
+        max_repairs=1,
     )
     queries = [event for event in result["trace"] if event.get("tool") == "query_metric"]
     assert queries[0]["result"]["error_code"] == "MISSING_GRAIN"
@@ -97,7 +101,12 @@ def test_stubborn_planner_is_stopped_after_bounded_repairs(tmp_path):
         real_model = False
 
         def choose(self, messages):
-            return Action("tool", "query_metric", {"sql": f"SELECT SUM(o.total) {JOIN}", "metric_id": "order_revenue"}, f"q-{len(messages)}")
+            return Action(
+                "tool",
+                "query_metric",
+                {"sql": f"SELECT SUM(o.total) {JOIN}", "metric_id": "order_revenue"},
+                f"q-{len(messages)}",
+            )
 
     database = seed_demo_database(tmp_path / "demo.sqlite3")
     result = AgentRunner(database, planner=StubbornPlanner()).run(max_repairs=2)
@@ -134,7 +143,16 @@ def test_usage_is_counted_per_run_when_planner_is_reused(tmp_path):
     runner = AgentRunner(seed_demo_database(tmp_path / "demo.sqlite3"), planner=planner)
     first, second = runner.run(), runner.run()
     assert first["model"] == "mock-model"
-    assert first["model_usage"] == second["model_usage"] == {"responses_with_usage": 2, "prompt_tokens": 200, "completion_tokens": 20, "total_tokens": 220}
+    assert (
+        first["model_usage"]
+        == second["model_usage"]
+        == {
+            "responses_with_usage": 2,
+            "prompt_tokens": 200,
+            "completion_tokens": 20,
+            "total_tokens": 220,
+        }
+    )
 
 
 def test_missing_usage_is_not_reported_as_measured_usage(tmp_path):
@@ -149,7 +167,12 @@ def test_missing_usage_is_not_reported_as_measured_usage(tmp_path):
     planner.choose = choose
     result = AgentRunner(seed_demo_database(tmp_path / "demo.sqlite3"), planner=planner).run()
     assert result["status"] == "verified"
-    assert result["model_usage"] == {"responses_with_usage": 0, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+    assert result["model_usage"] == {
+        "responses_with_usage": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+    }
 
 
 def test_qwen_adapter_receives_structured_counterexample_and_repairs_through_graph(tmp_path):
@@ -169,7 +192,10 @@ def test_qwen_adapter_receives_structured_counterexample_and_repairs_through_gra
             schema_message = body["messages"][-1]
             assert schema_message["role"] == "tool" and schema_message["name"] == "inspect_schema"
             assert "contracts" in json.loads(schema_message["content"])
-            name, arguments = "query_metric", {"sql": f"SELECT SUM(o.total) {JOIN}", "metric_id": "order_revenue"}
+            name, arguments = (
+                "query_metric",
+                {"sql": f"SELECT SUM(o.total) {JOIN}", "metric_id": "order_revenue"},
+            )
         else:
             assert len(bodies) == 3
             feedback_message = body["messages"][-1]
@@ -178,14 +204,30 @@ def test_qwen_adapter_receives_structured_counterexample_and_repairs_through_gra
             assert feedback["verification_status"] == "rejected"
             assert feedback["accepted_value"] is None
             assert feedback["evidence"]
-            name, arguments = "query_metric", {"sql": "SELECT SUM(total) FROM orders", "metric_id": "order_revenue"}
-        return httpx.Response(200, json={
-            "choices": [{"message": {"content": None, "tool_calls": [{
-                "id": f"mock-call-{len(bodies)}", "type": "function",
-                "function": {"name": name, "arguments": json.dumps(arguments)},
-            }]}}],
-            "usage": {"prompt_tokens": 20, "completion_tokens": 5, "total_tokens": 25},
-        })
+            name, arguments = (
+                "query_metric",
+                {"sql": "SELECT SUM(total) FROM orders", "metric_id": "order_revenue"},
+            )
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "message": {
+                            "content": None,
+                            "tool_calls": [
+                                {
+                                    "id": f"mock-call-{len(bodies)}",
+                                    "type": "function",
+                                    "function": {"name": name, "arguments": json.dumps(arguments)},
+                                }
+                            ],
+                        }
+                    }
+                ],
+                "usage": {"prompt_tokens": 20, "completion_tokens": 5, "total_tokens": 25},
+            },
+        )
 
     database = seed_demo_database(tmp_path / "mock-qwen.sqlite3")
     with httpx.Client(transport=httpx.MockTransport(handler)) as client:
@@ -203,7 +245,11 @@ def test_qwen_adapter_receives_structured_counterexample_and_repairs_through_gra
 
 def test_malformed_model_response_stops_with_trace_instead_of_crashing(tmp_path):
     database = seed_demo_database(tmp_path / "malformed-qwen.sqlite3")
-    with httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(200, json={"choices": [{"message": None}]}))) as client:
+    with httpx.Client(
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(200, json={"choices": [{"message": None}]})
+        )
+    ) as client:
         planner = QwenPlanner(api_key="test-key-only", client=client)
         result = AgentRunner(database, tmp_path / "traces", planner=planner).run(provider="qwen")
     assert result["status"] == "unverified" and result["value"] is None

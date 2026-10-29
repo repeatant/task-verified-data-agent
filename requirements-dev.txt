@@ -1,0 +1,2 @@
+# Development tools are separate from model/runtime dependencies.
+ruff==0.17.3

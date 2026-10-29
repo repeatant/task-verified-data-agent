@@ -3,7 +3,6 @@
 import asyncio
 import importlib.util
 import json
-from pathlib import Path
 
 import pytest
 
@@ -15,12 +14,16 @@ from dbgpt.agent.expand.data_scientist_agent import DataScientistAgent
 
 from dataverify.dbgpt_bridge import ScriptedLLMClient
 from dataverify.probe_agent_bridge import (
-    ProbeChartAction, ProbeDataScientistAgent, ProbeResource, probe_data_sha256,
-    probe_publication, probe_sql_candidate, run_probe_native_case,
+    ProbeChartAction,
+    ProbeDataScientistAgent,
+    ProbeResource,
+    probe_data_sha256,
+    probe_publication,
+    probe_sql_candidate,
+    run_probe_native_case,
 )
 from dataverify.probe_guard import ProbeGuard
 from dataverify.probe_runtime import ProbeData, ProbeTask
-
 
 GOOD = (
     "SELECT COALESCE(SUM(l.amount),0) AS revenue FROM order_lines l "
@@ -31,18 +34,28 @@ BAD_END = GOOD.replace("l.settled_at <", "l.settled_at <=")
 
 
 def task():
-    return ProbeTask("native01", "计算九月已结算明细净收入，含合法退款。",
-                     ("exclude_end", "exclude_status", "include_start", "include_negative"))
+    return ProbeTask(
+        "native01",
+        "计算九月已结算明细净收入，含合法退款。",
+        ("exclude_end", "exclude_status", "include_start", "include_negative"),
+    )
 
 
 def data():
-    return ProbeData(((1, 700, "web"),),
-                     ((1, 1, 100, "settled", "2026-09-15T12:00:00"),))
+    return ProbeData(((1, 700, "web"),), ((1, 1, 100, "settled", "2026-09-15T12:00:00"),))
 
 
 def run(tmp_path, responses, *, mode="compact", attempts=2):
-    return asyncio.run(run_probe_native_case(task(), data(), mode=mode, max_attempts=attempts,
-                                            output_dir=tmp_path, responses=responses))
+    return asyncio.run(
+        run_probe_native_case(
+            task(),
+            data(),
+            mode=mode,
+            max_attempts=attempts,
+            output_dir=tmp_path,
+            responses=responses,
+        )
+    )
 
 
 def test_generate_reply_and_retry_are_inherited_not_reimplemented():
@@ -53,7 +66,13 @@ def test_resource_exposes_new_schema_without_source_rows_or_old_metric_protocol(
     resource = ProbeResource(task())
     try:
         payload = json.loads(resource.get_schema_link(resource._db_name))
-        assert payload["tables"]["order_lines"] == ["line_id", "order_id", "amount", "status", "settled_at"]
+        assert payload["tables"]["order_lines"] == [
+            "line_id",
+            "order_id",
+            "amount",
+            "status",
+            "settled_at",
+        ]
         assert payload["confirmed_task"]["task_id"] == "native01"
         text = json.dumps(payload)
         assert "metric_id" not in text
@@ -86,7 +105,9 @@ def test_native_correct_candidate_publishes_guard_rows(tmp_path, mode):
     assert record["publication"]["verified_sql"] == GOOD
     assert record["raw_resource_queries"] == 0
     assert record["source_unchanged"]
-    assert record["source_sha256_before"] == record["source_sha256_after"] == probe_data_sha256(data())
+    assert (
+        record["source_sha256_before"] == record["source_sha256_after"] == probe_data_sha256(data())
+    )
     assert record["operational_error"] is None
     assert record["cleanup_errors"] == []
     assert record["llm_calls"] == 1
@@ -95,8 +116,11 @@ def test_native_correct_candidate_publishes_guard_rows(tmp_path, mode):
 
 @pytest.mark.parametrize("mode", ["full", "compact", "code"])
 def test_native_rejects_then_repairs_without_replacing_loop(tmp_path, mode):
-    record = run(tmp_path, [probe_sql_candidate(BAD_END, task().task_id),
-                            probe_sql_candidate(GOOD, task().task_id)], mode=mode)
+    record = run(
+        tmp_path,
+        [probe_sql_candidate(BAD_END, task().task_id), probe_sql_candidate(GOOD, task().task_id)],
+        mode=mode,
+    )
     assert record["publication"]["status"] == "verified"
     assert record["publication"]["rows"] == [[100]]
     assert len(record["actions"]) == 2
@@ -120,8 +144,10 @@ def test_unrepaired_failure_has_no_public_value_or_view(tmp_path):
 
 
 def test_wrong_task_id_is_rejected_and_can_be_corrected(tmp_path):
-    record = run(tmp_path, [probe_sql_candidate(GOOD, "changed-task"),
-                            probe_sql_candidate(GOOD, task().task_id)])
+    record = run(
+        tmp_path,
+        [probe_sql_candidate(GOOD, "changed-task"), probe_sql_candidate(GOOD, task().task_id)],
+    )
     assert record["actions"][0]["feedback"]["error_code"] == "TASK_DRIFT"
     assert record["publication"]["status"] == "verified"
 
@@ -133,8 +159,13 @@ def test_malformed_json_is_invalidated_then_native_retry_recovers(tmp_path):
 
 
 def test_write_attempt_is_blocked_and_source_remains_unchanged(tmp_path):
-    record = run(tmp_path, [probe_sql_candidate("DELETE FROM order_lines", task().task_id),
-                            probe_sql_candidate(GOOD, task().task_id)])
+    record = run(
+        tmp_path,
+        [
+            probe_sql_candidate("DELETE FROM order_lines", task().task_id),
+            probe_sql_candidate(GOOD, task().task_id),
+        ],
+    )
     assert record["actions"][0]["feedback"]["error_code"]
     assert record["publication"]["status"] == "verified"
     assert record["source_unchanged"]
@@ -152,6 +183,7 @@ def test_invalid_action_clears_previously_verified_state():
         assert not output.is_exe_success
         assert output.view is None
         assert guard.publish()["status"] == "unverified"
+
     asyncio.run(scenario())
 
 
@@ -167,16 +199,22 @@ def test_upstream_failure_cannot_publish_even_a_verified_guard():
 @pytest.mark.parametrize("attempts", [0, 4, True])
 def test_bad_attempt_allowance_rejected_before_runtime(tmp_path, attempts):
     with pytest.raises(ValueError):
-        asyncio.run(run_probe_native_case(task(), data(), responses=[],
-                                         max_attempts=attempts, output_dir=tmp_path))
+        asyncio.run(
+            run_probe_native_case(
+                task(), data(), responses=[], max_attempts=attempts, output_dir=tmp_path
+            )
+        )
 
 
 def test_explicit_clients_and_offline_scripts_are_mutually_exclusive(tmp_path):
     with pytest.raises(ValueError):
         asyncio.run(run_probe_native_case(task(), data(), output_dir=tmp_path))
     with pytest.raises(ValueError):
-        asyncio.run(run_probe_native_case(task(), data(), output_dir=tmp_path,
-                                         responses=[], llm_client=ScriptedLLMClient([])))
+        asyncio.run(
+            run_probe_native_case(
+                task(), data(), output_dir=tmp_path, responses=[], llm_client=ScriptedLLMClient([])
+            )
+        )
 
 
 def test_response_failure_keeps_safe_partial_record_and_no_publication(tmp_path):

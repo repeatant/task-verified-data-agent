@@ -8,12 +8,12 @@ generate_reply and retry scheduling remain the upstream implementation.
 from __future__ import annotations
 
 import asyncio
-from copy import deepcopy
-from dataclasses import asdict
 import hashlib
 import json
-from pathlib import Path
 import re
+from copy import deepcopy
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import Any, Literal
 from uuid import uuid4
 
@@ -25,10 +25,10 @@ from dbgpt.agent.expand.data_scientist_agent import DataScientistAgent
 from dbgpt.agent.resource.database import DBResource
 from dbgpt.core import LLMClient
 
-from .dbgpt_bridge import ScriptedLLMClient, UPSTREAM_COMMIT, verify_upstream_files
-from .probe_guard import ProbeGuard
+from .dbgpt_bridge import UPSTREAM_COMMIT, ScriptedLLMClient, verify_upstream_files
 from .probe_capabilities import policy_features, sql_capabilities, validate_policy
-from .probe_runtime import ProbeData, ProbeTask, TABLE_SCHEMA
+from .probe_guard import ProbeGuard
+from .probe_runtime import TABLE_SCHEMA, ProbeData, ProbeTask
 
 
 def probe_data_sha256(data: ProbeData) -> str:
@@ -51,15 +51,17 @@ class ProbeResource(DBResource):
         name = "probe-memory-" + uuid4().hex
         super().__init__(name=name, db_name=name, db_type="sqlite", dialect="sqlite")
 
-    def get_schema_link(self, db: str, question: str | None = None):
+    def get_schema_link(self, db: str, question: str | None = None) -> str:
         if db != self._db_name:
             raise ValueError("Only the bound probe task schema is available")
         payload = {
             "confirmed_task": self.task.to_dict(),
             "tables": {name: list(columns) for name, columns in TABLE_SCHEMA.items()},
-            "types": {"money": "bounded integer minor units; refunds may be negative",
-                      "settled_at": "canonical timezone-free ISO seconds YYYY-MM-DDTHH:MM:SS",
-                      "status": ["settled", "pending", "cancelled"]},
+            "types": {
+                "money": "bounded integer minor units; refunds may be negative",
+                "settled_at": "canonical timezone-free ISO seconds YYYY-MM-DDTHH:MM:SS",
+                "status": ["settled", "pending", "cancelled"],
+            },
             "relation": "orders.order_id = order_lines.order_id; child FK is valid",
             "supported_sql": [
                 "Exactly one SELECT, one SUM(order_lines.amount); COALESCE(SUM(...),0) is permitted.",
@@ -79,13 +81,15 @@ class ProbeResource(DBResource):
         self.raw_query_attempts += 1
         raise RuntimeError("RAW_PROBE_QUERY_DISABLED_USE_GUARDED_ACTION")
 
-    def close(self):
+    def close(self) -> None:
         self._executor.shutdown(wait=True)
 
 
 class ProbeSqlInput(SqlInput):
     task_id: str = Field(
-        ..., min_length=1, max_length=80,
+        ...,
+        min_length=1,
+        max_length=80,
         description="Repeat the caller-confirmed task_id exactly; never change it during repair.",
     )
 
@@ -94,9 +98,11 @@ def probe_publication(guard: ProbeGuard, upstream_success: bool) -> dict:
     """Publish only guard-owned data when BOTH native loop and guard succeeded."""
     raw = guard.publish()
     complete = (
-        isinstance(raw, dict) and raw.get("status") == "verified"
+        isinstance(raw, dict)
+        and raw.get("status") == "verified"
         and isinstance(raw.get("rows"), list)
-        and type(raw.get("verified_sql")) is str and bool(raw["verified_sql"].strip())
+        and type(raw.get("verified_sql")) is str
+        and bool(raw["verified_sql"].strip())
     )
     accepted = bool(upstream_success and complete)
     code = raw.get("error_code") if isinstance(raw, dict) else "INVALID_PUBLICATION_ENVELOPE"
@@ -108,8 +114,11 @@ def probe_publication(guard: ProbeGuard, upstream_success: bool) -> dict:
         "rows": deepcopy(raw["rows"]) if accepted else None,
         "verified_sql": raw["verified_sql"] if accepted else None,
         "error_code": None if accepted else code,
-        "scope": raw.get("scope", "registered task properties only; not a complete correctness proof")
-        if isinstance(raw, dict) else "registered task properties only",
+        "scope": raw.get(
+            "scope", "registered task properties only; not a complete correctness proof"
+        )
+        if isinstance(raw, dict)
+        else "registered task properties only",
     }
 
 
@@ -122,17 +131,18 @@ class ProbeChartAction(ChartAction):
         self.audit: list[dict] = []
 
     @property
-    def out_model_type(self):
+    def out_model_type(self) -> type[ProbeSqlInput]:
         return ProbeSqlInput
 
-    async def run(self, ai_message: str, **kwargs):
+    async def run(self, ai_message: str, **kwargs) -> ActionOutput:
         if self.guard is None:
             raise RuntimeError("A fresh ProbeGuard must be bound")
         try:
             candidate = self._input_convert(ai_message, ProbeSqlInput)
         except Exception:
             feedback = self.guard.invalidate(
-                "INVALID_ACTION_FORMAT", "Return one JSON object with display_type, sql, task_id and thought.",
+                "INVALID_ACTION_FORMAT",
+                "Return one JSON object with display_type, sql, task_id and thought.",
             )
         else:
             feedback = await asyncio.to_thread(self.guard.execute, candidate.sql, candidate.task_id)
@@ -142,9 +152,11 @@ class ProbeChartAction(ChartAction):
         content = json.dumps(feedback, ensure_ascii=False)
         return ActionOutput(
             is_exe_success=accepted,
-            content=content, observations=content,
+            content=content,
+            observations=content,
             view=json.dumps(publication, ensure_ascii=False) if accepted else None,
-            resource_type="database", resource_value="caller-confirmed-immutable-probe-data",
+            resource_type="database",
+            resource_value="caller-confirmed-immutable-probe-data",
             have_retry=bool(feedback.get("retryable", True)),
         )
 
@@ -160,25 +172,29 @@ class ProbeDataScientistAgent(DataScientistAgent):
         self._init_actions([ProbeChartAction])
         self.actions[0].guard = guard
 
-    async def correctness_check(self, message: AgentMessage):
+    async def correctness_check(self, message: AgentMessage) -> tuple[bool, str | None]:
         if self._probe_guard.publish().get("status") == "verified":
             return True, None
         # Only mode-filtered public feedback enters the native retry context.
         return False, message.action_report.content if message.action_report else "NO_ACTION"
 
-    async def adjust_final_message(self, is_success: bool, reply_message: AgentMessage):
+    async def adjust_final_message(self, is_success: bool, reply_message: AgentMessage) -> None:
         publication = probe_publication(self._probe_guard, is_success)
         reply_message.success = publication["status"] == "verified"
         reply_message.content = json.dumps(publication, ensure_ascii=False)
         if reply_message.action_report:
             reply_message.action_report.content = reply_message.content
-            reply_message.action_report.view = reply_message.content if reply_message.success else None
+            reply_message.action_report.view = (
+                reply_message.content if reply_message.success else None
+            )
             reply_message.action_report.is_exe_success = reply_message.success
 
 
 def probe_sql_candidate(sql: str, task_id: str) -> dict[str, str]:
     return {
-        "display_type": "response_table", "sql": sql, "task_id": task_id,
+        "display_type": "response_table",
+        "sql": sql,
+        "task_id": task_id,
         "thought": "Controlled integration candidate; not a natural model prediction.",
     }
 
@@ -191,19 +207,42 @@ def _safe_error(error: BaseException) -> dict[str, str]:
     return {"type": type(error).__name__, "code": code}
 
 
-async def run_probe_native_case(
-    task: ProbeTask, data: ProbeData, *,
-    mode: Literal["full", "compact", "code", "adaptive"] = "compact", seed: int = 17,
-    max_attempts: int = 2, output_dir: Path,
-    llm_client: LLMClient | None = None, responses: list[dict | str] | None = None,
-    feedback_policy: str = "capability_v2",
-) -> dict[str, Any]:
-    """Run the real pinned loop with one immutable task and fresh guard.
+@dataclass
+class _NativeSession:
+    """The resources owned by exactly one native Agent task."""
 
-    Scripted clients are explicitly offline. Controlled first candidates may be
-    injected by the caller's labeled client; only its subsequent real HTTP calls
-    may be reported as model repairs. Only ``publication`` is application output.
-    """
+    client: LLMClient
+    resource: ProbeResource
+    guard: ProbeGuard
+    context: AgentContext
+    agent: ProbeDataScientistAgent
+    sender: UserProxyAgent
+
+
+@dataclass
+class _NativeOutcome:
+    """Keep the reply, private event capture and safe failures in one record."""
+
+    reply: AgentMessage | None = None
+    operational_error: dict[str, str] | None = None
+    cleanup_errors: list[dict[str, str]] = field(default_factory=list)
+    events: list[dict[str, Any]] = field(default_factory=list)
+
+    async def capture_event(self, event_type: str, payload: Any) -> None:
+        self.events.append({"event_type": event_type, "payload": deepcopy(payload)})
+
+
+def _validate_native_inputs(
+    task: ProbeTask,
+    data: ProbeData,
+    mode: str,
+    seed: int,
+    max_attempts: int,
+    llm_client: LLMClient | None,
+    responses: list[dict | str] | None,
+    feedback_policy: str,
+) -> None:
+    """Fail before creating threads, directories or a model client."""
     if not isinstance(task, ProbeTask) or not isinstance(data, ProbeData):
         raise ValueError("Expected immutable confirmed task and probe data")
     if mode not in {"full", "compact", "code", "adaptive"} or type(seed) is not int:
@@ -213,80 +252,189 @@ async def run_probe_native_case(
     if (llm_client is None) == (responses is None):
         raise ValueError("Choose exactly one explicit client or offline response script")
     validate_policy(feedback_policy)
-    upstream_check = verify_upstream_files()
-    output_dir = Path(output_dir).resolve()
-    run_output = output_dir / ("probe-native-" + uuid4().hex)
-    run_output.mkdir(parents=True, exist_ok=False)
-    source_before = probe_data_sha256(data)
-    client = llm_client if llm_client is not None else ScriptedLLMClient(responses)
+
+
+def _create_native_session(
+    task: ProbeTask,
+    data: ProbeData,
+    *,
+    mode: str,
+    seed: int,
+    feedback_policy: str,
+    max_attempts: int,
+    run_output: Path,
+    client: LLMClient,
+) -> _NativeSession:
+    """Bind fresh guard/resource ownership without replacing DB-GPT's loop."""
     resource = ProbeResource(task, feedback_policy=feedback_policy)
     guard = ProbeGuard(task, data, mode=mode, seed=seed, feedback_policy=feedback_policy)
     context = AgentContext(
-        conv_id="probe-native-" + uuid4().hex, language="en", output_dir=str(run_output),
-        temperature=0, verbose=False,
+        conv_id="probe-native-" + uuid4().hex,
+        language="en",
+        output_dir=str(run_output),
+        temperature=0,
+        verbose=False,
     )
-    agent = ProbeDataScientistAgent(guard=guard, max_retry_count=max_attempts, max_timeout=120, stream_out=False)
-    sender = UserProxyAgent()
-    events: list[dict] = []
-    reply = None
-    operational_error = None
-    cleanup_errors = []
+    agent = ProbeDataScientistAgent(
+        guard=guard, max_retry_count=max_attempts, max_timeout=120, stream_out=False
+    )
+    return _NativeSession(client, resource, guard, context, agent, UserProxyAgent())
 
-    async def capture_event(event_type, payload):
-        events.append({"event_type": event_type, "payload": deepcopy(payload)})
 
-    try:
-        agent = await agent.bind(context).bind(LLMConfig(llm_client=client)).bind(resource).build()
-        sender = await sender.bind(context).build()
-        question = (
-            task.question + "\nCaller-confirmed task_id=" + task.task_id
-            + ". Preserve all confirmed task requirements during repairs. "
-            "Return one action JSON; the guard executes SQL and owns the result."
-        )
-        reply = await agent.generate_reply(
-            AgentMessage(content=question, current_goal=question), sender=sender,
-            stream_callback=capture_event,
-        )
-    except Exception as error:
-        operational_error = _safe_error(error)
-    finally:
-        for owner in (resource, agent, sender):
-            try:
-                if isinstance(owner, ProbeResource):
-                    owner.close()
-                else:
-                    owner.executor.shutdown(wait=True)
-            except Exception as error:
-                cleanup_errors.append(_safe_error(error))
-        if callable(getattr(client, "aclose", None)):
-            try:
-                await client.aclose()
-            except Exception as error:
-                cleanup_errors.append(_safe_error(error))
-    source_after = probe_data_sha256(data)
-    upstream_success = bool(reply is not None and reply.success)
-    publication = probe_publication(guard, upstream_success and operational_error is None)
-    if source_before != source_after:
-        publication.update(status="unverified", rows=None, verified_sql=None, error_code="SOURCE_DATA_CHANGED")
+async def _generate_native_reply(
+    session: _NativeSession, task: ProbeTask, outcome: _NativeOutcome
+) -> AgentMessage:
+    """Enter the inherited loop using only the caller-confirmed task."""
+    session.agent = (
+        await session.agent.bind(session.context)
+        .bind(LLMConfig(llm_client=session.client))
+        .bind(session.resource)
+        .build()
+    )
+    session.sender = await session.sender.bind(session.context).build()
+    question = (
+        task.question
+        + "\nCaller-confirmed task_id="
+        + task.task_id
+        + ". Preserve all confirmed task requirements during repairs. "
+        "Return one action JSON; the guard executes SQL and owns the result."
+    )
+    return await session.agent.generate_reply(
+        AgentMessage(content=question, current_goal=question),
+        sender=session.sender,
+        stream_callback=outcome.capture_event,
+    )
+
+
+async def _close_native_session(session: _NativeSession) -> list[dict[str, str]]:
+    """Attempt every cleanup, retaining safe diagnostics for each failure."""
+    errors: list[dict[str, str]] = []
+    for owner in (session.resource, session.agent, session.sender):
+        try:
+            if isinstance(owner, ProbeResource):
+                owner.close()
+            else:
+                owner.executor.shutdown(wait=True)
+        except Exception as error:
+            errors.append(_safe_error(error))
+    if callable(getattr(session.client, "aclose", None)):
+        try:
+            await session.client.aclose()
+        except Exception as error:
+            errors.append(_safe_error(error))
+    return errors
+
+
+def _native_record(
+    session: _NativeSession,
+    outcome: _NativeOutcome,
+    *,
+    mode: str,
+    seed: int,
+    feedback_policy: str,
+    upstream_check: dict,
+    publication: dict,
+    source_before: str,
+    source_after: str,
+) -> dict[str, Any]:
+    """Separate guard-owned publication from the private replay/audit record."""
+    client = session.client
+    reply = outcome.reply
     return {
-        "mode": mode, "seed": seed, "feedback_policy": feedback_policy,
+        "mode": mode,
+        "seed": seed,
+        "feedback_policy": feedback_policy,
         "feedback_features": policy_features(feedback_policy),
         "upstream_commit": UPSTREAM_COMMIT,
         "upstream_file_check": upstream_check,
         "native_loop": "DataScientistAgent.generate_reply (inherited)",
-        "client_kind": getattr(client, "client_kind", "deterministic_offline_script_not_real_model"),
-        "upstream_success": upstream_success, "publication": publication,
+        "client_kind": getattr(
+            client, "client_kind", "deterministic_offline_script_not_real_model"
+        ),
+        "upstream_success": bool(reply is not None and reply.success),
+        "publication": publication,
         "native_reply": reply.to_dict() if reply is not None else None,
         "llm_requests": deepcopy(getattr(client, "requests", [])),
         "llm_calls": len(getattr(client, "requests", [])),
         "http_events": deepcopy(getattr(client, "http_events", [])),
         "model_usage": deepcopy(getattr(client, "usage", [])),
         "turn_origins": deepcopy(getattr(client, "turn_origins", [])),
-        "actions": deepcopy(agent.actions[0].audit),
-        "guard_audit": deepcopy(guard.audit),
-        "raw_resource_queries": resource.raw_query_attempts,
-        "stream_events": events,
-        "source_sha256_before": source_before, "source_sha256_after": source_after,
+        "actions": deepcopy(session.agent.actions[0].audit),
+        "guard_audit": deepcopy(session.guard.audit),
+        "raw_resource_queries": session.resource.raw_query_attempts,
+        "stream_events": outcome.events,
+        "source_sha256_before": source_before,
+        "source_sha256_after": source_after,
         "source_unchanged": source_before == source_after,
-        "operational_error": operational_error, "cleanup_errors": cleanup_errors,
+        "operational_error": outcome.operational_error,
+        "cleanup_errors": outcome.cleanup_errors,
     }
+
+
+async def run_probe_native_case(
+    task: ProbeTask,
+    data: ProbeData,
+    *,
+    mode: Literal["full", "compact", "code", "adaptive"] = "compact",
+    seed: int = 17,
+    max_attempts: int = 2,
+    output_dir: Path,
+    llm_client: LLMClient | None = None,
+    responses: list[dict | str] | None = None,
+    feedback_policy: str = "capability_v2",
+) -> dict[str, Any]:
+    """Run the real pinned loop with one immutable task and fresh guard.
+
+    Scripted clients are explicitly offline. Controlled first candidates may be
+    injected by the caller's labeled client; only its subsequent real HTTP calls
+    may be reported as model repairs. Only ``publication`` is application output.
+    """
+    _validate_native_inputs(
+        task, data, mode, seed, max_attempts, llm_client, responses, feedback_policy
+    )
+    upstream_check = verify_upstream_files()
+    output_dir = Path(output_dir).resolve()
+    run_output = output_dir / ("probe-native-" + uuid4().hex)
+    run_output.mkdir(parents=True, exist_ok=False)
+    source_before = probe_data_sha256(data)
+    client = llm_client if llm_client is not None else ScriptedLLMClient(responses)
+    session = _create_native_session(
+        task,
+        data,
+        mode=mode,
+        seed=seed,
+        feedback_policy=feedback_policy,
+        max_attempts=max_attempts,
+        run_output=run_output,
+        client=client,
+    )
+    outcome = _NativeOutcome()
+
+    # 生成与重试仍由上游循环负责；本层只绑定核验边界和资源生命周期。
+    try:
+        outcome.reply = await _generate_native_reply(session, task, outcome)
+    except Exception as error:
+        outcome.operational_error = _safe_error(error)
+    finally:
+        outcome.cleanup_errors = await _close_native_session(session)
+
+    source_after = probe_data_sha256(data)
+    upstream_success = bool(outcome.reply is not None and outcome.reply.success)
+    publication = probe_publication(
+        session.guard, upstream_success and outcome.operational_error is None
+    )
+    if source_before != source_after:
+        publication.update(
+            status="unverified", rows=None, verified_sql=None, error_code="SOURCE_DATA_CHANGED"
+        )
+    return _native_record(
+        session,
+        outcome,
+        mode=mode,
+        seed=seed,
+        feedback_policy=feedback_policy,
+        upstream_check=upstream_check,
+        publication=publication,
+        source_before=source_before,
+        source_after=source_after,
+    )

@@ -9,16 +9,20 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from dataverify.database import seed_demo_database
 from dataverify.dbgpt_bridge import (
-    BAD_ORDER_SUM, GOOD_LINE_JOIN, GOOD_ORDER_SUM, UPSTREAM_COMMIT,
-    run_native_case, sql_candidate,
+    BAD_ORDER_SUM,
+    GOOD_LINE_JOIN,
+    GOOD_ORDER_SUM,
+    UPSTREAM_COMMIT,
+    run_native_case,
+    sql_candidate,
 )
 from dataverify.guarded_task import ConfirmedMetricTask
 
@@ -38,24 +42,40 @@ async def validate(output: Path):
     records = {}
     for mode in ("original", "code", "evidence"):
         records[mode] = await run_native_case(
-            database, order_task, [bad, good], mode=mode, output_dir=output / "runtime",
+            database,
+            order_task,
+            [bad, good],
+            mode=mode,
+            output_dir=output / "runtime",
         )
     records["valid_detail_join"] = await run_native_case(
-        database, line_task, [sql_candidate(GOOD_LINE_JOIN, "line_revenue")],
+        database,
+        line_task,
+        [sql_candidate(GOOD_LINE_JOIN, "line_revenue")],
         output_dir=output / "runtime",
     )
     records["metric_drift"] = await run_native_case(
-        database, order_task, [sql_candidate(GOOD_LINE_JOIN, "line_revenue"), good],
+        database,
+        order_task,
+        [sql_candidate(GOOD_LINE_JOIN, "line_revenue"), good],
         output_dir=output / "runtime",
     )
     records["retry_exhausted"] = await run_native_case(
-        database, order_task, [bad, bad], output_dir=output / "runtime",
+        database,
+        order_task,
+        [bad, bad],
+        output_dir=output / "runtime",
     )
     records["malformed_output"] = await run_native_case(
-        database, order_task, ["not JSON", good], output_dir=output / "runtime",
+        database,
+        order_task,
+        ["not JSON", good],
+        output_dir=output / "runtime",
     )
     # Retain raw observations even when an assertion catches an integration bug.
-    (output / "native_traces.json").write_text(json.dumps(records, ensure_ascii=False, indent=2), encoding="utf-8")
+    (output / "native_traces.json").write_text(
+        json.dumps(records, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     original = records["original"]
     original_action = original["native_reply"]["action_report"]
@@ -102,8 +122,12 @@ async def validate(output: Path):
             name: {
                 "upstream_success": record["upstream_success"],
                 "llm_calls": record["llm_calls"],
-                "published_value": record["publication"]["accepted_value"] if record["publication"] else None,
-                "first_rejection": record["actions"][0].get("error_code") if record["actions"] else None,
+                "published_value": record["publication"]["accepted_value"]
+                if record["publication"]
+                else None,
+                "first_rejection": record["actions"][0].get("error_code")
+                if record["actions"]
+                else None,
             }
             for name, record in records.items()
         },
@@ -130,8 +154,13 @@ if __name__ == "__main__":
     try:
         asyncio.run(validate(args.output.resolve()))
     except Exception as error:
-        write_summary(args.output.resolve(), {
-            "status": "failed", "all_checks_passed": False,
-            "error_type": type(error).__name__, "error": str(error)[:1000],
-        })
+        write_summary(
+            args.output.resolve(),
+            {
+                "status": "failed",
+                "all_checks_passed": False,
+                "error_type": type(error).__name__,
+                "error": str(error)[:1000],
+            },
+        )
         raise

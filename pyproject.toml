@@ -1,0 +1,21 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = [
+    ".upstream",
+    ".venv*",
+    ".test-temp*",
+    "reports",
+    "release",
+    "tmp",
+    "examples/independent_holdout/initial_verifier",
+]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# CLI scripts establish their project import path before importing the package.
+"tools/*.py" = ["E402"]
+# Optional native dependencies are checked before their imports during collection.
+"tests/*.py" = ["E402"]

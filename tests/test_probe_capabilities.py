@@ -9,9 +9,9 @@ No credentials are read and no real model client is constructed.
 from __future__ import annotations
 
 import asyncio
+import json
 from copy import deepcopy
 from dataclasses import replace
-import json
 
 import pytest
 
@@ -21,16 +21,17 @@ from dataverify.probe_capabilities import POLICIES, repair_guidance, sql_capabil
 from dataverify.probe_guard import ProbeGuard, source_digest
 from dataverify.probe_runtime import ProbeData, ProbeTask, execute_sql, static_check
 
-
 TASK = ProbeTask(
     "capability-july-cancelled",
     "按订单累计七月已取消明细的净额，保留没有符合条件明细的订单与合法负金额。",
-    ("preserve_zero_orders",), output_kind="orders",
-    start="2026-07-01T00:00:00", end="2026-08-01T00:00:00", status="cancelled",
+    ("preserve_zero_orders",),
+    output_kind="orders",
+    start="2026-07-01T00:00:00",
+    end="2026-08-01T00:00:00",
+    status="cancelled",
 )
 DATA = ProbeData(
-    ((101, 999, "web"), (102, 0, None), (103, 88, "app"),
-     (104, 0, "web"), (105, 20, "app")),
+    ((101, 999, "web"), (102, 0, None), (103, 88, "app"), (104, 0, "web"), (105, 20, "app")),
     (
         (11, 101, 100, "cancelled", "2026-07-01T00:00:00"),
         (12, 101, -25, "cancelled", "2026-07-15T12:00:00"),
@@ -48,16 +49,15 @@ PREDICATES = (
 )
 GOOD = (
     "SELECT o.order_id, COALESCE(SUM(l.amount),0) FROM orders o "
-    "LEFT JOIN order_lines l ON o.order_id=l.order_id AND " + PREDICATES
-    + " GROUP BY o.order_id"
+    "LEFT JOIN order_lines l ON o.order_id=l.order_id AND " + PREDICATES + " GROUP BY o.order_id"
 )
 BAD_WHERE = (
     "SELECT o.order_id, COALESCE(SUM(l.amount),0) FROM orders o "
-    "LEFT JOIN order_lines l ON o.order_id=l.order_id WHERE " + PREDICATES
-    + " GROUP BY o.order_id"
+    "LEFT JOIN order_lines l ON o.order_id=l.order_id WHERE " + PREDICATES + " GROUP BY o.order_id"
 )
 CASE_AGGREGATE = (
-    "SELECT o.order_id, COALESCE(SUM(CASE WHEN " + PREDICATES
+    "SELECT o.order_id, COALESCE(SUM(CASE WHEN "
+    + PREDICATES
     + " THEN l.amount ELSE 0 END),0) FROM orders o "
     "LEFT JOIN order_lines l ON o.order_id=l.order_id GROUP BY o.order_id"
 )
@@ -108,8 +108,12 @@ def test_where_filter_that_discards_zero_orders_stays_rejected(policy):
 
 
 def test_v2_classifies_semantic_and_supported_syntax_repairs_separately():
-    semantic = ProbeGuard(TASK, DATA, feedback_policy="capability_v2").execute(BAD_WHERE, TASK.task_id)
-    syntax = ProbeGuard(TASK, DATA, feedback_policy="capability_v2").execute(CASE_AGGREGATE, TASK.task_id)
+    semantic = ProbeGuard(TASK, DATA, feedback_policy="capability_v2").execute(
+        BAD_WHERE, TASK.task_id
+    )
+    syntax = ProbeGuard(TASK, DATA, feedback_policy="capability_v2").execute(
+        CASE_AGGREGATE, TASK.task_id
+    )
     assert semantic["repair_guidance"]["classification"] == "task_requirement"
     assert syntax["repair_guidance"]["classification"] == "unsupported_syntax"
     for result in (semantic, syntax):
@@ -123,7 +127,9 @@ def test_v2_classifies_semantic_and_supported_syntax_repairs_separately():
 
 def test_legacy_keeps_previous_feedback_without_new_guidance():
     legacy = ProbeGuard(TASK, DATA, feedback_policy="legacy_v1").execute(BAD_WHERE, TASK.task_id)
-    enhanced = ProbeGuard(TASK, DATA, feedback_policy="capability_v2").execute(BAD_WHERE, TASK.task_id)
+    enhanced = ProbeGuard(TASK, DATA, feedback_policy="capability_v2").execute(
+        BAD_WHERE, TASK.task_id
+    )
     assert "repair_guidance" not in legacy
     # New instructions may help a future model turn, not change this verdict or
     # expose a different counterexample in the comparison arm.
@@ -157,15 +163,22 @@ def test_guidance_does_not_authorize_different_task_even_with_good_sql():
 
 
 @pytest.mark.parametrize("policy", POLICIES)
-@pytest.mark.parametrize("source", [
-    ProbeData((), ()),
-    ProbeData(((201, 100, "web"),),
-              ((201, 201, 100, "pending", "2026-07-15T12:00:00"),)),
-], ids=["empty-source", "no-eligible-lines"])
+@pytest.mark.parametrize(
+    "source",
+    [
+        ProbeData((), ()),
+        ProbeData(((201, 100, "web"),), ((201, 201, 100, "pending", "2026-07-15T12:00:00"),)),
+    ],
+    ids=["empty-source", "no-eligible-lines"],
+)
 def test_scalar_empty_result_never_publishes_null_as_a_verified_amount(policy, source):
-    scalar_task = replace(TASK, task_id="scalar-empty-case", question="七月已取消明细净额，无匹配时为零。",
-                          output_kind="scalar",
-                          properties=("exclude_end", "exclude_status", "include_start", "include_negative"))
+    scalar_task = replace(
+        TASK,
+        task_id="scalar-empty-case",
+        question="七月已取消明细净额，无匹配时为零。",
+        output_kind="scalar",
+        properties=("exclude_end", "exclude_status", "include_start", "include_negative"),
+    )
     naked_sum = "SELECT SUM(l.amount) FROM order_lines l WHERE " + PREDICATES
     guard = ProbeGuard(scalar_task, source, feedback_policy=policy)
     result = guard.execute(naked_sum, scalar_task.task_id)
@@ -175,15 +188,22 @@ def test_scalar_empty_result_never_publishes_null_as_a_verified_amount(policy, s
 
 
 @pytest.mark.parametrize("policy", POLICIES)
-@pytest.mark.parametrize("source", [
-    ProbeData((), ()),
-    ProbeData(((201, 100, "web"),),
-              ((201, 201, 100, "pending", "2026-07-15T12:00:00"),)),
-], ids=["empty-source", "no-eligible-lines"])
+@pytest.mark.parametrize(
+    "source",
+    [
+        ProbeData((), ()),
+        ProbeData(((201, 100, "web"),), ((201, 201, 100, "pending", "2026-07-15T12:00:00"),)),
+    ],
+    ids=["empty-source", "no-eligible-lines"],
+)
 def test_supported_scalar_zero_wrapper_accepts_empty_or_nonmatching_source(policy, source):
-    scalar_task = replace(TASK, task_id="scalar-zero-case", question="七月已取消明细净额，无匹配时为零。",
-                          output_kind="scalar",
-                          properties=("exclude_end", "exclude_status", "include_start", "include_negative"))
+    scalar_task = replace(
+        TASK,
+        task_id="scalar-zero-case",
+        question="七月已取消明细净额，无匹配时为零。",
+        output_kind="scalar",
+        properties=("exclude_end", "exclude_status", "include_start", "include_negative"),
+    )
     wrapped_sum = "SELECT COALESCE(SUM(l.amount),0) FROM order_lines l WHERE " + PREDICATES
     guard = ProbeGuard(scalar_task, source, feedback_policy=policy)
     result = guard.execute(wrapped_sum, scalar_task.task_id)
@@ -224,7 +244,12 @@ def test_unknown_feedback_policy_fails_before_any_action(policy):
 @pytest.fixture
 def native_types():
     pytest.importorskip("dbgpt", reason="Optional pinned DB-GPT runtime")
-    from dataverify.probe_agent_bridge import ProbeResource, probe_sql_candidate, run_probe_native_case
+    from dataverify.probe_agent_bridge import (
+        ProbeResource,
+        probe_sql_candidate,
+        run_probe_native_case,
+    )
+
     return ProbeResource, probe_sql_candidate, run_probe_native_case
 
 
@@ -260,10 +285,15 @@ def test_legacy_resource_contains_no_v2_contract(native_types):
 
 def test_native_retry_receives_guidance_without_reference_answer(native_types, tmp_path):
     _, candidate, run_native = native_types
-    record = asyncio.run(run_native(
-        TASK, DATA, feedback_policy="capability_v2", output_dir=tmp_path,
-        responses=[candidate(BAD_WHERE, TASK.task_id), candidate(GOOD, TASK.task_id)],
-    ))
+    record = asyncio.run(
+        run_native(
+            TASK,
+            DATA,
+            feedback_policy="capability_v2",
+            output_dir=tmp_path,
+            responses=[candidate(BAD_WHERE, TASK.task_id), candidate(GOOD, TASK.task_id)],
+        )
+    )
     assert record["feedback_policy"] == "capability_v2"
     assert record["publication"]["status"] == "verified"
     assert ordered(record["publication"]["rows"]) == EXPECTED

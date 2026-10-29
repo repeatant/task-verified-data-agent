@@ -11,26 +11,31 @@ resource is accepted, and candidate SQL runs only after a closed AST check.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from datetime import datetime
 import math
 import sqlite3
 import time
+from dataclasses import asdict, dataclass
+from datetime import datetime
 from typing import Any
 
 import sqlglot
 from sqlglot import expressions as exp
 from sqlglot.errors import ParseError, TokenError
 
-
 TABLE_SCHEMA = {
     "orders": ("order_id", "total", "channel"),
     "order_lines": ("line_id", "order_id", "amount", "status", "settled_at"),
 }
-PROPERTY_IDS = frozenset({
-    "exclude_end", "exclude_status", "include_start", "preserve_zero_orders",
-    "merge_other_channels", "include_negative",
-})
+PROPERTY_IDS = frozenset(
+    {
+        "exclude_end",
+        "exclude_status",
+        "include_start",
+        "preserve_zero_orders",
+        "merge_other_channels",
+        "include_negative",
+    }
+)
 STATUSES = frozenset({"settled", "pending", "cancelled"})
 _MAX_ROWS = 1_000
 _MAX_INT = 1_000_000_000
@@ -77,7 +82,9 @@ class ProbeData:
                 raise ValueError("orders.order_id must be a unique positive integer")
             if not _integer(total):
                 raise ValueError("orders.total must be a bounded integer amount")
-            if channel is not None and (type(channel) is not str or not channel or len(channel) > 80):
+            if channel is not None and (
+                type(channel) is not str or not channel or len(channel) > 80
+            ):
                 raise ValueError("orders.channel must be NULL or a nonempty short string")
             keys.add(order_id)
         line_keys: set[int] = set()
@@ -95,7 +102,10 @@ class ProbeData:
             line_keys.add(line_id)
 
     def to_dict(self) -> dict[str, list[list[Any]]]:
-        return {"orders": [list(row) for row in self.orders], "lines": [list(row) for row in self.lines]}
+        return {
+            "orders": [list(row) for row in self.orders],
+            "lines": [list(row) for row in self.lines],
+        }
 
 
 @dataclass(frozen=True)
@@ -146,7 +156,10 @@ class ProbeTask:
         return result
 
     def public_input(self) -> dict[str, Any]:
-        return {"task": self.to_dict(), "schema": {name: list(cols) for name, cols in TABLE_SCHEMA.items()}}
+        return {
+            "task": self.to_dict(),
+            "schema": {name: list(cols) for name, cols in TABLE_SCHEMA.items()},
+        }
 
 
 class _Rejected(ValueError):
@@ -160,7 +173,11 @@ def _reject(code: str, message: str) -> None:
 
 
 def _only(node: exp.Expression, allowed: set[str]) -> None:
-    extras = [key for key, value in node.args.items() if value not in (None, False, [], "") and key not in allowed]
+    extras = [
+        key
+        for key, value in node.args.items()
+        if value not in (None, False, [], "") and key not in allowed
+    ]
     if extras:
         _reject("UNSUPPORTED_SQL", f"Unsupported {node.key} options: {', '.join(extras)}")
 
@@ -181,7 +198,9 @@ def _binding(node: exp.Expression) -> tuple[str, str]:
         _reject("UNKNOWN_TABLE", "Table is not registered")
     alias_node = node.args.get("alias")
     if alias_node is not None:
-        if not isinstance(alias_node, exp.TableAlias) or not isinstance(alias_node.this, exp.Identifier):
+        if not isinstance(alias_node, exp.TableAlias) or not isinstance(
+            alias_node.this, exp.Identifier
+        ):
             _reject("UNSUPPORTED_ALIAS", "Only ordinary aliases are supported")
         _only(alias_node, {"this"})
     return (alias_node.name if alias_node else node.name).casefold(), name
@@ -234,23 +253,41 @@ def _flatten(node: exp.Expression) -> list[exp.Expression]:
     return [node]
 
 
-_OP_NAMES = {exp.EQ: "eq", exp.NEQ: "neq", exp.GT: "gt", exp.GTE: "gte", exp.LT: "lt", exp.LTE: "lte", exp.Is: "is"}
+_OP_NAMES = {
+    exp.EQ: "eq",
+    exp.NEQ: "neq",
+    exp.GT: "gt",
+    exp.GTE: "gte",
+    exp.LT: "lt",
+    exp.LTE: "lte",
+    exp.Is: "is",
+}
 _REVERSED = {"eq": "eq", "neq": "neq", "gt": "lt", "gte": "lte", "lt": "gt", "lte": "gte"}
 
 
-def _predicates(node: exp.Expression, bindings: dict[str, str], *, join: bool = False) -> tuple[list[dict[str, Any]], int]:
+def _predicates(
+    node: exp.Expression, bindings: dict[str, str], *, join: bool = False
+) -> tuple[list[dict[str, Any]], int]:
     predicates: list[dict[str, Any]] = []
     key_equalities = 0
     for atom in _flatten(node):
         op = _OP_NAMES.get(type(atom))
         if op is None:
-            _reject("UNSUPPORTED_PREDICATE", "Only AND of direct comparisons and IS NULL is supported")
+            _reject(
+                "UNSUPPORTED_PREDICATE", "Only AND of direct comparisons and IS NULL is supported"
+            )
         _only(atom, {"this", "expression"})
         left, right = atom.this, atom.expression
         if isinstance(left, exp.Column) and isinstance(right, exp.Column):
             pair = {_column(left, bindings), _column(right, bindings)}
-            if not join or op != "eq" or pair != {("orders", "order_id"), ("order_lines", "order_id")}:
-                _reject("UNREGISTERED_RELATION", "Only the registered order key equality is supported")
+            if (
+                not join
+                or op != "eq"
+                or pair != {("orders", "order_id"), ("order_lines", "order_id")}
+            ):
+                _reject(
+                    "UNREGISTERED_RELATION", "Only the registered order key equality is supported"
+                )
             key_equalities += 1
             continue
         if not isinstance(left, exp.Column):
@@ -266,7 +303,9 @@ def _predicates(node: exp.Expression, bindings: dict[str, str], *, join: bool = 
         if value is not None:
             text_column = column in {"channel", "status", "settled_at"}
             if text_column != (type(value) is str):
-                _reject("PREDICATE_TYPE_MISMATCH", "Predicate literal type does not match its field")
+                _reject(
+                    "PREDICATE_TYPE_MISMATCH", "Predicate literal type does not match its field"
+                )
             if column == "settled_at" and not _iso_second(value):
                 _reject("INVALID_TIME_LITERAL", "Date comparisons require canonical ISO seconds")
             if column == "status" and value not in STATUSES:
@@ -325,29 +364,34 @@ def _schema_implies_predicate(predicate: dict[str, Any]) -> bool:
     on a driving table, or a legitimate match witness on the nullable side of
     LEFT JOIN. Its placement still matters; it is not globally true after JOIN.
     """
-    field = (predicate['table'], predicate['column'])
+    field = (predicate["table"], predicate["column"])
     bounds = {
-        ('orders','order_id'):(1,_MAX_INT),
-        ('order_lines','order_id'):(1,_MAX_INT),
-        ('order_lines','line_id'):(1,_MAX_INT),
-        ('orders','total'):(-_MAX_INT,_MAX_INT),
-        ('order_lines','amount'):(-_MAX_INT,_MAX_INT),
+        ("orders", "order_id"): (1, _MAX_INT),
+        ("order_lines", "order_id"): (1, _MAX_INT),
+        ("order_lines", "line_id"): (1, _MAX_INT),
+        ("orders", "total"): (-_MAX_INT, _MAX_INT),
+        ("order_lines", "amount"): (-_MAX_INT, _MAX_INT),
     }
-    value, operator = predicate['value'], predicate['op']
+    value, operator = predicate["value"], predicate["op"]
     if field not in bounds or type(value) is not int:
         return False
     low, high = bounds[field]
     return {
-        'eq':low == high == value,
-        'neq':value < low or value > high,
-        'gt':low > value, 'gte':low >= value,
-        'lt':high < value, 'lte':high <= value,
+        "eq": low == high == value,
+        "neq": value < low or value > high,
+        "gt": low > value,
+        "gte": low >= value,
+        "lt": high < value,
+        "lte": high <= value,
     }.get(operator, False)
 
 
 def _null_rejecting_on(predicate: dict[str, Any], table: str) -> bool:
-    return (predicate['table'] == table and predicate['value'] is not None
-            and predicate['op'] in {'eq','neq','gt','gte','lt','lte'})
+    return (
+        predicate["table"] == table
+        and predicate["value"] is not None
+        and predicate["op"] in {"eq", "neq", "gt", "gte", "lt", "lte"}
+    )
 
 
 def _semantics(task: ProbeTask, features: dict[str, Any]) -> None:
@@ -372,14 +416,19 @@ def _semantics(task: ProbeTask, features: dict[str, Any]) -> None:
     if "preserve_zero_orders" in task.properties:
         if features["join_type"] != "left" or features["first_table"] != "orders":
             _reject("ZERO_ORDER_COVERAGE", "All orders require orders LEFT JOIN order_lines")
-        if any(p['table'] != 'orders' or not _schema_implies_predicate(p)
-               for p in features["where_predicates"]):
+        if any(
+            p["table"] != "orders" or not _schema_implies_predicate(p)
+            for p in features["where_predicates"]
+        ):
             _reject("ZERO_ORDER_WHERE_FILTER", "WHERE filtering may remove required zero orders")
         if not features["zero_default"]:
             _reject("MISSING_ZERO_DEFAULT", "Zero-order output requires COALESCE(SUM(amount),0)")
     if "merge_other_channels" in task.properties:
         if features["group_signature"] != ("orders", "channel", task.other_label):
-            _reject("CHANNEL_NORMALIZATION", "NULL and the declared other channel must be grouped together")
+            _reject(
+                "CHANNEL_NORMALIZATION",
+                "NULL and the declared other channel must be grouped together",
+            )
     if "include_negative" in task.properties and any(
         (p["table"], p["column"]) == ("order_lines", "amount") and not _schema_implies_predicate(p)
         for p in predicates
@@ -389,34 +438,50 @@ def _semantics(task: ProbeTask, features: dict[str, Any]) -> None:
     # channel/ID/amount restrictions. Correct required predicates do not make
     # extra predicates legitimate: they can silently narrow the task universe.
     allowed_scope_fields = {("order_lines", "status"), ("order_lines", "settled_at")}
-    if any((p["table"], p["column"]) not in allowed_scope_fields and not _schema_implies_predicate(p)
-           for p in predicates):
-        _reject("UNDECLARED_SCOPE_FILTER", "An eligibility filter was not confirmed by the caller; preserve the full task population")
+    if any(
+        (p["table"], p["column"]) not in allowed_scope_fields and not _schema_implies_predicate(p)
+        for p in predicates
+    ):
+        _reject(
+            "UNDECLARED_SCOPE_FILTER",
+            "An eligibility filter was not confirmed by the caller; preserve the full task population",
+        )
     if features["join_type"] == "left" and features["first_table"] == "order_lines":
         # ON only determines the optional parent match. It does not discard
         # ineligible driving child rows, even when every FK is valid.
-        where_facts = {(p["table"], p["column"], p["op"], p["value"])
-                       for p in features["where_predicates"]}
-        required = {("order_lines", "status", "eq", task.status),
-                    ("order_lines", "settled_at", "gte", task.start),
-                    ("order_lines", "settled_at", "lt", task.end)}
-        matched_parent = any(_null_rejecting_on(p, 'orders') for p in features['where_predicates'])
+        where_facts = {
+            (p["table"], p["column"], p["op"], p["value"]) for p in features["where_predicates"]
+        }
+        required = {
+            ("order_lines", "status", "eq", task.status),
+            ("order_lines", "settled_at", "gte", task.start),
+            ("order_lines", "settled_at", "lt", task.end),
+        }
+        matched_parent = any(_null_rejecting_on(p, "orders") for p in features["where_predicates"])
         if not required.issubset(where_facts) and not matched_parent:
-            _reject("FILTER_PLACEMENT_MISMATCH", "LEFT JOIN preserves driving line rows; their confirmed eligibility filters must apply in WHERE")
-    if (task.output_kind == "channels" and features["join_type"] == "left"
-            and features["first_table"] == "orders"
-            and not any(_null_rejecting_on(p, 'order_lines') for p in features["where_predicates"])):
+            _reject(
+                "FILTER_PLACEMENT_MISMATCH",
+                "LEFT JOIN preserves driving line rows; their confirmed eligibility filters must apply in WHERE",
+            )
+    if (
+        task.output_kind == "channels"
+        and features["join_type"] == "left"
+        and features["first_table"] == "orders"
+        and not any(_null_rejecting_on(p, "order_lines") for p in features["where_predicates"])
+    ):
         # A legitimate zero-sum group has eligible line rows. Parent-only
         # channels are not groups in this task, regardless of COALESCE(0).
         # Keep equivalent LEFT+WHERE forms: confirmed child comparisons are
         # null-rejecting, so they remove unmatched parents without dropping
         # genuine zero-amount lines.
-        _reject("UNMATCHED_GROUP_COVERAGE", "Channel output requires an eligible line; unmatched parents must not create zero-valued groups")
+        _reject(
+            "UNMATCHED_GROUP_COVERAGE",
+            "Channel output requires an eligible line; unmatched parents must not create zero-valued groups",
+        )
 
 
-def _analyse(sql: str, task: ProbeTask, *, static_semantics: bool) -> tuple[str, dict[str, Any]]:
-    if not isinstance(task, ProbeTask):
-        _reject("INVALID_TASK", "Expected a confirmed ProbeTask")
+def _parse_select(sql: str) -> exp.Select:
+    """Parse exactly one SELECT within the closed execution grammar."""
     if type(sql) is not str or not sql.strip() or len(sql) > _MAX_SQL:
         _reject("INVALID_SQL", "Expected one nonempty bounded SQL string")
     try:
@@ -429,6 +494,11 @@ def _analyse(sql: str, task: ProbeTask, *, static_semantics: bool) -> tuple[str,
     if not isinstance(tree, exp.Select):
         _reject("SQL_NOT_READ_ONLY", "Only a supported SELECT is allowed")
     _only(tree, {"expressions", "from_", "joins", "where", "group"})
+    return tree
+
+
+def _analyse_relations(tree: exp.Select) -> tuple[dict[str, str], str, str, list[dict[str, Any]]]:
+    """Resolve aliases and validate the single registered parent/child join."""
     source = tree.args.get("from_")
     if not isinstance(source, exp.From):
         _reject("MISSING_SOURCE", "FROM is required")
@@ -458,6 +528,11 @@ def _analyse(sql: str, task: ProbeTask, *, static_semantics: bool) -> tuple[str,
         join_type = "left" if side == "LEFT" else "inner"
     if "order_lines" not in bindings.values():
         _reject("METRIC_SOURCE_MISMATCH", "The line amount source is required")
+    return bindings, first, join_type, on_predicates
+
+
+def _analyse_where(tree: exp.Select, bindings: dict[str, str]) -> list[dict[str, Any]]:
+    """Collect supported WHERE predicates after table names are resolved."""
     where = tree.args.get("where")
     where_predicates: list[dict[str, Any]] = []
     if where is not None:
@@ -465,6 +540,15 @@ def _analyse(sql: str, task: ProbeTask, *, static_semantics: bool) -> tuple[str,
             _reject("UNSUPPORTED_PREDICATE", "Invalid WHERE")
         _only(where, {"this"})
         where_predicates, _ = _predicates(where.this, bindings)
+    return where_predicates
+
+
+def _analyse_projection(
+    tree: exp.Select,
+    bindings: dict[str, str],
+    task: ProbeTask,
+) -> tuple[bool, tuple | None]:
+    """Match the projected measure and grouping key to the confirmed task."""
     group = tree.args.get("group")
     group_signature = None
     if task.output_kind == "scalar":
@@ -486,11 +570,28 @@ def _analyse(sql: str, task: ProbeTask, *, static_semantics: bool) -> tuple[str,
             _reject("OUTPUT_SHAPE_MISMATCH", "Output key does not match the confirmed task")
         group_signature = grouped
         zero_default = _aggregate(tree.expressions[1], bindings)
+    return zero_default, group_signature
+
+
+def _analyse(sql: str, task: ProbeTask, *, static_semantics: bool) -> tuple[str, dict[str, Any]]:
+    """Read SQL in stages: syntax, relations, filters, output, task semantics."""
+    if not isinstance(task, ProbeTask):
+        _reject("INVALID_TASK", "Expected a confirmed ProbeTask")
+    tree = _parse_select(sql)
+    bindings, first, join_type, on_predicates = _analyse_relations(tree)
+    where_predicates = _analyse_where(tree, bindings)
+    zero_default, group_signature = _analyse_projection(tree, bindings, task)
+    where = tree.args.get("where")
     features = {
-        "tables": list(bindings.values()), "first_table": first, "join_type": join_type,
-        "has_where": where is not None, "predicates": on_predicates + where_predicates,
-        "where_predicates": where_predicates, "group_signature": group_signature,
-        "zero_default": zero_default, "output_kind": task.output_kind,
+        "tables": list(bindings.values()),
+        "first_table": first,
+        "join_type": join_type,
+        "has_where": where is not None,
+        "predicates": on_predicates + where_predicates,
+        "where_predicates": where_predicates,
+        "group_signature": group_signature,
+        "zero_default": zero_default,
+        "output_kind": task.output_kind,
         "static_semantics": static_semantics,
     }
     if static_semantics:
@@ -510,10 +611,17 @@ def static_check(sql: str, task: ProbeTask, *, static_semantics: bool = True) ->
     except _Rejected as exc:
         return {"accepted": False, "code": exc.code, "message": str(exc), "features": {}}
     except (ValueError, TypeError, AttributeError, RecursionError):
-        return {"accepted": False, "code": "INVALID_SQL_STRUCTURE", "message": "Unsupported SQL structure", "features": {}}
+        return {
+            "accepted": False,
+            "code": "INVALID_SQL_STRUCTURE",
+            "message": "Unsupported SQL structure",
+            "features": {},
+        }
 
 
-def execute_sql(sql: str, data: ProbeData, task: ProbeTask, *, static_semantics: bool = True) -> dict[str, Any]:
+def execute_sql(
+    sql: str, data: ProbeData, task: ProbeTask, *, static_semantics: bool = True
+) -> dict[str, Any]:
     """Execute one accepted candidate on an isolated, legal in-memory fixture."""
     result: dict[str, Any] = {"status": "blocked", "code": None, "columns": [], "rows": []}
     if not isinstance(data, ProbeData):
@@ -528,8 +636,12 @@ def execute_sql(sql: str, data: ProbeData, task: ProbeTask, *, static_semantics:
     query_budget_exceeded = False
     try:
         connection.execute("PRAGMA foreign_keys=ON")
-        connection.execute("CREATE TABLE orders(order_id INTEGER PRIMARY KEY, total INTEGER NOT NULL, channel TEXT)")
-        connection.execute("CREATE TABLE order_lines(line_id INTEGER PRIMARY KEY, order_id INTEGER NOT NULL REFERENCES orders(order_id), amount INTEGER NOT NULL, status TEXT NOT NULL CHECK(status IN ('settled','pending','cancelled')), settled_at TEXT NOT NULL)")
+        connection.execute(
+            "CREATE TABLE orders(order_id INTEGER PRIMARY KEY, total INTEGER NOT NULL, channel TEXT)"
+        )
+        connection.execute(
+            "CREATE TABLE order_lines(line_id INTEGER PRIMARY KEY, order_id INTEGER NOT NULL REFERENCES orders(order_id), amount INTEGER NOT NULL, status TEXT NOT NULL CHECK(status IN ('settled','pending','cancelled')), settled_at TEXT NOT NULL)"
+        )
         connection.executemany("INSERT INTO orders VALUES (?,?,?)", data.orders)
         connection.executemany("INSERT INTO order_lines VALUES (?,?,?,?,?)", data.lines)
         connection.commit()
@@ -545,15 +657,26 @@ def execute_sql(sql: str, data: ProbeData, task: ProbeTask, *, static_semantics:
             query_budget_exceeded = callbacks > 100 or time.monotonic() > deadline
             return int(query_budget_exceeded)
 
-        def authorize(action: int, table: str | None, column: str | None, database: str | None, trigger: str | None) -> int:
+        def authorize(
+            action: int,
+            table: str | None,
+            column: str | None,
+            database: str | None,
+            trigger: str | None,
+        ) -> int:
             if action == sqlite3.SQLITE_SELECT:
                 return sqlite3.SQLITE_OK
             if action == sqlite3.SQLITE_READ and table in TABLE_SCHEMA:
                 # Some SQLite versions report a registered-table row scan
                 # (not a system-table read) with an empty column and no DB.
-                if (database == "main" and column in TABLE_SCHEMA[table]) or (database in {"main", None} and column == ""):
+                if (database == "main" and column in TABLE_SCHEMA[table]) or (
+                    database in {"main", None} and column == ""
+                ):
                     return sqlite3.SQLITE_OK
-            if action == sqlite3.SQLITE_FUNCTION and (column or "").casefold() in {"sum", "coalesce"}:
+            if action == sqlite3.SQLITE_FUNCTION and (column or "").casefold() in {
+                "sum",
+                "coalesce",
+            }:
                 return sqlite3.SQLITE_OK
             return sqlite3.SQLITE_DENY
 

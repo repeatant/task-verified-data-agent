@@ -1,18 +1,24 @@
 """Frozen DB-GPT tasks keep target truth outside every model's prompt."""
 
-from collections import defaultdict
-from dataclasses import FrozenInstanceError, replace
 import json
-from pathlib import Path
 import sqlite3
 import subprocess
 import sys
+from collections import defaultdict
+from dataclasses import FrozenInstanceError, replace
+from pathlib import Path
 
 import pytest
 
 from dataverify import benchmark_tasks
 from dataverify.benchmark_tasks import (
-    TASKS, Fixture, candidate_expectation, get_task, get_tasks, manifest, oracle,
+    TASKS,
+    Fixture,
+    candidate_expectation,
+    get_task,
+    get_tasks,
+    manifest,
+    oracle,
     write_fixture,
 )
 
@@ -23,8 +29,15 @@ def test_suite_is_small_disclosed_development_data():
     assert len(get_tasks("controlled")) == 10
     assert all(task.split == "development" for task in TASKS)
     assert len({task.task_id for task in TASKS}) == len(TASKS)
-    assert len({(task.initial_candidate["sql"], task.initial_candidate["metric_id"])
-                for task in get_tasks("controlled")}) == 6
+    assert (
+        len(
+            {
+                (task.initial_candidate["sql"], task.initial_candidate["metric_id"])
+                for task in get_tasks("controlled")
+            }
+        )
+        == 6
+    )
     with pytest.raises(ValueError, match="development"):
         replace(TASKS[0], split="held_out")
     with pytest.raises(ValueError):
@@ -33,16 +46,28 @@ def test_suite_is_small_disclosed_development_data():
         get_task("unknown")
 
 
-@pytest.mark.parametrize("task_id,total,rows", [
-    ("n01", 300.0, 3), ("n02", 300.0, 3), ("n03", 300.0, 3),
-    ("n04", 355.0, 5), ("c02", 300.0, 3), ("c03", 300.0, 3),
-    ("c05", 330.0, 4), ("c06", 355.0, 5), ("c08", 300.0, 3),
-])
+@pytest.mark.parametrize(
+    "task_id,total,rows",
+    [
+        ("n01", 300.0, 3),
+        ("n02", 300.0, 3),
+        ("n03", 300.0, 3),
+        ("n04", 355.0, 5),
+        ("c02", 300.0, 3),
+        ("c03", 300.0, 3),
+        ("c05", 330.0, 4),
+        ("c06", 355.0, 5),
+        ("c08", 300.0, 3),
+    ],
+)
 def test_record_oracle_keeps_all_target_grains(task_id, total, rows):
     expected = oracle(get_task(task_id))
     assert expected == {
-        "target_defined": True, "metric_value": total,
-        "source_rows": rows, "source_grains": rows, "reason": None,
+        "target_defined": True,
+        "metric_value": total,
+        "source_rows": rows,
+        "source_grains": rows,
+        "reason": None,
     }
 
 
@@ -55,15 +80,23 @@ from dataverify.benchmark_tasks import TASKS, oracle
 assert oracle(TASKS[0])['metric_value'] == 300.0
 """
     process = subprocess.run(
-        [sys.executable, "-c", script], cwd=Path(__file__).resolve().parents[1],
-        capture_output=True, text=True, encoding="utf-8", timeout=15,
+        [sys.executable, "-c", script],
+        cwd=Path(__file__).resolve().parents[1],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=15,
     )
     assert process.returncode == 0, process.stderr
 
 
-@pytest.mark.parametrize("task_id,reason", [
-    ("c09", "invalid_source_grain"), ("c10", "invalid_measure_value"),
-])
+@pytest.mark.parametrize(
+    "task_id,reason",
+    [
+        ("c09", "invalid_source_grain"),
+        ("c10", "invalid_measure_value"),
+    ],
+)
 def test_damaged_frozen_data_has_no_target_answer(task_id, reason):
     task = get_task(task_id)
     expected = oracle(task)
@@ -73,18 +106,21 @@ def test_damaged_frozen_data_has_no_target_answer(task_id, reason):
     assert candidate_expectation(task)["should_accept"] is False
 
 
-@pytest.mark.parametrize("orders,reason", [
-    ((), "empty_source"),
-    (((None, 1.0),), "invalid_source_grain"),
-    (((1, 1.0), (1, 2.0)), "invalid_source_grain"),
-    (((1, None),), "invalid_measure_value"),
-    (((1, "1.0"),), "invalid_measure_value"),
-    (((1, True),), "invalid_measure_value"),
-    (((1, float("nan")),), "invalid_measure_value"),
-    (((1, float("inf")),), "invalid_measure_value"),
-    (((1, 10 ** 400),), "invalid_measure_value"),
-    (((1, 1e308), (2, 1e308)), "nonfinite_total"),
-])
+@pytest.mark.parametrize(
+    "orders,reason",
+    [
+        ((), "empty_source"),
+        (((None, 1.0),), "invalid_source_grain"),
+        (((1, 1.0), (1, 2.0)), "invalid_source_grain"),
+        (((1, None),), "invalid_measure_value"),
+        (((1, "1.0"),), "invalid_measure_value"),
+        (((1, True),), "invalid_measure_value"),
+        (((1, float("nan")),), "invalid_measure_value"),
+        (((1, float("inf")),), "invalid_measure_value"),
+        (((1, 10**400),), "invalid_measure_value"),
+        (((1, 1e308), (2, 1e308)), "nonfinite_total"),
+    ],
+)
 def test_oracle_fails_closed_for_undefined_source(orders, reason):
     task = replace(TASKS[0], fixture=Fixture(orders, ()))
     expected = oracle(task)
@@ -127,7 +163,16 @@ def test_public_input_is_an_allowlist_without_answers_or_fixture_labels():
             "confirmed_metric_id": task.confirmed_metric_id,
         }
         serialized = json.dumps(public, ensure_ascii=False)
-        for private in ("expected", "metric_value", "fixture", "pair_id", "initial_candidate", "task_id", "300", "355"):
+        for private in (
+            "expected",
+            "metric_value",
+            "fixture",
+            "pair_id",
+            "initial_candidate",
+            "task_id",
+            "300",
+            "355",
+        ):
             assert private not in serialized
         for fault_or_repair in ("fanout", "DISTINCT", "SUM(", "孤儿", "损坏", "去重", "缺失"):
             assert fault_or_repair not in serialized
@@ -158,11 +203,18 @@ def test_metamorphic_pairs_keep_candidate_and_question_fixed():
 
 def test_equal_totals_do_not_make_wrong_source_or_value_distinct_valid():
     source_swap = get_task("c07")
-    assert sum(row[1] for row in source_swap.fixture.orders) == sum(row[2] for row in source_swap.fixture.lines)
+    assert sum(row[1] for row in source_swap.fixture.orders) == sum(
+        row[2] for row in source_swap.fixture.lines
+    )
     assert candidate_expectation(source_swap)["candidate_reason"] == "metric_source_mismatch"
     for task_id in ("c03", "c04"):
-        assert candidate_expectation(get_task(task_id))["candidate_reason"] == "value_distinct_not_grain"
-    distinct_totals = [sum({row[1] for row in get_task(task_id).fixture.orders}) for task_id in ("c03", "c04")]
+        assert (
+            candidate_expectation(get_task(task_id))["candidate_reason"]
+            == "value_distinct_not_grain"
+        )
+    distinct_totals = [
+        sum({row[1] for row in get_task(task_id).fixture.orders}) for task_id in ("c03", "c04")
+    ]
     assert distinct_totals == [100.0, 300.0]
 
 

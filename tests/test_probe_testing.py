@@ -1,16 +1,24 @@
-from dataclasses import replace
 import json
+from dataclasses import replace
 
 import pytest
 
-pytest.importorskip("hypothesis", reason="optional probe experiment requires requirements-probes.txt")
+pytest.importorskip(
+    "hypothesis", reason="optional probe experiment requires requirements-probes.txt"
+)
 from hypothesis import find, settings
 
 from dataverify.probe_cases import get_case
 from dataverify.probe_runtime import ProbeData
 from dataverify.probe_testing import (
-    ExecutionBudget, ProbeBudgetExceeded, ProbePair, _equal, evaluate_pair,
-    pair_strategy, probe_candidate, rank_properties,
+    ExecutionBudget,
+    ProbeBudgetExceeded,
+    ProbePair,
+    _equal,
+    evaluate_pair,
+    pair_strategy,
+    probe_candidate,
+    rank_properties,
 )
 
 
@@ -48,7 +56,9 @@ def test_query_budget_is_global_across_generation_and_shrinking():
     assert not report["acceptance"]
 
 
-@pytest.mark.parametrize("queries,seconds", [(1, 3), (True, 3), (2001, 3), (3, 0), (3, float("nan"))])
+@pytest.mark.parametrize(
+    "queries,seconds", [(1, 3), (True, 3), (2001, 3), (3, 0), (3, float("nan"))]
+)
 def test_invalid_budget_rejected(queries, seconds):
     with pytest.raises(ValueError):
         ExecutionBudget(queries, seconds)
@@ -74,8 +84,11 @@ def test_task_condition_absent_from_ast_still_selects_status_probe():
 
 def test_pair_generation_has_valid_parent_child_keys_and_stable_seed_inputs():
     case = get_case("d06")
-    pair = find(pair_strategy(case.task, "exclude_end"), lambda value: True,
-                settings=settings(database=None, deadline=None))
+    pair = find(
+        pair_strategy(case.task, "exclude_end"),
+        lambda value: True,
+        settings=settings(database=None, deadline=None),
+    )
     ids = {row[0] for row in pair.followup.orders}
     assert all(row[1] in ids for row in pair.followup.lines)
     assert pair.added_lines[0][4] == case.task.end
@@ -84,9 +97,11 @@ def test_pair_generation_has_valid_parent_child_keys_and_stable_seed_inputs():
 
 def test_status_probe_can_generate_cancelled_not_just_pending():
     case = get_case("d14")
-    pair = find(pair_strategy(case.task, "exclude_status"),
-                lambda value: value.added_lines[0][3] == "cancelled",
-                settings=settings(database=None, deadline=None))
+    pair = find(
+        pair_strategy(case.task, "exclude_status"),
+        lambda value: value.added_lines[0][3] == "cancelled",
+        settings=settings(database=None, deadline=None),
+    )
     verdict = evaluate_pair(case.candidate_sql, case.task, pair, ExecutionBudget())
     assert verdict["failure_type"] == "PROPERTY_EXCLUDE_STATUS"
 
@@ -99,8 +114,9 @@ def test_invalid_pair_cannot_become_counterexample():
 
 def test_empty_base_is_not_original_failure():
     case = get_case("d06")
-    pair = ProbePair("exclude_end", ProbeData((), ()),
-                     ((2, 1, "web"),), ((2, 2, 1, "settled", case.task.end),))
+    pair = ProbePair(
+        "exclude_end", ProbeData((), ()), ((2, 1, "web"),), ((2, 2, 1, "settled", case.task.end),)
+    )
     verdict = evaluate_pair(case.candidate_sql, case.task, pair, ExecutionBudget())
     assert verdict["status"] == "not_applicable"
 
@@ -108,8 +124,12 @@ def test_empty_base_is_not_original_failure():
 def test_invalid_transformation_cannot_falsely_reject_correct_query():
     case = get_case("d01")
     # Label says excluded upper boundary, but this row is actually eligible.
-    pair = ProbePair("exclude_end", case.source,
-                     ((3, 1, "web"),), ((30, 3, 1, "settled", "2026-09-20T00:00:00"),))
+    pair = ProbePair(
+        "exclude_end",
+        case.source,
+        ((3, 1, "web"),),
+        ((30, 3, 1, "settled", "2026-09-20T00:00:00"),),
+    )
     budget = ExecutionBudget()
     assert evaluate_pair(case.candidate_sql, case.task, pair, budget)["status"] == "not_applicable"
     assert budget.queries == 0

@@ -1,15 +1,14 @@
 """Task identity and final-output boundaries, using real read-only SQL checks."""
 
+import sqlite3
 from contextlib import closing
 from dataclasses import FrozenInstanceError
-import sqlite3
 
 import pytest
 
 from dataverify.checker import CheckedQueryExecutor
 from dataverify.database import database_sha256
 from dataverify.guarded_task import ConfirmedMetricTask, GuardedTaskExecutor
-
 
 ORDER_SQL = "SELECT SUM(total) FROM orders"
 LINE_SQL = "SELECT SUM(amount) FROM order_lines"
@@ -31,11 +30,18 @@ def database(tmp_path):
     return path
 
 
-@pytest.mark.parametrize("question,metric", [
-    ("", "order_revenue"), ("  \n", "order_revenue"),
-    (None, "order_revenue"), ("问题", None), ("问题", ["order_revenue"]),
-    ("问题", "invented_revenue"), ("x" * 2001, "order_revenue"),
-])
+@pytest.mark.parametrize(
+    "question,metric",
+    [
+        ("", "order_revenue"),
+        ("  \n", "order_revenue"),
+        (None, "order_revenue"),
+        ("问题", None),
+        ("问题", ["order_revenue"]),
+        ("问题", "invented_revenue"),
+        ("x" * 2001, "order_revenue"),
+    ],
+)
 def test_confirmation_requires_explicit_valid_inputs(question, metric):
     with pytest.raises(ValueError):
         ConfirmedMetricTask(question, metric)
@@ -53,7 +59,9 @@ def test_constructor_rejects_unconfirmed_dict_and_unknown_feedback_mode(database
     with pytest.raises(TypeError):
         GuardedTaskExecutor(database, {"question": "收入", "metric_id": "order_revenue"})
     with pytest.raises(ValueError):
-        GuardedTaskExecutor(database, ConfirmedMetricTask("收入", "order_revenue"), feedback_mode="guess")
+        GuardedTaskExecutor(
+            database, ConfirmedMetricTask("收入", "order_revenue"), feedback_mode="guess"
+        )
 
 
 def test_equal_totals_do_not_authorize_wrong_metric_or_execute_sql(database, monkeypatch):
@@ -109,7 +117,13 @@ def test_feedback_ablation_changes_evidence_not_rejection(database):
     evidence = GuardedTaskExecutor(database, task, feedback_mode="evidence")
     a = code.execute(ORDER_JOIN, task.metric_id)
     b = evidence.execute(ORDER_JOIN, task.metric_id)
-    for field in ("execution_status", "verification_status", "error_code", "accepted_value", "value"):
+    for field in (
+        "execution_status",
+        "verification_status",
+        "error_code",
+        "accepted_value",
+        "value",
+    ):
         assert a[field] == b[field]
     assert a["feedback"] == "GRAIN_MULTIPLICATION"
     assert a["evidence"] == [] and a["checks"] == []

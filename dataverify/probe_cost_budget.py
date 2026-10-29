@@ -14,21 +14,20 @@ budget refuses a second in-flight reservation rather than misattribute usage.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
-import re
 from typing import Any
 from urllib.parse import urlsplit
 
 from .dbgpt_qwen import QwenClientError, QwenConfig, RequestBudget
 
-
 PRICE_SOURCE = "https://help.aliyun.com/zh/model-studio/qwen3-8-flash"
 PRICE_CHECKED_DATE = "2026-10-29"
 PRICE_MODEL = "qwen3.8-flash"
 _NANO_PER_CNY = 1_000_000_000
-_INPUT_NANO_PER_TOKEN = 800       # CNY 0.8 / 1,000,000 tokens
-_OUTPUT_NANO_PER_TOKEN = 2_700    # CNY 2.7 / 1,000,000 tokens
+_INPUT_NANO_PER_TOKEN = 800  # CNY 0.8 / 1,000,000 tokens
+_OUTPUT_NANO_PER_TOKEN = 2_700  # CNY 2.7 / 1,000,000 tokens
 _AUTHORIZED_MAX_CNY = Decimal("5")
 _FRAMING_TOKEN_RESERVATION = 4_096
 
@@ -57,11 +56,14 @@ def validate_pricing(config: QwenConfig) -> dict[str, Any]:
     if host != "dashscope.aliyuncs.com" and workspace_host is None:
         raise QwenClientError("PRICE_REGION_NOT_APPROVED")
     return {
-        "model": PRICE_MODEL, "region": "cn-beijing", "currency": "CNY",
+        "model": PRICE_MODEL,
+        "region": "cn-beijing",
+        "currency": "CNY",
         "input_cny_per_million_tokens": 0.8,
         "output_cny_per_million_tokens": 2.7,
         "discounts_and_free_quota_included": False,
-        "price_source": PRICE_SOURCE, "price_checked_date": PRICE_CHECKED_DATE,
+        "price_source": PRICE_SOURCE,
+        "price_checked_date": PRICE_CHECKED_DATE,
     }
 
 
@@ -110,7 +112,11 @@ class MonetaryRequestBudget(RequestBudget):
         self._output_cap = self.max_output_tokens
 
     def _stop_locked(self, reason: str, *, unknown_pending: bool) -> None:
-        safe_reason = reason if type(reason) is str and re.fullmatch(r"[A-Z][A-Z0-9_]{0,79}", reason) else "STOP_REASON_REDACTED"
+        safe_reason = (
+            reason
+            if type(reason) is str and re.fullmatch(r"[A-Z][A-Z0-9_]{0,79}", reason)
+            else "STOP_REASON_REDACTED"
+        )
         self.stopped_reason = self.stopped_reason or safe_reason
         if unknown_pending and self._pending is not None:
             self._pending["status"] = "usage_unknown"
@@ -134,7 +140,9 @@ class MonetaryRequestBudget(RequestBudget):
             if self.reported_tokens >= self.max_reported_tokens:
                 raise QwenClientError("LIVE_REPORTED_TOKEN_LIMIT")
             input_upper = 4 * prompt_chars + _FRAMING_TOKEN_RESERVATION
-            reserved = input_upper * _INPUT_NANO_PER_TOKEN + self._output_cap * _OUTPUT_NANO_PER_TOKEN
+            reserved = (
+                input_upper * _INPUT_NANO_PER_TOKEN + self._output_cap * _OUTPUT_NANO_PER_TOKEN
+            )
             if self._reserved_nano + reserved > self._money_limit_nano:
                 self._stop_locked("MONEY_RESERVATION_LIMIT", unknown_pending=False)
                 raise QwenClientError("LIVE_MONEY_RESERVATION_LIMIT")
@@ -142,9 +150,12 @@ class MonetaryRequestBudget(RequestBudget):
             self.input_chars += prompt_chars
             self._reserved_nano += reserved
             self._pending = {
-                "attempt": self.used, "prompt_chars": prompt_chars,
-                "input_token_upper": input_upper, "output_token_upper": self._output_cap,
-                "reserved_upper_cny": _cny(reserved), "status": "in_flight",
+                "attempt": self.used,
+                "prompt_chars": prompt_chars,
+                "input_token_upper": input_upper,
+                "output_token_upper": self._output_cap,
+                "reserved_upper_cny": _cny(reserved),
+                "status": "in_flight",
             }
             self._ledger.append(self._pending)
             return self.used
@@ -156,7 +167,9 @@ class MonetaryRequestBudget(RequestBudget):
                 self._stop_locked("UNRESERVED_USAGE", unknown_pending=False)
                 raise QwenClientError("LIVE_UNRESERVED_USAGE")
             raw = usage if isinstance(usage, dict) else {}
-            prompt, completion, total = (raw.get(name) for name in ("prompt_tokens", "completion_tokens", "total_tokens"))
+            prompt, completion, total = (
+                raw.get(name) for name in ("prompt_tokens", "completion_tokens", "total_tokens")
+            )
             if any(type(value) is not int or value < 0 for value in (prompt, completion, total)):
                 self._stop_locked("USAGE_UNAVAILABLE", unknown_pending=True)
                 return
@@ -172,9 +185,13 @@ class MonetaryRequestBudget(RequestBudget):
             self._reported_completion_tokens += completion
             self._reported_nano += nano
             self._complete_count += 1
-            pending.update(status="usage_complete", prompt_tokens=prompt,
-                           completion_tokens=completion, total_tokens=total,
-                           estimated_reported_cny=_cny(nano))
+            pending.update(
+                status="usage_complete",
+                prompt_tokens=prompt,
+                completion_tokens=completion,
+                total_tokens=total,
+                estimated_reported_cny=_cny(nano),
+            )
             self._pending = None
             if prompt > pending["input_token_upper"] or completion > pending["output_token_upper"]:
                 pending["status"] = "usage_exceeded_reservation"
@@ -189,10 +206,17 @@ class MonetaryRequestBudget(RequestBudget):
     def snapshot(self) -> dict[str, Any]:
         # Do not call super().snapshot() while holding the inherited lock.
         with self._lock:
-            complete = self._unknown_count == 0 and self._unmatched_usage_events == 0 and self._pending is None and self._complete_count == self.used
+            complete = (
+                self._unknown_count == 0
+                and self._unmatched_usage_events == 0
+                and self._pending is None
+                and self._complete_count == self.used
+            )
             return {
-                "http_attempts": self.used, "http_attempt_limit": self.limit,
-                "input_chars": self.input_chars, "input_char_limit": self.max_input_chars,
+                "http_attempts": self.used,
+                "http_attempt_limit": self.limit,
+                "input_chars": self.input_chars,
+                "input_char_limit": self.max_input_chars,
                 "reported_total_tokens": self.reported_tokens,
                 "reported_token_stop_threshold": self.max_reported_tokens,
                 "stopped_reason": self.stopped_reason,
@@ -200,7 +224,8 @@ class MonetaryRequestBudget(RequestBudget):
                 "reserved_upper_cny": _cny(self._reserved_nano),
                 "estimated_reported_cny": _cny(self._reported_nano),
                 "reported_cost_complete": complete,
-                "complete_count": self._complete_count, "unknown_count": self._unknown_count,
+                "complete_count": self._complete_count,
+                "unknown_count": self._unknown_count,
                 "in_flight_count": int(self._pending is not None),
                 "unmatched_usage_events": self._unmatched_usage_events,
                 "reported_prompt_tokens": self._reported_prompt_tokens,
@@ -209,10 +234,13 @@ class MonetaryRequestBudget(RequestBudget):
                 "input_token_reservation_rule": "4 * prompt_chars + 4096 framing tokens",
                 "reservation_ledger": [dict(entry) for entry in self._ledger],
                 "pricing": {
-                    "model": PRICE_MODEL, "region": "cn-beijing", "currency": "CNY",
+                    "model": PRICE_MODEL,
+                    "region": "cn-beijing",
+                    "currency": "CNY",
                     "input_cny_per_million_tokens": 0.8,
                     "output_cny_per_million_tokens": 2.7,
-                    "price_source": PRICE_SOURCE, "price_checked_date": PRICE_CHECKED_DATE,
+                    "price_source": PRICE_SOURCE,
+                    "price_checked_date": PRICE_CHECKED_DATE,
                     "discounts_and_free_quota_included": False,
                 },
                 "limitation": "Conservative preflight reservation and list-rate usage estimate; not a verified cloud bill or a provider-side spending cap.",

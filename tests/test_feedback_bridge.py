@@ -10,32 +10,45 @@ if importlib.util.find_spec("dbgpt") is None:
     pytest.skip("Optional pinned DB-GPT runtime", allow_module_level=True)
 
 from dataverify.probe_agent_bridge import ProbeResource, probe_sql_candidate, run_probe_native_case
-from dataverify.probe_cases import get_case
 from dataverify.probe_capabilities import policy_features
+from dataverify.probe_cases import get_case
 
 
-@pytest.mark.parametrize("policy", ["legacy_v1", "capability_only", "guidance_only", "capability_v2"])
+@pytest.mark.parametrize(
+    "policy", ["legacy_v1", "capability_only", "guidance_only", "capability_v2"]
+)
 def test_resource_exposes_only_selected_capability_component(policy):
     case = get_case("d10")
     resource = ProbeResource(case.task, feedback_policy=policy)
     try:
         payload = json.loads(resource.get_schema_link(resource._db_name))
-        assert ("execution_contract" in payload) == policy_features(policy)["capability_description"]
+        assert ("execution_contract" in payload) == policy_features(policy)[
+            "capability_description"
+        ]
         assert payload["confirmed_task"] == case.task.to_dict()
         assert "reference_sql" not in json.dumps(payload)
     finally:
         resource.close()
 
 
-@pytest.mark.parametrize("policy", ["legacy_v1", "capability_only", "guidance_only", "capability_v2"])
+@pytest.mark.parametrize(
+    "policy", ["legacy_v1", "capability_only", "guidance_only", "capability_v2"]
+)
 def test_ablation_components_enter_the_correct_native_context(tmp_path, policy):
     case = get_case("d10")
-    record = asyncio.run(run_probe_native_case(
-        case.task, case.source, output_dir=tmp_path,
-        feedback_policy=policy, max_attempts=2,
-        responses=[probe_sql_candidate(case.candidate_sql, case.task.task_id),
-                   probe_sql_candidate(case.reference_sql, case.task.task_id)],
-    ))
+    record = asyncio.run(
+        run_probe_native_case(
+            case.task,
+            case.source,
+            output_dir=tmp_path,
+            feedback_policy=policy,
+            max_attempts=2,
+            responses=[
+                probe_sql_candidate(case.candidate_sql, case.task.task_id),
+                probe_sql_candidate(case.reference_sql, case.task.task_id),
+            ],
+        )
+    )
     assert record["publication"]["status"] == "verified"
     assert record["feedback_features"] == policy_features(policy)
     first_prompt = json.dumps(record["llm_requests"][0])
@@ -54,10 +67,16 @@ def test_ablation_components_enter_the_correct_native_context(tmp_path, policy):
 def test_adaptive_escalation_is_observed_before_the_final_native_repair(tmp_path):
     case = get_case("d06")
     bad = probe_sql_candidate(case.candidate_sql, case.task.task_id)
-    record = asyncio.run(run_probe_native_case(
-        case.task, case.source, output_dir=tmp_path, mode="adaptive", max_attempts=3,
-        responses=[bad, bad, probe_sql_candidate(case.reference_sql, case.task.task_id)],
-    ))
+    record = asyncio.run(
+        run_probe_native_case(
+            case.task,
+            case.source,
+            output_dir=tmp_path,
+            mode="adaptive",
+            max_attempts=3,
+            responses=[bad, bad, probe_sql_candidate(case.reference_sql, case.task.task_id)],
+        )
+    )
     assert record["publication"]["status"] == "verified"
     assert len(record["actions"]) == 3
     first, second = [action["feedback"]["feedback_strategy"] for action in record["actions"][:2]]

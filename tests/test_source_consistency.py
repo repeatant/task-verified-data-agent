@@ -35,7 +35,8 @@ def test_wal_commit_between_planner_steps_invalidates_run(tmp_path):
                     writer.commit()
                     return Action("tool", "inspect_schema", {}, "schema")
                 return Action(
-                    "tool", "query_metric",
+                    "tool",
+                    "query_metric",
                     {"sql": "SELECT SUM(total) FROM orders", "metric_id": "order_revenue"},
                     "query",
                 )
@@ -50,7 +51,9 @@ def test_wal_commit_between_planner_steps_invalidates_run(tmp_path):
         assert result["stop_reason"] == "source_changed_during_run"
 
 
-def test_query_and_probes_share_snapshot_and_changed_source_is_not_final_fact(tmp_path, monkeypatch):
+def test_query_and_probes_share_snapshot_and_changed_source_is_not_final_fact(
+    tmp_path, monkeypatch
+):
     database = seed_demo_database(tmp_path / "wal-between-read-and-probe.sqlite3")
     observed_snapshots = []
     original_verify = CheckedQueryExecutor._verify
@@ -66,7 +69,9 @@ def test_query_and_probes_share_snapshot_and_changed_source_is_not_final_fact(tm
             assert result["value"] == 280
             writer.execute("UPDATE orders SET total=1000 WHERE order_id=1")
             writer.commit()
-            observed_snapshots.append(connection.execute("SELECT SUM(total) FROM orders").fetchone()[0])
+            observed_snapshots.append(
+                connection.execute("SELECT SUM(total) FROM orders").fetchone()[0]
+            )
             return original_verify(connection, shape, result)
 
         monkeypatch.setattr(CheckedQueryExecutor, "_verify", staticmethod(commit_before_probe))

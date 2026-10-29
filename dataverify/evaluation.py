@@ -6,25 +6,32 @@
 
 from __future__ import annotations
 
-from collections import Counter
-from contextlib import closing
-from dataclasses import dataclass
-from datetime import datetime, timezone
 import hashlib
 import math
-from pathlib import Path
 import random
 import sqlite3
 import tempfile
 import time
+from collections import Counter
+from contextlib import closing
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from .checker import CheckedQueryExecutor
 
-
 FAMILIES = (
-    "one_to_one", "fanout", "missing_order", "orphan_line", "cancelled_error",
-    "null_measure", "text_measure", "duplicate_grain", "null_grain", "empty",
+    "one_to_one",
+    "fanout",
+    "missing_order",
+    "orphan_line",
+    "cancelled_error",
+    "null_measure",
+    "text_measure",
+    "duplicate_grain",
+    "null_grain",
+    "empty",
 )
 DEFAULT_SEEDS = (101, 211, 307, 401)
 
@@ -49,11 +56,31 @@ class Candidate:
 
 CANDIDATES = (
     Candidate("order_direct", "SELECT SUM(total) FROM orders", "order_revenue", "orders"),
-    Candidate("order_join", "SELECT SUM(o.total) FROM orders o INNER JOIN order_lines l ON o.order_id=l.order_id", "order_revenue", "orders", joined=True),
-    Candidate("order_distinct", "SELECT SUM(DISTINCT total) FROM orders", "order_revenue", "orders", value_distinct=True),
+    Candidate(
+        "order_join",
+        "SELECT SUM(o.total) FROM orders o INNER JOIN order_lines l ON o.order_id=l.order_id",
+        "order_revenue",
+        "orders",
+        joined=True,
+    ),
+    Candidate(
+        "order_distinct",
+        "SELECT SUM(DISTINCT total) FROM orders",
+        "order_revenue",
+        "orders",
+        value_distinct=True,
+    ),
     Candidate("line_direct", "SELECT SUM(amount) FROM order_lines", "line_revenue", "order_lines"),
-    Candidate("line_join", "SELECT SUM(l.amount) FROM order_lines l JOIN orders o ON l.order_id=o.order_id", "line_revenue", "order_lines", joined=True),
-    Candidate("wrong_metric_source", "SELECT SUM(amount) FROM order_lines", "order_revenue", "order_lines"),
+    Candidate(
+        "line_join",
+        "SELECT SUM(l.amount) FROM order_lines l JOIN orders o ON l.order_id=o.order_id",
+        "line_revenue",
+        "order_lines",
+        joined=True,
+    ),
+    Candidate(
+        "wrong_metric_source", "SELECT SUM(amount) FROM order_lines", "order_revenue", "order_lines"
+    ),
 )
 
 
@@ -67,7 +94,9 @@ def make_fixture(family: str, seed: int) -> Fixture:
     count = rng.randint(5, 12)
     cents = [rng.randint(100, 25000) for _ in range(count)]
     cents[1] = cents[0]  # 不同订单同额，SUM(DISTINCT 金额)不能替代按订单去重。
-    orders: list[tuple[Any, Any]] = [(index + 1, amount / 100) for index, amount in enumerate(cents)]
+    orders: list[tuple[Any, Any]] = [
+        (index + 1, amount / 100) for index, amount in enumerate(cents)
+    ]
     lines: list[tuple[Any, Any, Any]] = []
     for index, amount in enumerate(cents):
         pieces = rng.randint(2, 4) if family == "fanout" else 1
@@ -110,7 +139,9 @@ def expected_result(fixture: Fixture, candidate: Candidate) -> dict[str, Any]:
     ids = [row[0] for row in records]
     amounts = [row[1] if target == "orders" else row[2] for row in records]
     source_valid = (
-        bool(records) and None not in ids and len(ids) == len(set(ids))
+        bool(records)
+        and None not in ids
+        and len(ids) == len(set(ids))
         and all(_numeric(value) for value in amounts)
     )
     value = math.fsum(amounts) if source_valid else None
@@ -151,17 +182,27 @@ def _raw_execute(path: Path, sql: str) -> dict[str, Any]:
 
 
 def _matches(value: Any, expected: Any) -> bool:
-    return _numeric(value) and _numeric(expected) and math.isclose(value, expected, rel_tol=1e-10, abs_tol=1e-8)
+    return (
+        _numeric(value)
+        and _numeric(expected)
+        and math.isclose(value, expected, rel_tol=1e-10, abs_tol=1e-8)
+    )
 
 
 def run_evaluation(
-    *, seeds: tuple[int, ...] = DEFAULT_SEEDS, families: tuple[str, ...] = FAMILIES,
+    *,
+    seeds: tuple[int, ...] = DEFAULT_SEEDS,
+    families: tuple[str, ...] = FAMILIES,
     work_dir: Path | None = None,
 ) -> dict[str, Any]:
     """运行受控对照；夹具临时创建并清理，逐例记录SQL、预期和反例。"""
     if not seeds or any(type(seed) is not int for seed in seeds) or len(set(seeds)) != len(seeds):
         raise ValueError("seeds must contain distinct integers")
-    if not families or any(family not in FAMILIES for family in families) or len(set(families)) != len(families):
+    if (
+        not families
+        or any(family not in FAMILIES for family in families)
+        or len(set(families)) != len(families)
+    ):
         raise ValueError("families must be distinct registered fixture families")
     if work_dir is not None:
         work_dir = Path(work_dir)
@@ -183,28 +224,50 @@ def run_evaluation(
                     began_check = time.perf_counter()
                     checked = executor.execute(candidate.sql, candidate.metric_id)
                     check_ms = (time.perf_counter() - began_check) * 1000
-                    accepted = checked["verification_status"] == "verified" and checked["accepted_value"] is not None
-                    baseline_correct = expectation["should_accept"] and _matches(baseline["value"], expectation["metric_value"])
-                    guarded_correct = expectation["should_accept"] and _matches(checked["accepted_value"], expectation["metric_value"])
-                    cases.append({
-                        "case_id": f"{seed}:{family}:{candidate.name}",
-                        "seed": seed, "family": family, "candidate": candidate.name,
-                        "sql": candidate.sql, "metric_id": candidate.metric_id,
-                        "expected": expectation,
-                        "baseline": {**baseline, "wrong_result_released": baseline["accepted"] and not baseline_correct},
-                        "guarded": {
-                            "accepted": accepted, "value": checked["accepted_value"],
-                            "verification_status": checked["verification_status"],
-                            "error_code": checked["error_code"], "evidence": checked["evidence"],
-                            "wrong_result_released": accepted and not guarded_correct,
-                            "valid_query_rejected": expectation["should_accept"] and not guarded_correct,
-                            "elapsed_ms": round(check_ms, 4),
-                        },
-                        "numeric_match_but_invalid": (
-                            not expectation["should_accept"] and _matches(baseline["value"], expectation["metric_value"])
-                        ),
-                    })
-                unchanged = unchanged and digest == hashlib.sha256(database.read_bytes()).hexdigest()
+                    accepted = (
+                        checked["verification_status"] == "verified"
+                        and checked["accepted_value"] is not None
+                    )
+                    baseline_correct = expectation["should_accept"] and _matches(
+                        baseline["value"], expectation["metric_value"]
+                    )
+                    guarded_correct = expectation["should_accept"] and _matches(
+                        checked["accepted_value"], expectation["metric_value"]
+                    )
+                    cases.append(
+                        {
+                            "case_id": f"{seed}:{family}:{candidate.name}",
+                            "seed": seed,
+                            "family": family,
+                            "candidate": candidate.name,
+                            "sql": candidate.sql,
+                            "metric_id": candidate.metric_id,
+                            "expected": expectation,
+                            "baseline": {
+                                **baseline,
+                                "wrong_result_released": baseline["accepted"]
+                                and not baseline_correct,
+                            },
+                            "guarded": {
+                                "accepted": accepted,
+                                "value": checked["accepted_value"],
+                                "verification_status": checked["verification_status"],
+                                "error_code": checked["error_code"],
+                                "evidence": checked["evidence"],
+                                "wrong_result_released": accepted and not guarded_correct,
+                                "valid_query_rejected": expectation["should_accept"]
+                                and not guarded_correct,
+                                "elapsed_ms": round(check_ms, 4),
+                            },
+                            "numeric_match_but_invalid": (
+                                not expectation["should_accept"]
+                                and _matches(baseline["value"], expectation["metric_value"])
+                            ),
+                        }
+                    )
+                unchanged = (
+                    unchanged and digest == hashlib.sha256(database.read_bytes()).hexdigest()
+                )
     valid_count = sum(case["expected"]["should_accept"] for case in cases)
     baseline_wrong = sum(case["baseline"]["wrong_result_released"] for case in cases)
     guarded_wrong = sum(case["guarded"]["wrong_result_released"] for case in cases)
@@ -212,20 +275,25 @@ def run_evaluation(
     return {
         "created_at": datetime.now(timezone.utc).isoformat(),
         "evaluation_type": "controlled-sql-fault-injection-checker-comparison",
-        "real_model_used": False, "llm_accuracy_benchmark": False,
+        "real_model_used": False,
+        "llm_accuracy_benchmark": False,
         "scope": "registered all-row SUM metrics; zero or one registered INNER JOIN",
         "limitation": (
             "随机合成数据库与固定候选SQL模板的受控故障对照；预期口径由Python行记录独立计算。"
             "不评估自然语言意图、真实模型泛化、修正成功率或生产收益，不能宣称LLM准确率提升。"
         ),
-        "seeds": list(seeds), "families": list(families),
-        "dataset_count": len(seeds) * len(families), "candidate_count": len(cases),
-        "valid_candidate_count": valid_count, "invalid_candidate_count": len(cases) - valid_count,
+        "seeds": list(seeds),
+        "families": list(families),
+        "dataset_count": len(seeds) * len(families),
+        "candidate_count": len(cases),
+        "valid_candidate_count": valid_count,
+        "invalid_candidate_count": len(cases) - valid_count,
         "baseline_wrong_result_releases": baseline_wrong,
         "guarded_wrong_result_releases": guarded_wrong,
         "guarded_valid_query_rejections": false_reject,
         "numeric_match_but_invalid_count": sum(case["numeric_match_but_invalid"] for case in cases),
         "source_databases_unchanged": unchanged,
         "passed": unchanged and valid_count > 0 and guarded_wrong == 0 and false_reject == 0,
-        "elapsed_seconds": round(time.perf_counter() - started, 4), "cases": cases,
+        "elapsed_seconds": round(time.perf_counter() - started, 4),
+        "cases": cases,
     }

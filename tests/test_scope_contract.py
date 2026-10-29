@@ -12,7 +12,6 @@ import pytest
 
 from dataverify.probe_runtime import ProbeData, ProbeTask, execute_sql, static_check
 
-
 START = "2026-12-03T22:40:00"
 END = "2026-12-04T03:10:00"
 LABEL = "Unassigned"
@@ -40,9 +39,13 @@ def task_for(kind="channels", status="pending"):
 def source_for(status="pending"):
     return ProbeData(
         (
-            (401, -99, "kiosk"), (402, 7, None), (403, 333, LABEL),
-            (404, 0, "courier"), (405, 19, "partner"),
-            (406, 12, "inactive"), (407, 0, "quiet"),
+            (401, -99, "kiosk"),
+            (402, 7, None),
+            (403, 333, LABEL),
+            (404, 0, "courier"),
+            (405, 19, "partner"),
+            (406, 12, "inactive"),
+            (407, 0, "quiet"),
         ),
         (
             (8101, 401, 31, status, START),
@@ -72,7 +75,11 @@ def select_and_group(task, wrapped=True):
     aggregate = "COALESCE(SUM(l.amount),0)" if wrapped else "SUM(l.amount)"
     if task.output_kind == "scalar":
         return "SELECT " + aggregate, ""
-    key = "o.order_id" if task.output_kind == "orders" else f"COALESCE(o.channel,'{task.other_label}')"
+    key = (
+        "o.order_id"
+        if task.output_kind == "orders"
+        else f"COALESCE(o.channel,'{task.other_label}')"
+    )
     return "SELECT " + key + ", " + aggregate, " GROUP BY " + key
 
 
@@ -108,10 +115,19 @@ def assert_blocked(sql, task, data, code):
     assert result["rows"] == []
 
 
-@pytest.mark.parametrize("extra", [
-    "o.channel='kiosk'", "o.channel IS NULL", "o.order_id=401", "o.total>0",
-    "l.order_id=405", "l.line_id=8101", "l.amount >= 0", "0 < l.amount",
-])
+@pytest.mark.parametrize(
+    "extra",
+    [
+        "o.channel='kiosk'",
+        "o.channel IS NULL",
+        "o.order_id=401",
+        "o.total>0",
+        "l.order_id=405",
+        "l.line_id=8101",
+        "l.amount >= 0",
+        "0 < l.amount",
+    ],
+)
 @pytest.mark.parametrize("location", ["on", "where"])
 def test_undeclared_parent_and_child_scope_filters_are_blocked(extra, location):
     task, data = task_for(), source_for()
@@ -143,14 +159,24 @@ def test_parent_left_join_cannot_create_channels_without_eligible_lines(wrapped,
     weak = execute_sql(sql, data, task, static_semantics=False)
     assert weak["status"] == "ok"
     assert {row[0] for row in weak["rows"]} == {
-        "Unassigned", "courier", "inactive", "kiosk", "partner", "quiet",
+        "Unassigned",
+        "courier",
+        "inactive",
+        "kiosk",
+        "partner",
+        "quiet",
     }
     assert_blocked(sql, task, data, "UNMATCHED_GROUP_COVERAGE")
 
 
 LEGAL_GROUP_SHAPES = [
-    "inner-where", "inner-on", "left-where", "left-on-status", "left-on-time",
-    "left-on-all-with-null-rejection", "reverse-left-where",
+    "inner-where",
+    "inner-on",
+    "left-where",
+    "left-on-status",
+    "left-on-time",
+    "left-on-all-with-null-rejection",
+    "reverse-left-where",
 ]
 
 
@@ -171,9 +197,15 @@ def test_real_zero_groups_survive_supported_join_and_filter_locations(shape, sta
 @pytest.mark.parametrize("empty", [False, True], ids=["no-eligible-lines", "no-orders"])
 def test_channels_without_eligible_lines_are_an_empty_relation(shape, empty):
     task, full = task_for(status="cancelled"), source_for("cancelled")
-    data = ProbeData((), ()) if empty else ProbeData(
-        full.orders,
-        tuple(row for row in full.lines if row[3] != task.status or not (START <= row[4] < END)),
+    data = (
+        ProbeData((), ())
+        if empty
+        else ProbeData(
+            full.orders,
+            tuple(
+                row for row in full.lines if row[3] != task.status or not (START <= row[4] < END)
+            ),
+        )
     )
     sql = query_for(task, shape)
     assert static_check(sql, task)["accepted"]
@@ -233,25 +265,46 @@ def witness_query(task, driving, witness):
     select, group = select_and_group(task)
     status, times = qualifications(task)
     tables = (
-        "orders o LEFT JOIN order_lines l" if driving == "orders"
+        "orders o LEFT JOIN order_lines l"
+        if driving == "orders"
         else "order_lines l LEFT JOIN orders o"
     )
     return (
-        select + " FROM " + tables + " ON o.order_id=l.order_id AND "
-        + status + " AND " + times + " WHERE " + witness + group
+        select
+        + " FROM "
+        + tables
+        + " ON o.order_id=l.order_id AND "
+        + status
+        + " AND "
+        + times
+        + " WHERE "
+        + witness
+        + group
     )
 
 
-@pytest.mark.parametrize("extra", [
-    "o.order_id > 0", "o.order_id >= 1", "0 < l.line_id", "1 <= l.order_id",
-])
+@pytest.mark.parametrize(
+    "extra",
+    [
+        "o.order_id > 0",
+        "o.order_id >= 1",
+        "0 < l.line_id",
+        "1 <= l.order_id",
+    ],
+)
 def test_schema_implied_positive_key_filters_do_not_change_inner_join_scope(extra):
     task, data = task_for(), source_for()
     select, group = select_and_group(task)
     status, times = qualifications(task)
     sql = (
-        select + " FROM orders o INNER JOIN order_lines l ON o.order_id=l.order_id WHERE "
-        + status + " AND " + times + " AND " + extra + group
+        select
+        + " FROM orders o INNER JOIN order_lines l ON o.order_id=l.order_id WHERE "
+        + status
+        + " AND "
+        + times
+        + " AND "
+        + extra
+        + group
     )
     assert static_check(sql, task)["accepted"]
     result = execute_sql(sql, data, task)
@@ -259,13 +312,21 @@ def test_schema_implied_positive_key_filters_do_not_change_inner_join_scope(extr
     assert sorted(result["rows"]) == EXPECTED_CHANNELS
 
 
-@pytest.mark.parametrize("driving,witness", [
-    ("orders", "l.line_id > 0"), ("orders", "l.order_id >= 1"),
-    ("orders", "0 < l.line_id"), ("orders", "1 <= l.order_id"),
-    ("lines", "o.order_id > 0"), ("lines", "o.order_id >= 1"),
-])
+@pytest.mark.parametrize(
+    "driving,witness",
+    [
+        ("orders", "l.line_id > 0"),
+        ("orders", "l.order_id >= 1"),
+        ("orders", "0 < l.line_id"),
+        ("orders", "1 <= l.order_id"),
+        ("lines", "o.order_id > 0"),
+        ("lines", "o.order_id >= 1"),
+    ],
+)
 @pytest.mark.parametrize("status", ["pending", "cancelled"])
-def test_nullable_side_positive_key_witness_applies_on_filters_without_losing_real_zeros(driving, witness, status):
+def test_nullable_side_positive_key_witness_applies_on_filters_without_losing_real_zeros(
+    driving, witness, status
+):
     task, data = task_for(status=status), source_for(status)
     sql = witness_query(task, driving, witness)
     assert static_check(sql, task)["accepted"]
@@ -287,12 +348,15 @@ def test_parent_match_witness_makes_reverse_left_on_filters_effective_for_scalar
     assert result["rows"] == [[30]]
 
 
-@pytest.mark.parametrize("driving,witness,code", [
-    ("orders", "o.order_id > 0", "UNMATCHED_GROUP_COVERAGE"),
-    ("orders", "o.order_id >= 1", "UNMATCHED_GROUP_COVERAGE"),
-    ("lines", "l.line_id > 0", "FILTER_PLACEMENT_MISMATCH"),
-    ("lines", "l.order_id >= 1", "FILTER_PLACEMENT_MISMATCH"),
-])
+@pytest.mark.parametrize(
+    "driving,witness,code",
+    [
+        ("orders", "o.order_id > 0", "UNMATCHED_GROUP_COVERAGE"),
+        ("orders", "o.order_id >= 1", "UNMATCHED_GROUP_COVERAGE"),
+        ("lines", "l.line_id > 0", "FILTER_PLACEMENT_MISMATCH"),
+        ("lines", "l.order_id >= 1", "FILTER_PLACEMENT_MISMATCH"),
+    ],
+)
 def test_positive_driving_key_is_not_a_nullable_side_match_witness(driving, witness, code):
     task, data = task_for(status="cancelled"), source_for("cancelled")
     sql = witness_query(task, driving, witness)
@@ -304,11 +368,17 @@ def test_positive_driving_key_is_not_a_nullable_side_match_witness(driving, witn
     assert_blocked(sql, task, data, code)
 
 
-@pytest.mark.parametrize("driving,witness", [
-    ("orders", "l.line_id > 1"), ("orders", "l.order_id > 1"),
-    ("orders", "1 < l.line_id"), ("lines", "o.order_id > 1"),
-    ("lines", "o.order_id >= 2"), ("lines", "2 <= o.order_id"),
-])
+@pytest.mark.parametrize(
+    "driving,witness",
+    [
+        ("orders", "l.line_id > 1"),
+        ("orders", "l.order_id > 1"),
+        ("orders", "1 < l.line_id"),
+        ("lines", "o.order_id > 1"),
+        ("lines", "o.order_id >= 2"),
+        ("lines", "2 <= o.order_id"),
+    ],
+)
 def test_stricter_id_threshold_is_not_a_schema_implied_match_witness(driving, witness):
     task = task_for(status="cancelled")
     data = ProbeData(
@@ -347,5 +417,11 @@ def test_schema_implied_driving_key_where_can_preserve_all_orders(witness):
     result = execute_sql(sql, data, task)
     assert result["status"] == "ok"
     assert sorted(result["rows"]) == [
-        [401, 0], [402, 18], [403, -5], [404, 0], [405, 17], [406, 0], [407, 0],
+        [401, 0],
+        [402, 18],
+        [403, -5],
+        [404, 0],
+        [405, 17],
+        [406, 0],
+        [407, 0],
     ]
