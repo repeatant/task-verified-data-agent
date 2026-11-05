@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from dataverify.probe_cases import get_case, get_cases, grade_rows, reference_result
+from dataverify.evaluation.probe_cases import get_case, get_cases, grade_rows, reference_result
 
 
 def test_suite_has_explicit_controlled_development_provenance():
@@ -87,9 +87,9 @@ def test_reference_is_independent_of_sql_runtime_and_parser():
     script = """
 import sys
 from types import SimpleNamespace
-for module in ("sqlglot", "dataverify.probe_runtime", "dataverify.checker"):
+for module in ("sqlglot", "dataverify.verification.probe_runtime", "dataverify.verification.checker"):
     sys.modules[module] = None
-from dataverify.probe_cases import reference_result, grade_rows
+from dataverify.evaluation.probe_cases import reference_result, grade_rows
 case = SimpleNamespace(
     task=SimpleNamespace(output_kind="scalar", status="settled", start="2026-09-01T00:00:00", end="2026-10-01T00:00:00"),
     source=SimpleNamespace(orders=((1, 1, None),), lines=((11, 1, -25, "settled", "2026-09-01T00:00:00"),)))
@@ -164,7 +164,7 @@ def test_reference_does_not_read_reference_sql_or_fault_label():
 def test_reference_sql_is_executable_and_agrees_with_record_oracle(case_id):
     # This is a consistency check of two independent reference paths, not a
     # score calculated from the runtime verifier's own correctness decision.
-    from dataverify.probe_runtime import execute_sql
+    from dataverify.verification.probe_runtime import execute_sql
 
     case = get_case(case_id)
     result = execute_sql(case.reference_sql, case.source, case.task)

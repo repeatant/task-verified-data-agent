@@ -8,11 +8,11 @@ import pytest
 
 pytest.importorskip("hypothesis", reason="Optional probe experiment")
 
-from dataverify.feedback_strategy import FeedbackStrategy
-from dataverify.graph_guard import dump_guard, restore_guard
-from dataverify.probe_cases import get_case
-from dataverify.probe_guard import ProbeGuard
-from dataverify.probe_runtime import ProbeData
+from dataverify.agent.feedback_strategy import FeedbackStrategy
+from dataverify.agent.graph_guard import dump_guard, restore_guard
+from dataverify.evaluation.probe_cases import get_case
+from dataverify.verification.probe_guard import ProbeGuard
+from dataverify.verification.probe_runtime import ProbeData
 
 
 def failed_guard(mode="adaptive"):

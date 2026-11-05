@@ -8,7 +8,7 @@ Python 3.12，在仓库根目录执行：
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.lock.txt -r requirements-probes.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements/core.lock.txt -r requirements/probes.txt
 .\.venv\Scripts\python.exe tools/run_graph.py --case d06 --thread boundary-demo
 ```
 

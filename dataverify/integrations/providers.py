@@ -14,7 +14,7 @@ from typing import Any, Protocol
 
 import httpx
 
-from .contracts import METRIC_CATALOG
+from dataverify.verification.contracts import METRIC_CATALOG
 
 JOIN = "FROM orders AS o INNER JOIN order_lines AS l ON o.order_id = l.order_id"
 CASES = {

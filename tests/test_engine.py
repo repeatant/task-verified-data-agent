@@ -6,9 +6,9 @@ import sqlite3
 import httpx
 import pytest
 
-from dataverify.database import database_sha256, seed_demo_database
-from dataverify.engine import AgentRunner
-from dataverify.providers import JOIN, Action, OfflineScriptedPlanner, QwenPlanner
+from dataverify.agent.engine import AgentRunner
+from dataverify.integrations.providers import JOIN, Action, OfflineScriptedPlanner, QwenPlanner
+from dataverify.verification.database import database_sha256, seed_demo_database
 
 
 @pytest.mark.parametrize("case,wrong_value", [("join_fanout", 540), ("distinct_fix", 180)])

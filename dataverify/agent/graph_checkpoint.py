@@ -15,8 +15,8 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Iterator
 
-from .experiment_budget import restore_budget
-from .probe_cost_budget import MonetaryRequestBudget
+from dataverify.runtime.experiment_budget import restore_budget
+from dataverify.runtime.probe_cost_budget import MonetaryRequestBudget
 
 
 class GraphResumeError(RuntimeError):

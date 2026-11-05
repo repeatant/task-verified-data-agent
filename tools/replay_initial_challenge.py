@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-public = ROOT / "examples/independent_holdout"
+public = ROOT / "tests/fixtures/independent_holdout"
 if public.is_dir():
     dataset = public / "frozen_challenges.json"
     freeze = public / "verifier_manifest.json"
@@ -38,13 +38,16 @@ sys.path.insert(0, str(snapshot))
 # project root to sys.path. Otherwise it can silently select the current code.
 from dataverify.probe_guard import ProbeGuard
 
+from dataverify import probe_cases, probe_runtime
+
 if not Path(inspect.getfile(ProbeGuard)).resolve().is_relative_to(snapshot.resolve()):
     raise RuntimeError("Initial replay imported the current verifier instead of frozen source")
 
-from evaluate_independent_holdout import load_challenges, score
+from evaluate_independent_holdout import Verifier, load_challenges, score
 
-challenges = load_challenges(json.loads(dataset.read_text(encoding="utf-8")))
-rows = [score(item) for item in challenges]
+verifier = Verifier(probe_cases, probe_runtime, ProbeGuard)
+challenges = load_challenges(json.loads(dataset.read_text(encoding="utf-8")), verifier=verifier)
+rows = [score(item, verifier=verifier) for item in challenges]
 result = {
     "mode": "original_frozen_verifier_replay",
     "real_model_used": False,

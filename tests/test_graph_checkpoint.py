@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from dataverify.graph_checkpoint import (
+from dataverify.agent.graph_checkpoint import (
     GraphResumeError,
     JournaledBudget,
     exclusive_run,
@@ -12,7 +12,7 @@ from dataverify.graph_checkpoint import (
     resume_budget,
     validate_budget_continuation,
 )
-from dataverify.probe_cost_budget import MonetaryRequestBudget
+from dataverify.runtime.probe_cost_budget import MonetaryRequestBudget
 
 
 def usage():

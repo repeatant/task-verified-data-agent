@@ -12,9 +12,9 @@ if importlib.util.find_spec("dbgpt") is None:
     pytest.skip("Optional pinned DB-GPT runtime is not installed", allow_module_level=True)
 pytest.importorskip("hypothesis")
 
-from dataverify import probe_live_benchmark as bench
-from dataverify.probe_cases import get_case, reference_result
-from dataverify.probe_cost_budget import MonetaryRequestBudget
+from dataverify.evaluation import probe_live_benchmark as bench
+from dataverify.evaluation.probe_cases import get_case, reference_result
+from dataverify.runtime.probe_cost_budget import MonetaryRequestBudget
 
 
 def record_for(case, *, sql=None, rows=None):
@@ -79,7 +79,7 @@ def test_independent_evaluator_has_own_read_boundary(sql):
 
 
 def test_independent_grader_does_not_call_runtime_checker(monkeypatch):
-    import dataverify.probe_runtime as runtime
+    import dataverify.verification.probe_runtime as runtime
 
     monkeypatch.setattr(
         runtime,
@@ -125,7 +125,9 @@ def report_root(tmp_path, monkeypatch):
     (root / "dataverify").mkdir(parents=True)
     (root / "reports").mkdir()
     for name in bench.FINGERPRINT_FILES:
-        (root / "dataverify" / name).write_text("# test fingerprint\n", encoding="utf-8")
+        source = root / "dataverify" / name
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text("# test fingerprint\n", encoding="utf-8")
     monkeypatch.setattr(bench, "PROJECT_ROOT", root)
     return root / "reports"
 
@@ -232,7 +234,7 @@ def test_live_never_accepts_test_client_factory(report_root):
 
 
 def test_live_cannot_underreserve_the_fixed_client_output_cap(report_root):
-    from dataverify.dbgpt_qwen import QwenConfig
+    from dataverify.integrations.dbgpt_qwen import QwenConfig
 
     config = QwenConfig("sk-test-never-real", "https://dashscope.aliyuncs.com/compatible-mode/v1")
     budget = MonetaryRequestBudget(max_output_tokens=100)
@@ -254,7 +256,7 @@ def test_external_evaluation_case_id_cannot_escape_report_directory(report_root)
 
 
 def test_external_natural_tasks_use_explicit_frozen_selection(report_root, monkeypatch):
-    from dataverify.capability_cases import get_capability_cases
+    from dataverify.evaluation.capability_cases import get_capability_cases
 
     case = get_capability_cases()[0].case
 

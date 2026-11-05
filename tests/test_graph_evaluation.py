@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import pytest
 
-from dataverify.probe_cases import get_case, reference_result
+from dataverify.evaluation.probe_cases import get_case, reference_result
 from tools.evaluate_graph import evaluate_reports
 
 

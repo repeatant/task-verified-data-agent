@@ -13,9 +13,9 @@ import pytest
 
 pytest.importorskip("hypothesis")
 
-from dataverify.probe_capabilities import policy_features
-from dataverify.probe_cases import get_case
-from dataverify.probe_guard import ProbeGuard, source_digest
+from dataverify.evaluation.probe_cases import get_case
+from dataverify.verification.probe_capabilities import policy_features
+from dataverify.verification.probe_guard import ProbeGuard, source_digest
 
 
 @pytest.mark.parametrize(

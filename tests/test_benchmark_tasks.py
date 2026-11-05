@@ -10,8 +10,8 @@ from pathlib import Path
 
 import pytest
 
-from dataverify import benchmark_tasks
-from dataverify.benchmark_tasks import (
+from dataverify.evaluation import benchmark_tasks
+from dataverify.evaluation.benchmark_tasks import (
     TASKS,
     Fixture,
     candidate_expectation,
@@ -74,9 +74,9 @@ def test_record_oracle_keeps_all_target_grains(task_id, total, rows):
 def test_oracle_is_importable_without_the_checker_parser_or_old_oracle():
     script = """
 import sys
-for name in ('sqlglot', 'dataverify.checker', 'dataverify.evaluation'):
+for name in ('sqlglot', 'dataverify.verification.checker', 'dataverify.evaluation.evaluation'):
     sys.modules[name] = None
-from dataverify.benchmark_tasks import TASKS, oracle
+from dataverify.evaluation.benchmark_tasks import TASKS, oracle
 assert oracle(TASKS[0])['metric_value'] == 300.0
 """
     process = subprocess.run(

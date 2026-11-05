@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .checker import CheckedQueryExecutor
+from dataverify.verification.checker import CheckedQueryExecutor
 
 FAMILIES = (
     "one_to_one",

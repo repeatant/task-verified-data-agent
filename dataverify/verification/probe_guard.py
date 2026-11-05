@@ -14,7 +14,8 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
 
-from .feedback_strategy import FeedbackStrategy, candidate_fingerprint
+from dataverify.agent.feedback_strategy import FeedbackStrategy, candidate_fingerprint
+
 from .probe_capabilities import policy_features, repair_guidance, validate_policy
 from .probe_runtime import ProbeData, ProbeTask, execute_sql
 from .probe_testing import (
@@ -130,7 +131,7 @@ class ProbeGuard:
 
     def checkpoint_state(self) -> dict[str, Any]:
         """Retain exact witnesses and feedback progress, never accepted values."""
-        from .graph_guard import validate_guard_state
+        from dataverify.agent.graph_guard import validate_guard_state
 
         if source_digest(self.task, self.data) != self._source_digest:
             raise ValueError("Cannot checkpoint a changed task source")
@@ -149,7 +150,7 @@ class ProbeGuard:
 
     def restore_checkpoint_state(self, state: dict[str, Any]) -> None:
         """Restore into a fresh guard; callers must recheck SQL before publish."""
-        from .graph_guard import validate_guard_state
+        from dataverify.agent.graph_guard import validate_guard_state
 
         if self._audit or self._regressions or self._last or self._accepted is not None:
             raise ValueError("Guard continuation requires a fresh instance")

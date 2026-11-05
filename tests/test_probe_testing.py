@@ -4,13 +4,13 @@ from dataclasses import replace
 import pytest
 
 pytest.importorskip(
-    "hypothesis", reason="optional probe experiment requires requirements-probes.txt"
+    "hypothesis", reason="optional probe experiment requires requirements/probes.txt"
 )
 from hypothesis import find, settings
 
-from dataverify.probe_cases import get_case
-from dataverify.probe_runtime import ProbeData
-from dataverify.probe_testing import (
+from dataverify.evaluation.probe_cases import get_case
+from dataverify.verification.probe_runtime import ProbeData
+from dataverify.verification.probe_testing import (
     ExecutionBudget,
     ProbeBudgetExceeded,
     ProbePair,

@@ -6,9 +6,9 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from dataverify.checker import CheckedQueryExecutor
-from dataverify.database import database_sha256
-from dataverify.guarded_task import ConfirmedMetricTask, GuardedTaskExecutor
+from dataverify.verification.checker import CheckedQueryExecutor
+from dataverify.verification.database import database_sha256
+from dataverify.verification.guarded_task import ConfirmedMetricTask, GuardedTaskExecutor
 
 ORDER_SQL = "SELECT SUM(total) FROM orders"
 LINE_SQL = "SELECT SUM(amount) FROM order_lines"

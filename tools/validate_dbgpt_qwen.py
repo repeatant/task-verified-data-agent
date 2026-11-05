@@ -18,15 +18,15 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from dataverify.database import seed_demo_database
-from dataverify.dbgpt_bridge import BAD_ORDER_SUM, run_native_case, sql_candidate
-from dataverify.dbgpt_qwen import (
+from dataverify.integrations.dbgpt_bridge import BAD_ORDER_SUM, run_native_case, sql_candidate
+from dataverify.integrations.dbgpt_qwen import (
     InjectedFirstCandidateClient,
     QwenConfig,
     QwenLLMClient,
     RequestBudget,
 )
-from dataverify.guarded_task import ConfirmedMetricTask
+from dataverify.verification.database import seed_demo_database
+from dataverify.verification.guarded_task import ConfirmedMetricTask
 
 SCENARIOS = {
     "natural_order": {

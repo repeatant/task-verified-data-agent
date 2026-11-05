@@ -45,7 +45,7 @@ try {
     $env:TEMP = $taskPipTemp
     $env:TMP = $taskPipTemp
     $env:TMPDIR = $taskPipTemp
-    & $Python -m pip --python $taskPython install --no-cache-dir -r (Join-Path $taskRoot 'requirements-dbgpt.txt') -r (Join-Path $taskRoot 'requirements-probes.txt')
+    & $Python -m pip --python $taskPython install --no-cache-dir -r (Join-Path $taskRoot 'requirements/dbgpt.txt') -r (Join-Path $taskRoot 'requirements/probes.txt')
     if ($LASTEXITCODE -ne 0) { throw 'Failed to install the minimal integration dependencies.' }
 } finally {
     $env:TEMP = $taskPreviousTemp
@@ -59,6 +59,6 @@ $taskPth = Join-Path $taskRoot '.venv-dbgpt/Lib/site-packages/data_verify_dbgpt.
     (Join-Path $taskCheckout 'packages/dbgpt-core/src'),
     (Join-Path $taskCheckout 'packages/dbgpt-ext/src')
 ), [Text.UTF8Encoding]::new($false))
-& $taskPython -c 'from dataverify.dbgpt_bridge import verify_upstream_files; print(verify_upstream_files())'
+& $taskPython -c 'from dataverify.integrations.dbgpt_bridge import verify_upstream_files; print(verify_upstream_files())'
 if ($LASTEXITCODE -ne 0) { throw 'Pinned source import validation failed.' }
 Write-Host 'Ready. Run .venv-dbgpt/Scripts/python.exe tools/validate_dbgpt.py'

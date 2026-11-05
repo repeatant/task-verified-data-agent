@@ -17,7 +17,7 @@ from typing import Any, Protocol
 
 import httpx
 
-from .qwen_config import QwenClientError, QwenConfig
+from dataverify.integrations.qwen_config import QwenClientError, QwenConfig
 
 GraphMessages = list[dict[str, str]]
 GraphAction = dict[str, str]

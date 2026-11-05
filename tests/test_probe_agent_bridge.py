@@ -12,8 +12,8 @@ pytest.importorskip("hypothesis", reason="Optional probe generation dependencies
 
 from dbgpt.agent.expand.data_scientist_agent import DataScientistAgent
 
-from dataverify.dbgpt_bridge import ScriptedLLMClient
-from dataverify.probe_agent_bridge import (
+from dataverify.integrations.dbgpt_bridge import ScriptedLLMClient
+from dataverify.integrations.probe_agent_bridge import (
     ProbeChartAction,
     ProbeDataScientistAgent,
     ProbeResource,
@@ -22,8 +22,8 @@ from dataverify.probe_agent_bridge import (
     probe_sql_candidate,
     run_probe_native_case,
 )
-from dataverify.probe_guard import ProbeGuard
-from dataverify.probe_runtime import ProbeData, ProbeTask
+from dataverify.verification.probe_guard import ProbeGuard
+from dataverify.verification.probe_runtime import ProbeData, ProbeTask
 
 GOOD = (
     "SELECT COALESCE(SUM(l.amount),0) AS revenue FROM order_lines l "

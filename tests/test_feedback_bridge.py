@@ -9,9 +9,13 @@ import pytest
 if importlib.util.find_spec("dbgpt") is None:
     pytest.skip("Optional pinned DB-GPT runtime", allow_module_level=True)
 
-from dataverify.probe_agent_bridge import ProbeResource, probe_sql_candidate, run_probe_native_case
-from dataverify.probe_capabilities import policy_features
-from dataverify.probe_cases import get_case
+from dataverify.evaluation.probe_cases import get_case
+from dataverify.integrations.probe_agent_bridge import (
+    ProbeResource,
+    probe_sql_candidate,
+    run_probe_native_case,
+)
+from dataverify.verification.probe_capabilities import policy_features
 
 
 @pytest.mark.parametrize(

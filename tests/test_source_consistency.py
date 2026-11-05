@@ -8,10 +8,10 @@ these tests neither use a language model nor race against background threads.
 import hashlib
 import sqlite3
 
-from dataverify.checker import CheckedQueryExecutor
-from dataverify.database import seed_demo_database
-from dataverify.engine import AgentRunner
-from dataverify.providers import Action
+from dataverify.agent.engine import AgentRunner
+from dataverify.integrations.providers import Action
+from dataverify.verification.checker import CheckedQueryExecutor
+from dataverify.verification.database import seed_demo_database
 
 
 def _main_file_hash(path):

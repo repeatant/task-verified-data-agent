@@ -16,14 +16,32 @@ from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from types import ModuleType
+from typing import TYPE_CHECKING
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tools"))
 
-from dataverify.probe_cases import Case, grade_rows, reference_result
-from dataverify.probe_guard import ProbeGuard
-from dataverify.probe_runtime import ProbeData, ProbeTask
+if TYPE_CHECKING:
+    from dataverify.verification.probe_runtime import ProbeData, ProbeTask
+
+
+@dataclass(frozen=True)
+class Verifier:
+    """Bindings for the active verifier or the isolated historical snapshot."""
+
+    cases: ModuleType
+    runtime: ModuleType
+    guard: type
+
+
+def current_verifier() -> Verifier:
+    from dataverify.evaluation import probe_cases
+    from dataverify.verification import probe_runtime
+    from dataverify.verification.probe_guard import ProbeGuard
+
+    return Verifier(probe_cases, probe_runtime, ProbeGuard)
 
 
 def read(path):
@@ -53,7 +71,8 @@ class Challenge:
     reason: str
 
 
-def load_challenges(document):
+def load_challenges(document, *, verifier: Verifier | None = None):
+    verifier = verifier or current_verifier()
     result = []
     for item in document["challenges"]:
         identifier = item["id"]
@@ -76,12 +95,12 @@ def load_challenges(document):
                 else:
                     rows.append(tuple(row))
             converted[name] = tuple(rows)
-        task = ProbeTask(**item["task"])
-        data = ProbeData(**converted)
+        task = verifier.runtime.ProbeTask(**item["task"])
+        data = verifier.runtime.ProbeData(**converted)
         expected = item["expected_rows"]
         # Existing record oracle is a cross-check, not the label author. No
         # correct SQL is invented: this placeholder is never executed or sent.
-        case = Case(
+        case = verifier.cases.Case(
             identifier,
             task,
             data,
@@ -90,7 +109,9 @@ def load_challenges(document):
             None if item["category"] == "legal" else item["category"],
             item["reason"],
         )
-        if not grade_rows(reference_result(case), expected)["correct"]:
+        if not verifier.cases.grade_rows(verifier.cases.reference_result(case), expected)[
+            "correct"
+        ]:
             raise ValueError("Independent target disagrees with task-record oracle")
         result.append(
             Challenge(
@@ -116,12 +137,13 @@ def load_challenges(document):
     return tuple(result)
 
 
-def score(challenge):
-    guard = ProbeGuard(challenge.task, challenge.data, feedback_policy="capability_v2")
+def score(challenge, *, verifier: Verifier | None = None):
+    verifier = verifier or current_verifier()
+    guard = verifier.guard(challenge.task, challenge.data, feedback_policy="capability_v2")
     guard.execute(challenge.sql, challenge.task.task_id)
     publication = guard.publish()
     accepted = publication["status"] == "verified"
-    grade = grade_rows(publication["rows"], challenge.expected) if accepted else None
+    grade = verifier.cases.grade_rows(publication["rows"], challenge.expected) if accepted else None
     audit = guard.last_result
     probe = audit.get("probe_report") or {}
     semantic_wrong_release = accepted and not grade["correct"]
@@ -161,13 +183,13 @@ async def evaluate(
         dataset.resolve(),
         verifier_manifest.resolve(),
     )
-    readable_roots = ((ROOT / "reports").resolve(), (ROOT / "examples").resolve())
+    readable_roots = ((ROOT / "reports").resolve(), (ROOT / "tests/fixtures").resolve())
     if not output.is_relative_to((ROOT / "reports").resolve()) or any(
         not any(path.is_relative_to(base) for base in readable_roots)
         for path in (dataset, verifier_manifest)
     ):
         raise ValueError(
-            "Inputs must remain inside reports/examples; output must remain inside reports"
+            "Inputs must remain inside reports or tests/fixtures; output must remain inside reports"
         )
     freeze = read(verifier_manifest)
     unchanged = {name: sha(ROOT / name) == digest for name, digest in freeze["files"].items()}
@@ -183,7 +205,8 @@ async def evaluate(
     ):
         raise ValueError("Challenge hash mismatch or unresolved independent label dispute")
     document = read(dataset)
-    challenges = load_challenges(document)
+    verifier = current_verifier()
+    challenges = load_challenges(document, verifier=verifier)
     if len(challenges) != 24 or Counter(item.category for item in challenges) != {
         "legal": 8,
         "semantic_fault": 10,
@@ -193,7 +216,7 @@ async def evaluate(
     if regression_from is not None:
         regression_from = regression_from.resolve()
         if not any(regression_from.is_relative_to(base) for base in readable_roots):
-            raise ValueError("Original evaluation must be inside reports/examples")
+            raise ValueError("Original evaluation must be inside reports or tests/fixtures")
         prior_manifest = read(regression_from / "evaluation_manifest.json")
         if prior_manifest["challenge_sha256"] != dataset_hash or live:
             raise ValueError(
@@ -206,8 +229,8 @@ async def evaluate(
             raise ValueError("Live validation must continue an existing budget")
         from run_probe_workflow import restore_completed_budget
 
-        from dataverify.dbgpt_qwen import QwenConfig
-        from dataverify.probe_cost_budget import validate_pricing
+        from dataverify.integrations.dbgpt_qwen import QwenConfig
+        from dataverify.runtime.probe_cost_budget import validate_pricing
 
         previous_workflow = Path(previous_workflow).resolve()
         if not previous_workflow.is_relative_to((ROOT / "reports").resolve()):
@@ -259,7 +282,7 @@ async def evaluate(
         rows = []
         for item in challenges:
             try:
-                rows.append(score(item))
+                rows.append(score(item, verifier=verifier))
             except Exception as exc:
                 rows.append(
                     {
@@ -289,11 +312,11 @@ async def evaluate(
         workflow["initial_summary"] = summary
         write(output / "workflow.json", workflow)
         if live:
-            from dataverify.probe_live_benchmark import run_probe_benchmark
+            from dataverify.evaluation.probe_live_benchmark import run_probe_benchmark
 
             by_id = {item.identifier: item for item in challenges}
             cases = tuple(
-                Case(
+                verifier.cases.Case(
                     name,
                     by_id[name].task,
                     by_id[name].data,
@@ -343,7 +366,7 @@ def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__)
-    public = ROOT / "examples/independent_holdout"
+    public = ROOT / "tests/fixtures/independent_holdout"
     parser.add_argument(
         "--dataset",
         type=Path,

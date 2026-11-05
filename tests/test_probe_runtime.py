@@ -4,8 +4,8 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-import dataverify.probe_runtime as runtime
-from dataverify.probe_runtime import ProbeData, ProbeTask, execute_sql, static_check
+import dataverify.verification.probe_runtime as runtime
+from dataverify.verification.probe_runtime import ProbeData, ProbeTask, execute_sql, static_check
 
 START = "2026-09-01T00:00:00"
 END = "2026-10-01T00:00:00"

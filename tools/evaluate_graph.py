@@ -16,9 +16,9 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from dataverify.probe_cases import get_case
-from dataverify.probe_grading import grade_probe_record
-from dataverify.reporting import summarize_usage, write_json
+from dataverify.evaluation.probe_cases import get_case
+from dataverify.evaluation.probe_grading import grade_probe_record
+from dataverify.runtime.reporting import summarize_usage, write_json
 
 
 def evaluate_reports(reports: list[dict[str, Any]]) -> dict[str, Any]:

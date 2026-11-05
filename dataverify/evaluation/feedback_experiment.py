@@ -18,22 +18,27 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
-from . import experiment_budget
-from .dbgpt_bridge import UPSTREAM_COMMIT
-from .dbgpt_qwen import InjectedFirstCandidateClient, QwenConfig, QwenLLMClient
-from .experiment_budget import IncrementalAllowance as IncrementalAllowance
-from .experiment_budget import restore_budget as restore_budget
-from .probe_agent_bridge import probe_sql_candidate, run_probe_native_case
+from dataverify.integrations.dbgpt_bridge import UPSTREAM_COMMIT
+from dataverify.integrations.dbgpt_qwen import (
+    InjectedFirstCandidateClient,
+    QwenConfig,
+    QwenLLMClient,
+)
+from dataverify.integrations.probe_agent_bridge import probe_sql_candidate, run_probe_native_case
+from dataverify.runtime import experiment_budget
+from dataverify.runtime.experiment_budget import IncrementalAllowance as IncrementalAllowance
+from dataverify.runtime.experiment_budget import restore_budget as restore_budget
+from dataverify.runtime.probe_cost_budget import MonetaryRequestBudget, validate_pricing
+from dataverify.runtime.reporting import digest_json, summarize_usage, write_json
+
 from .probe_cases import Case, get_case
-from .probe_cost_budget import MonetaryRequestBudget, validate_pricing
 from .probe_live_benchmark import boundary_fixture, grade_probe_record
-from .reporting import digest_json, summarize_usage, write_json
 
 JsonObject = dict[str, Any]
 Arm = tuple[str, str, str]
 ClientFactory = Callable[[Case, str, int, str, IncrementalAllowance], Any]
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 ARMS = {
     "ablation": (
         ("neither", "compact", "legacy_v1"),
@@ -48,21 +53,21 @@ ARMS = {
     ),
 }
 SOURCE_FILES = (
-    "dataverify/feedback_experiment.py",
-    "dataverify/probe_agent_bridge.py",
-    "dataverify/probe_guard.py",
-    "dataverify/probe_capabilities.py",
-    "dataverify/probe_runtime.py",
-    "dataverify/probe_testing.py",
-    "dataverify/probe_cases.py",
-    "dataverify/probe_live_benchmark.py",
-    "dataverify/probe_cost_budget.py",
-    "dataverify/dbgpt_qwen.py",
-    "dataverify/experiment_budget.py",
-    "dataverify/reporting.py",
-    "dataverify/feedback_strategy.py",
-    "dataverify/qwen_config.py",
-    "dataverify/probe_grading.py",
+    "dataverify/evaluation/feedback_experiment.py",
+    "dataverify/integrations/probe_agent_bridge.py",
+    "dataverify/verification/probe_guard.py",
+    "dataverify/verification/probe_capabilities.py",
+    "dataverify/verification/probe_runtime.py",
+    "dataverify/verification/probe_testing.py",
+    "dataverify/evaluation/probe_cases.py",
+    "dataverify/evaluation/probe_live_benchmark.py",
+    "dataverify/runtime/probe_cost_budget.py",
+    "dataverify/integrations/dbgpt_qwen.py",
+    "dataverify/runtime/experiment_budget.py",
+    "dataverify/runtime/reporting.py",
+    "dataverify/agent/feedback_strategy.py",
+    "dataverify/integrations/qwen_config.py",
+    "dataverify/evaluation/probe_grading.py",
 )
 
 

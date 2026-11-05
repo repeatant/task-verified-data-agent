@@ -13,7 +13,7 @@ if importlib.util.find_spec("dbgpt") is None:
 
 from dbgpt.agent.expand.data_scientist_agent import DataScientistAgent
 
-from dataverify.dbgpt_bridge import (
+from dataverify.integrations.dbgpt_bridge import (
     BAD_ORDER_SUM,
     GOOD_LINE_JOIN,
     GOOD_ORDER_SUM,
@@ -24,7 +24,7 @@ from dataverify.dbgpt_bridge import (
     sql_candidate,
     verify_upstream_files,
 )
-from dataverify.guarded_task import ConfirmedMetricTask, GuardedTaskExecutor
+from dataverify.verification.guarded_task import ConfirmedMetricTask, GuardedTaskExecutor
 
 
 @pytest.fixture

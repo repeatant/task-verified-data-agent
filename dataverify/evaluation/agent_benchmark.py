@@ -16,13 +16,24 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from dataverify.integrations.dbgpt_bridge import (
+    PROJECT_ROOT,
+    UPSTREAM_COMMIT,
+    run_native_case,
+    sql_candidate,
+)
+from dataverify.integrations.dbgpt_qwen import (
+    InjectedFirstCandidateClient,
+    QwenConfig,
+    QwenLLMClient,
+    RequestBudget,
+)
+from dataverify.verification.contracts import describe_contracts
+from dataverify.verification.database import database_sha256
+from dataverify.verification.guarded_task import ConfirmedMetricTask
+
 from .benchmark_grader import grade_record
 from .benchmark_tasks import TASKS, candidate_expectation, manifest, write_fixture
-from .contracts import describe_contracts
-from .database import database_sha256
-from .dbgpt_bridge import PROJECT_ROOT, UPSTREAM_COMMIT, run_native_case, sql_candidate
-from .dbgpt_qwen import InjectedFirstCandidateClient, QwenConfig, QwenLLMClient, RequestBudget
-from .guarded_task import ConfirmedMetricTask
 
 MODES = ("original", "code", "evidence")
 
@@ -178,11 +189,11 @@ async def run_benchmark(
     freeze_sha256 = hashlib.sha256(freeze_bytes).hexdigest()
     write_json(output / "frozen_manifest.json", {**freeze_document, "sha256": freeze_sha256})
     own_files = (
-        "dataverify/agent_benchmark.py",
-        "dataverify/benchmark_tasks.py",
-        "dataverify/benchmark_grader.py",
-        "dataverify/dbgpt_qwen.py",
-        "dataverify/dbgpt_bridge.py",
+        "dataverify/evaluation/agent_benchmark.py",
+        "dataverify/evaluation/benchmark_tasks.py",
+        "dataverify/evaluation/benchmark_grader.py",
+        "dataverify/integrations/dbgpt_qwen.py",
+        "dataverify/integrations/dbgpt_bridge.py",
     )
     write_json(
         output / "code_fingerprints.json",

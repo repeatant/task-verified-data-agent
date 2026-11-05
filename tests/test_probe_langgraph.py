@@ -9,10 +9,10 @@ pytest.importorskip("langgraph.checkpoint.sqlite.aio")
 
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
-from dataverify.graph_checkpoint import GraphResumeError
-from dataverify.graph_model import GraphModelError, ScriptedGraphModel
-from dataverify.probe_cases import get_case, get_cases, reference_result
-from dataverify.probe_langgraph import _GraphNodes, run_graph_case
+from dataverify.agent.graph_checkpoint import GraphResumeError
+from dataverify.agent.graph_model import GraphModelError, ScriptedGraphModel
+from dataverify.agent.probe_langgraph import _GraphNodes, run_graph_case
+from dataverify.evaluation.probe_cases import get_case, get_cases, reference_result
 
 
 def action(case, sql=None):
@@ -151,7 +151,7 @@ def test_resume_refuses_changed_binding(change, tmp_path, monkeypatch):
             options["max_attempts"] = 2
         if change == "runtime":
             monkeypatch.setattr(
-                "dataverify.probe_langgraph.runtime_fingerprint", lambda: "new-version"
+                "dataverify.agent.probe_langgraph.runtime_fingerprint", lambda: "new-version"
             )
         model = ScriptedGraphModel([action(case)])
         with pytest.raises(GraphResumeError, match="TASK_SOURCE_RUNTIME_OR_CONFIG_CHANGED"):

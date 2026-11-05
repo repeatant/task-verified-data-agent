@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from dataverify.evaluation import (
+from dataverify.evaluation.evaluation import (
     CANDIDATES,
     FAMILIES,
     expected_result,

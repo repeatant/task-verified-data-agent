@@ -6,9 +6,9 @@ import json
 
 import pytest
 
-from dataverify import benchmark_grader
-from dataverify.benchmark_grader import grade_record
-from dataverify.benchmark_tasks import Fixture, Task, get_task
+from dataverify.evaluation import benchmark_grader
+from dataverify.evaluation.benchmark_grader import grade_record
+from dataverify.evaluation.benchmark_tasks import Fixture, Task, get_task
 
 ORDER_SQL = "SELECT SUM(total) AS revenue FROM orders"
 LINE_JOIN = "SELECT SUM(l.amount) FROM orders o INNER JOIN order_lines l ON o.order_id=l.order_id"

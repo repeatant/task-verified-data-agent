@@ -8,8 +8,8 @@ import pytest
 
 pytest.importorskip("langgraph.checkpoint.sqlite")
 
-from dataverify.graph_checkpoint import GraphResumeError
-from dataverify.probe_cases import get_case
+from dataverify.agent.graph_checkpoint import GraphResumeError
+from dataverify.evaluation.probe_cases import get_case
 from tools import run_graph as cli
 
 

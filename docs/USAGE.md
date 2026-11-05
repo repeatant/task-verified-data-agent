@@ -8,8 +8,8 @@
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.lock.txt -r requirements-probes.txt
-.\.venv\Scripts\python.exe tools/replay_probe.py examples/public_evidence/date_boundary.json
+.\.venv\Scripts\python.exe -m pip install -r requirements/core.lock.txt -r requirements/probes.txt
+.\.venv\Scripts\python.exe tools/replay_probe.py tests/fixtures/public_evidence/date_boundary.json
 ```
 
 该示例固定一条错误候选 SQL，在原数据及加入一条范围外记录后的数据上各运行一次。`reproduced=true` 表示重新观察到同一性质违规；这是反例重放成功，不是候选 SQL 通过。

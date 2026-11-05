@@ -8,7 +8,7 @@ extend-exclude = [
     "reports",
     "release",
     "tmp",
-    "examples/independent_holdout/initial_verifier",
+    "tests/fixtures/independent_holdout/initial_verifier",
 ]
 
 [tool.ruff.lint]

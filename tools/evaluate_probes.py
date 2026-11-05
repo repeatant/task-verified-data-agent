@@ -14,9 +14,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from dataverify.probe_cases import get_cases, grade_rows, reference_result
-from dataverify.probe_runtime import execute_sql, static_check
-from dataverify.probe_testing import ExecutionBudget, probe_candidate
+from dataverify.evaluation.probe_cases import get_cases, grade_rows, reference_result
+from dataverify.verification.probe_runtime import execute_sql, static_check
+from dataverify.verification.probe_testing import ExecutionBudget, probe_candidate
 
 
 def run_evaluation(
@@ -57,7 +57,11 @@ def run_evaluation(
             ).hexdigest()
             for path in [
                 ROOT / "dataverify" / name
-                for name in ("probe_runtime.py", "probe_testing.py", "probe_cases.py")
+                for name in (
+                    "verification/probe_runtime.py",
+                    "verification/probe_testing.py",
+                    "evaluation/probe_cases.py",
+                )
             ]
             + [Path(__file__).resolve()]
         },

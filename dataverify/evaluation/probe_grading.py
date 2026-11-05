@@ -12,8 +12,9 @@ import time
 from dataclasses import replace
 from datetime import datetime
 
+from dataverify.verification.probe_runtime import TABLE_SCHEMA, ProbeData
+
 from .probe_cases import Case, grade_rows, reference_result
-from .probe_runtime import TABLE_SCHEMA, ProbeData
 
 
 def boundary_fixture(case: Case) -> ProbeData:

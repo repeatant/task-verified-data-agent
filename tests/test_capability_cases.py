@@ -6,8 +6,8 @@ import pytest
 
 pytest.importorskip("hypothesis")
 
-from dataverify.capability_cases import get_capability_cases
-from dataverify.probe_cases import reference_result
+from dataverify.evaluation.capability_cases import get_capability_cases
+from dataverify.evaluation.probe_cases import reference_result
 
 
 @pytest.mark.parametrize(

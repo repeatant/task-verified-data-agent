@@ -29,7 +29,7 @@ SQL 被拒绝后，Agent 需要知道失败原因、可用语法及能揭露错�
 
 `feedback_strategy` 记录选择的格式、升级原因与证据可用性。实验另区分模式升级、完整失败反馈的发出，以及它是否进入后续实际 HTTP 请求。最后一次尝试才产生的升级反馈不能计作模型使用过的反馈。
 
-本轮真实三策略对照均完成 3/3，自适应组没有触发升级，因此升级效果仍待出现连续失败的任务验证。默认模式保持 `compact`。重复失败的离线接线记录见 [升级示例](../examples/public_evidence/adaptive_replay.json)。
+本轮真实三策略对照均完成 3/3，自适应组没有触发升级，因此升级效果仍待出现连续失败的任务验证。默认模式保持 `compact`。重复失败的离线接线记录见 [升级示例](../tests/fixtures/public_evidence/adaptive_replay.json)。
 
 ## 离线演示
 
@@ -62,7 +62,7 @@ SQL 被拒绝后，Agent 需要知道失败原因、可用语法及能揭露错�
 
 ## 源码
 
-- [probe_capabilities.py](../dataverify/probe_capabilities.py)：独立信息开关与分类指导。
-- [probe_guard.py](../dataverify/probe_guard.py)：运行状态、证据选择与发布控制。
-- [probe_agent_bridge.py](../dataverify/probe_agent_bridge.py)：原生资源和反馈接入。
-- [feedback_experiment.py](../dataverify/feedback_experiment.py)：分组、评分、预算续接和轨迹记录。
+- [probe_capabilities.py](../dataverify/verification/probe_capabilities.py)：独立信息开关与分类指导。
+- [probe_guard.py](../dataverify/verification/probe_guard.py)：运行状态、证据选择与发布控制。
+- [probe_agent_bridge.py](../dataverify/integrations/probe_agent_bridge.py)：原生资源和反馈接入。
+- [feedback_experiment.py](../dataverify/evaluation/feedback_experiment.py)：分组、评分、预算续接和轨迹记录。

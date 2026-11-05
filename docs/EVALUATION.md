@@ -10,11 +10,11 @@ LangGraph 路径单独运行三项千问联调，使用 `qwen3.8-flash`、`capab
 - `d10`：首轮注入 LEFT JOIN 过滤错误，模型一次真实调用完成修复，保留零值订单。
 - `d03`：首轮由模型自然生成，核验后暂停；在另一个进程恢复，重新核验并发布，恢复阶段新增 HTTP 为 0。
 
-三项在源数据、发布 SQL 一致性和评分器附加边界数据上均通过。四份进程报告只计三个任务；其中两条受控首轮不计模型生成。实际 HTTP 共 3 次，输入 2,974、输出 505，总计 3,479 Token，usage 完整。数据见 [LangGraph 联调证据](../examples/public_evidence/langgraph_validation.json)。
+三项在源数据、发布 SQL 一致性和评分器附加边界数据上均通过。四份进程报告只计三个任务；其中两条受控首轮不计模型生成。实际 HTTP 共 3 次，输入 2,974、输出 505，总计 3,479 Token，usage 完整。数据见 [LangGraph 联调证据](../tests/fixtures/public_evidence/langgraph_validation.json)。
 
 这项验证说明共享核验核心、图路由与检查点可以连通，不是 LangGraph 与 DB-GPT 的修复率或性能对照。下文 7.0% 的输入压缩结果来自原 DB-GPT 实验，不迁移为新框架结果。中断模型节点时拒绝自动重调；HTTP 成功但响应尚未写入图检查点时也不能承诺自动恢复。
 
-`tools/evaluate_graph.py` 对已保存的进程报告离线评分，恢复线程按一次任务统计，所有实际调用分别保留。评分器 [probe_grading.py](../dataverify/probe_grading.py) 由两条执行路径共用，不进入模型上下文或运行时核验模块。
+`tools/evaluate_graph.py` 对已保存的进程报告离线评分，恢复线程按一次任务统计，所有实际调用分别保留。评分器 [probe_grading.py](../dataverify/evaluation/probe_grading.py) 由两条执行路径共用，不进入模型上下文或运行时核验模块。
 
 本轮基础环境 767 项测试通过、12 项可选依赖测试跳过；DB-GPT 独立依赖环境 932 项通过、2 个 LangGraph 专属测试模块跳过，且排除未安装的三个早期服务测试文件。两组覆盖有重叠，不合并成总测试量。Ruff 检查与格式检查通过。
 
@@ -30,13 +30,13 @@ LangGraph 路径单独运行三项千问联调，使用 `qwen3.8-flash`、`capab
 
 全部受控单元中，两组各完成30/32；自然任务完整反馈3/3，紧凑反馈2/3。这些结果尚不能证明紧凑反馈的整体成功率不降。这些是固定schema开发任务，生成种子变化不构成新任务模板。
 
-这是前一版反馈策略的实验，新版能力说明尚未重复原 16 组配对的完整对照；后续小子集实验见下节。数据见 [反馈配对结果](../examples/public_evidence/results.json)。
+这是前一版反馈策略的实验，新版能力说明尚未重复原 16 组配对的完整对照；后续小子集实验见下节。数据见 [反馈配对结果](../tests/fixtures/public_evidence/results.json)。
 
 ## 能力说明与分类反馈
 
 模型在保留零值订单任务中使用了执行器不支持的CASE聚合。补充支持范围与分类修复指导后，同一个已知故障在两个生成种子下重复，旧反馈修复0/2，新反馈2/2；另8个数据条件的端到端任务8/8。
 
-这轮早期实验将能力说明与错误指导组合，不能区分各自作用；后续已补下面的四组消融。同一故障的两次重复不等于两种独立问题。示例见 [旧反馈轨迹](../examples/public_evidence/legacy_failure.json) 与 [能力反馈轨迹](../examples/public_evidence/capability_repair.json)。
+这轮早期实验将能力说明与错误指导组合，不能区分各自作用；后续已补下面的四组消融。同一故障的两次重复不等于两种独立问题。示例见 [旧反馈轨迹](../tests/fixtures/public_evidence/legacy_failure.json) 与 [能力反馈轨迹](../tests/fixtures/public_evidence/capability_repair.json)。
 
 ## 反馈消融与状态升级
 
@@ -53,7 +53,7 @@ LangGraph 路径单独运行三项千问联调，使用 `qwen3.8-flash`、`capab
 
 这两项实验只有三个已知开发任务，不足以确定稳定的主效应、交互效应或泛化提升。执行顺序按任务轮换，各组采用相同尝试上限。核验器、模型、900 输出上限及运行时源码在初次实验与补充执行之间保持一致；仅实验续账与补齐入口扩展，其版本摘要分别保留。
 
-策略与指标见 [反馈机制](FEEDBACK.md)，公开投影见 [消融与策略结果](../examples/public_evidence/feedback_experiments.json)，脚本升级过程见 [离线升级轨迹](../examples/public_evidence/adaptive_replay.json)。
+策略与指标见 [反馈机制](FEEDBACK.md)，公开投影见 [消融与策略结果](../tests/fixtures/public_evidence/feedback_experiments.json)，脚本升级过程见 [离线升级轨迹](../tests/fixtures/public_evidence/adaptive_replay.json)。
 
 ## 独立冻结查询挑战
 
@@ -63,14 +63,14 @@ LangGraph 路径单独运行三项千问联调，使用 `qwen3.8-flash`、`capab
 
 检查增加任务范围、匹配见证与分组成员约束后，原24项转为已知回归，24/24通过。3条原错误候选作为明确注入首轮，再由真实模型修复3/3。修复后同集成绩不计为新的留出结果。
 
-题目及原始实现见 [冻结挑战](../examples/independent_holdout/frozen_challenges.json) 与 [结果摘要](../examples/public_evidence/independent_challenge_results.json)。这一验证采用合成数据和独立AI上下文，不是外部人工测评或公开基准。
+题目及原始实现见 [冻结挑战](../tests/fixtures/independent_holdout/frozen_challenges.json) 与 [结果摘要](../tests/fixtures/public_evidence/independent_challenge_results.json)。这一验证采用合成数据和独立AI上下文，不是外部人工测评或公开基准。
 
 ## 反例重放与版本回放
 
 在核验组件环境运行：
 
 ```powershell
-.\.venv\Scripts\python.exe tools/replay_probe.py examples/public_evidence/date_boundary.json
+.\.venv\Scripts\python.exe tools/replay_probe.py tests/fixtures/public_evidence/date_boundary.json
 .\.venv\Scripts\python.exe tools/replay_initial_challenge.py
 .\.venv\Scripts\python.exe tools/evaluate_independent_holdout.py
 ```

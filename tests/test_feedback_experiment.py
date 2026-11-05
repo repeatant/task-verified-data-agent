@@ -13,9 +13,9 @@ if importlib.util.find_spec("dbgpt") is None:
     pytest.skip("Optional pinned DB-GPT runtime is not installed", allow_module_level=True)
 pytest.importorskip("hypothesis")
 
-from dataverify import feedback_experiment as experiment
-from dataverify.probe_cases import reference_result
-from dataverify.probe_cost_budget import MonetaryRequestBudget
+from dataverify.evaluation import feedback_experiment as experiment
+from dataverify.evaluation.probe_cases import reference_result
+from dataverify.runtime.probe_cost_budget import MonetaryRequestBudget
 
 
 def completed_budget():

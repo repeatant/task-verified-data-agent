@@ -17,39 +17,44 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
-from .dbgpt_bridge import UPSTREAM_COMMIT
-from .dbgpt_qwen import InjectedFirstCandidateClient, QwenConfig, QwenLLMClient
-from .probe_agent_bridge import probe_sql_candidate, run_probe_native_case
-from .probe_capabilities import validate_policy
+from dataverify.integrations.dbgpt_bridge import UPSTREAM_COMMIT
+from dataverify.integrations.dbgpt_qwen import (
+    InjectedFirstCandidateClient,
+    QwenConfig,
+    QwenLLMClient,
+)
+from dataverify.integrations.probe_agent_bridge import probe_sql_candidate, run_probe_native_case
+from dataverify.runtime.probe_cost_budget import MonetaryRequestBudget, validate_pricing
+from dataverify.runtime.reporting import digest_json as _digest
+from dataverify.runtime.reporting import summarize_usage as _usage
+from dataverify.runtime.reporting import write_json as _write
+from dataverify.verification.probe_capabilities import validate_policy
+from dataverify.verification.probe_testing import probe_candidate
+
 from .probe_cases import Case, get_cases
-from .probe_cost_budget import MonetaryRequestBudget, validate_pricing
 from .probe_grading import boundary_fixture, grade_probe_record
 from .probe_grading import independent_query as independent_query
-from .probe_testing import probe_candidate
-from .reporting import digest_json as _digest
-from .reporting import summarize_usage as _usage
-from .reporting import write_json as _write
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MODES = ("full", "compact")
 NATURAL_CASE_IDS = ("d01", "d03", "d04")
 JsonObject = dict[str, Any]
 ClientFactory = Callable[[Case, str, int, str, MonetaryRequestBudget], Any]
 FINGERPRINT_FILES = (
-    "probe_live_benchmark.py",
-    "probe_agent_bridge.py",
-    "probe_guard.py",
-    "probe_cost_budget.py",
-    "probe_testing.py",
-    "probe_runtime.py",
-    "probe_cases.py",
-    "dbgpt_qwen.py",
-    "probe_capabilities.py",
-    "capability_cases.py",
-    "reporting.py",
-    "feedback_strategy.py",
-    "qwen_config.py",
-    "probe_grading.py",
+    "evaluation/probe_live_benchmark.py",
+    "integrations/probe_agent_bridge.py",
+    "verification/probe_guard.py",
+    "runtime/probe_cost_budget.py",
+    "verification/probe_testing.py",
+    "verification/probe_runtime.py",
+    "evaluation/probe_cases.py",
+    "integrations/dbgpt_qwen.py",
+    "verification/probe_capabilities.py",
+    "evaluation/capability_cases.py",
+    "runtime/reporting.py",
+    "agent/feedback_strategy.py",
+    "integrations/qwen_config.py",
+    "evaluation/probe_grading.py",
 )
 
 

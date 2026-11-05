@@ -27,11 +27,11 @@ from dbgpt.agent.expand.data_scientist_agent import DataScientistAgent
 from dbgpt.agent.resource.database import DBResource
 from dbgpt.core import LLMClient, ModelMetadata, ModelOutput
 
-from .contracts import TABLE_COLUMNS, describe_contracts
-from .guarded_task import ConfirmedMetricTask, GuardedTaskExecutor
+from dataverify.verification.contracts import TABLE_COLUMNS, describe_contracts
+from dataverify.verification.guarded_task import ConfirmedMetricTask, GuardedTaskExecutor
 
 UPSTREAM_COMMIT = "06a46eea2d248a0f2b3e9096035424df4f2dc2eb"
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 BAD_ORDER_SUM = (
     "SELECT SUM(o.total) AS revenue FROM orders o "
     "INNER JOIN order_lines l ON o.order_id = l.order_id"

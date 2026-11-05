@@ -15,8 +15,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-from dataverify.database import seed_demo_database
-from dataverify.engine import AgentRunner
+from dataverify.agent.engine import AgentRunner
+from dataverify.verification.database import seed_demo_database
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 

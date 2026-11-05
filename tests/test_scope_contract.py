@@ -10,7 +10,7 @@ from dataclasses import replace
 
 import pytest
 
-from dataverify.probe_runtime import ProbeData, ProbeTask, execute_sql, static_check
+from dataverify.verification.probe_runtime import ProbeData, ProbeTask, execute_sql, static_check
 
 START = "2026-12-03T22:40:00"
 END = "2026-12-04T03:10:00"
@@ -244,7 +244,7 @@ def test_legal_reverse_left_scalar_filters_the_driving_lines_in_where():
 
 def test_scope_rejection_clears_previous_publication_and_correct_query_can_recover():
     pytest.importorskip("hypothesis", reason="Optional probe experiment")
-    from dataverify.probe_guard import ProbeGuard
+    from dataverify.verification.probe_guard import ProbeGuard
 
     task, data = task_for(status="cancelled"), source_for("cancelled")
     guard = ProbeGuard(task, data)

@@ -19,29 +19,34 @@ from typing import Any, TypedDict
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langgraph.graph import END, START, StateGraph
 
+from dataverify.runtime.reporting import digest_json
+from dataverify.verification.probe_capabilities import (
+    policy_features,
+    sql_capabilities,
+    validate_policy,
+)
+from dataverify.verification.probe_guard import ProbeGuard, source_digest
+from dataverify.verification.probe_runtime import ProbeData, ProbeTask
+
 from .graph_checkpoint import GraphResumeError, exclusive_run, validate_budget_continuation
 from .graph_guard import dump_guard, restore_guard
 from .graph_model import GraphModel, GraphModelError, parse_graph_action
-from .probe_capabilities import policy_features, sql_capabilities, validate_policy
-from .probe_guard import ProbeGuard, source_digest
-from .probe_runtime import ProbeData, ProbeTask
-from .reporting import digest_json
 
 _FORMAT = "probe-langgraph-v1"
 _RUNTIME_FILES = (
-    "probe_langgraph.py",
-    "graph_checkpoint.py",
-    "graph_guard.py",
-    "graph_model.py",
-    "probe_guard.py",
-    "probe_runtime.py",
-    "probe_testing.py",
-    "probe_capabilities.py",
-    "feedback_strategy.py",
-    "qwen_config.py",
-    "probe_cost_budget.py",
-    "experiment_budget.py",
-    "reporting.py",
+    "agent/probe_langgraph.py",
+    "agent/graph_checkpoint.py",
+    "agent/graph_guard.py",
+    "agent/graph_model.py",
+    "verification/probe_guard.py",
+    "verification/probe_runtime.py",
+    "verification/probe_testing.py",
+    "verification/probe_capabilities.py",
+    "agent/feedback_strategy.py",
+    "integrations/qwen_config.py",
+    "runtime/probe_cost_budget.py",
+    "runtime/experiment_budget.py",
+    "runtime/reporting.py",
 )
 
 
@@ -66,7 +71,7 @@ class GraphState(TypedDict):
 
 def runtime_fingerprint() -> str:
     """Refuse an old thread if verifier code or its execution dependencies change."""
-    root = Path(__file__).parent
+    root = Path(__file__).resolve().parents[1]
     files = {
         name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in _RUNTIME_FILES
     }

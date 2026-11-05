@@ -4,8 +4,8 @@ import sqlite3
 
 import pytest
 
-from dataverify.checker import CheckedQueryExecutor
-from dataverify.contracts import describe_contracts
+from dataverify.verification.checker import CheckedQueryExecutor
+from dataverify.verification.contracts import describe_contracts
 
 
 @pytest.fixture

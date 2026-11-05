@@ -18,20 +18,20 @@ sys.path.insert(0, str(ROOT))
 
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
-from dataverify.experiment_budget import load_prior_budget
-from dataverify.graph_checkpoint import (
+from dataverify.agent.graph_checkpoint import (
     GraphResumeError,
     JournaledBudget,
     exclusive_run,
     read_budget,
     resume_budget,
 )
-from dataverify.graph_model import InjectedFirstGraphModel, QwenGraphModel, ScriptedGraphModel
-from dataverify.probe_cases import Case, get_case, get_cases
-from dataverify.probe_cost_budget import MonetaryRequestBudget, validate_pricing
-from dataverify.probe_langgraph import run_graph_case
-from dataverify.qwen_config import QwenClientError, QwenConfig
-from dataverify.reporting import summarize_usage, write_json
+from dataverify.agent.graph_model import InjectedFirstGraphModel, QwenGraphModel, ScriptedGraphModel
+from dataverify.agent.probe_langgraph import run_graph_case
+from dataverify.evaluation.probe_cases import Case, get_case, get_cases
+from dataverify.integrations.qwen_config import QwenClientError, QwenConfig
+from dataverify.runtime.experiment_budget import load_prior_budget
+from dataverify.runtime.probe_cost_budget import MonetaryRequestBudget, validate_pricing
+from dataverify.runtime.reporting import summarize_usage, write_json
 
 
 def build_parser() -> argparse.ArgumentParser:

@@ -10,8 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from dataverify.probe_runtime import ProbeData, ProbeTask
-from dataverify.probe_testing import ExecutionBudget, ProbePair, evaluate_pair
+from dataverify.verification.probe_runtime import ProbeData, ProbeTask
+from dataverify.verification.probe_testing import ExecutionBudget, ProbePair, evaluate_pair
 
 
 def replay_report(cell: dict, *, compact: bool = True) -> dict:
@@ -48,12 +48,12 @@ def main() -> int:
     parser.add_argument("--full", action="store_true")
     args = parser.parse_args()
     path = args.trace.resolve()
-    allowed_roots = ((ROOT / "reports").resolve(), (ROOT / "examples").resolve())
+    allowed_roots = ((ROOT / "reports").resolve(), (ROOT / "tests/fixtures").resolve())
     if (
         not any(path.is_relative_to(base) for base in allowed_roots)
         or path.stat().st_size > 2_000_000
     ):
-        raise ValueError("Expected a bounded JSON trace inside project reports/examples")
+        raise ValueError("Expected a bounded JSON trace inside project reports or tests/fixtures")
     result = replay_report(json.loads(path.read_text(encoding="utf-8")), compact=not args.full)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result["reproduced"] else 1

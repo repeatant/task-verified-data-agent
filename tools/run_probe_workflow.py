@@ -16,9 +16,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from dataverify.dbgpt_qwen import QwenConfig
-from dataverify.probe_cost_budget import MonetaryRequestBudget, validate_pricing
-from dataverify.probe_live_benchmark import run_probe_benchmark
+from dataverify.evaluation.probe_live_benchmark import run_probe_benchmark
+from dataverify.integrations.dbgpt_qwen import QwenConfig
+from dataverify.runtime.probe_cost_budget import MonetaryRequestBudget, validate_pricing
 
 
 def write(path: Path, document: dict) -> None:

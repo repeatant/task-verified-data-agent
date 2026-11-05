@@ -3,6 +3,7 @@
 import importlib.util
 import sys
 from copy import deepcopy
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -87,7 +88,7 @@ def test_corrupt_or_changed_challenge_inputs_fail_before_model_use(corruption):
         module.load_challenges(document)
 
 
-def test_semantic_wrong_release_and_scope_breach_are_separate(monkeypatch):
+def test_semantic_wrong_release_and_scope_breach_are_separate():
     challenge = module.load_challenges(mini_document())[0]
 
     class FakeGuard:
@@ -100,8 +101,8 @@ def test_semantic_wrong_release_and_scope_breach_are_separate(monkeypatch):
         def publish(self):
             return {"status": "verified", "rows": [[999]], "verified_sql": "fake"}
 
-    monkeypatch.setattr(module, "ProbeGuard", FakeGuard)
-    result = module.score(challenge)
+    verifier = replace(module.current_verifier(), guard=FakeGuard)
+    result = module.score(challenge, verifier=verifier)
     assert result["semantic_wrong_release"]
     assert not result["scope_breach"]
     assert not result["passed"]

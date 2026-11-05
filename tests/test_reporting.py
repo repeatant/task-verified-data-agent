@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from dataverify.reporting import digest_json, summarize_usage, write_json
+from dataverify.runtime.reporting import digest_json, summarize_usage, write_json
 
 
 def test_unknown_usage_is_visible_and_known_tokens_are_retained():

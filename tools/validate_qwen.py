@@ -18,9 +18,9 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from dataverify.database import seed_demo_database
-from dataverify.engine import AgentRunner
-from dataverify.providers import JOIN, ProviderError, QwenPlanner
+from dataverify.agent.engine import AgentRunner
+from dataverify.integrations.providers import JOIN, ProviderError, QwenPlanner
+from dataverify.verification.database import seed_demo_database
 
 SCENARIOS = {
     "order_total": {

@@ -14,8 +14,8 @@ if importlib.util.find_spec("dbgpt") is None:
 
 from dbgpt.core import ModelMessage, ModelRequest
 
-from dataverify.dbgpt_qwen import QwenClientError, QwenConfig, QwenLLMClient
-from dataverify.probe_cost_budget import MonetaryRequestBudget, validate_pricing
+from dataverify.integrations.dbgpt_qwen import QwenClientError, QwenConfig, QwenLLMClient
+from dataverify.runtime.probe_cost_budget import MonetaryRequestBudget, validate_pricing
 
 SECRET = "sk-test-never-real-budget-credential"
 BEIJING = "https://ws-test.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"

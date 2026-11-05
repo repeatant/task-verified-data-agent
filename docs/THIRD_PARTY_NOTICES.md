@@ -2,11 +2,11 @@
 
 This project extends a pinned upstream Agent loop and uses external libraries.
 The project-specific task guard, test adaptation, evidence handling and
-evaluation code are distinguished from upstream capabilities in the README.
+evaluation code are distinguished from upstream capabilities in the [README](../README.md).
 
 - **DB-GPT** — MIT; https://github.com/eosphoros-ai/DB-GPT . Native loop pinned
   to `06a46eea2d248a0f2b3e9096035424df4f2dc2eb`. Bootstrapped as a separate
-  checkout; selected upstream source hashes are in `docs/research/dbgpt_pin.json`.
+  checkout; selected upstream source hashes are in the [upstream pin record](research/dbgpt_pin.json).
   Upstream source has not been modified. Preserve its LICENSE with its checkout.
 - **SQLGlot** — MIT; https://github.com/tobymao/sqlglot . SQL AST dependency.
 - **Hypothesis** — MPL-2.0; https://github.com/HypothesisWorks/hypothesis . Data

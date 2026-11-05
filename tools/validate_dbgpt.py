@@ -15,8 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from dataverify.database import seed_demo_database
-from dataverify.dbgpt_bridge import (
+from dataverify.integrations.dbgpt_bridge import (
     BAD_ORDER_SUM,
     GOOD_LINE_JOIN,
     GOOD_ORDER_SUM,
@@ -24,7 +23,8 @@ from dataverify.dbgpt_bridge import (
     run_native_case,
     sql_candidate,
 )
-from dataverify.guarded_task import ConfirmedMetricTask
+from dataverify.verification.database import seed_demo_database
+from dataverify.verification.guarded_task import ConfirmedMetricTask
 
 
 def request_text(record, index=1):

@@ -1,10 +1,11 @@
 import pytest
 
 pytest.importorskip(
-    "hypothesis", reason="optional probe experiment requires requirements-probes.txt"
+    "hypothesis", reason="optional probe experiment requires requirements/probes.txt"
 )
-from dataverify.probe_cases import get_case
-from dataverify.probe_testing import probe_candidate
+from dataverify.evaluation.probe_cases import get_case
+from dataverify.verification.probe_testing import probe_candidate
+from tools import evaluate_probes
 from tools.evaluate_probes import ROOT, run_evaluation
 from tools.replay_probe import replay_report
 
@@ -19,9 +20,15 @@ def test_report_destination_must_remain_inside_project_reports(tmp_path):
         run_evaluation(tmp_path / "report")
 
 
-def test_existing_output_is_never_replaced():
+def test_existing_output_is_never_replaced(tmp_path, monkeypatch):
+    monkeypatch.setattr(evaluate_probes, "ROOT", tmp_path)
+    output = tmp_path / "reports" / "previous"
+    output.mkdir(parents=True)
+    sentinel = output / "manifest.json"
+    sentinel.write_text("original", encoding="utf-8")
     with pytest.raises(FileExistsError):
-        run_evaluation(ROOT / "reports")
+        run_evaluation(output)
+    assert sentinel.read_text(encoding="utf-8") == "original"
 
 
 def test_invalid_budget_rejected_before_creating_report():

@@ -8,8 +8,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from dataverify.database import seed_demo_database
-from dataverify.engine import AgentRunner
+from dataverify.agent.engine import AgentRunner
+from dataverify.verification.database import seed_demo_database
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CASES = (

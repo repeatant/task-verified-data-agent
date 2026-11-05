@@ -58,21 +58,21 @@ Guard 检查点保留实际反例及反馈升级进度，不恢复已接受结�
 
 LEFT JOIN 按驱动表、过滤位置和可选侧匹配关系核验。`line_id>0` 等由输入约束可证明的条件可以充当匹配见证；任意渠道或 ID 门槛则可能缩小任务范围。真实零金额组和外连接补出的无明细零额组分别处理。
 
-完整语法与边界检查位于 [probe_runtime.py](../dataverify/probe_runtime.py)，模型可见的能力描述位于 [probe_capabilities.py](../dataverify/probe_capabilities.py)。
+完整语法与边界检查位于 [probe_runtime.py](../dataverify/verification/probe_runtime.py)，模型可见的能力描述位于 [probe_capabilities.py](../dataverify/verification/probe_capabilities.py)。
 
 ## 代码导览
 
-- [probe_runtime.py](../dataverify/probe_runtime.py)：任务与数据类型、AST检查、只读执行和范围约束。
-- [probe_testing.py](../dataverify/probe_testing.py)：性质选择、合法数据生成、成对执行、反例缩减。
-- [probe_guard.py](../dataverify/probe_guard.py)：任务保持、输出检查、旧反例回归和发布结果。
-- [probe_agent_bridge.py](../dataverify/probe_agent_bridge.py)：DB-GPT资源、Action、反馈及最终发布接口。
-- [probe_langgraph.py](../dataverify/probe_langgraph.py)：LangGraph 节点、条件路由和恢复约束。
-- [graph_guard.py](../dataverify/graph_guard.py)：反例与反馈状态的 JSON 编解码，不恢复接受状态。
-- [graph_model.py](../dataverify/graph_model.py)：单次生成接口、离线脚本与千问 HTTP 适配。
-- [graph_checkpoint.py](../dataverify/graph_checkpoint.py)：本地写入锁与持久费用账本。
-- [probe_live_benchmark.py](../dataverify/probe_live_benchmark.py)：真实模型和脚本客户端对照、独立评分、调用审计。
-- [probe_cost_budget.py](../dataverify/probe_cost_budget.py)：调用前预留、usage和估算费用账本。
-- [feedback_experiment.py](../dataverify/feedback_experiment.py)：信息开关消融、固定与自适应反馈对照、累计预算续接。
+- [probe_runtime.py](../dataverify/verification/probe_runtime.py)：任务与数据类型、AST检查、只读执行和范围约束。
+- [probe_testing.py](../dataverify/verification/probe_testing.py)：性质选择、合法数据生成、成对执行、反例缩减。
+- [probe_guard.py](../dataverify/verification/probe_guard.py)：任务保持、输出检查、旧反例回归和发布结果。
+- [probe_agent_bridge.py](../dataverify/integrations/probe_agent_bridge.py)：DB-GPT资源、Action、反馈及最终发布接口。
+- [probe_langgraph.py](../dataverify/agent/probe_langgraph.py)：LangGraph 节点、条件路由和恢复约束。
+- [graph_guard.py](../dataverify/agent/graph_guard.py)：反例与反馈状态的 JSON 编解码，不恢复接受状态。
+- [graph_model.py](../dataverify/agent/graph_model.py)：单次生成接口、离线脚本与千问 HTTP 适配。
+- [graph_checkpoint.py](../dataverify/agent/graph_checkpoint.py)：本地写入锁与持久费用账本。
+- [probe_live_benchmark.py](../dataverify/evaluation/probe_live_benchmark.py)：真实模型和脚本客户端对照、独立评分、调用审计。
+- [probe_cost_budget.py](../dataverify/runtime/probe_cost_budget.py)：调用前预留、usage和估算费用账本。
+- [feedback_experiment.py](../dataverify/evaluation/feedback_experiment.py)：信息开关消融、固定与自适应反馈对照、累计预算续接。
 
 评测目标、故障标签和参考 SQL 位于独立评测模块，运行时核验模块不导入这些目标。
 

@@ -25,10 +25,15 @@ from dbgpt.agent.expand.data_scientist_agent import DataScientistAgent
 from dbgpt.agent.resource.database import DBResource
 from dbgpt.core import LLMClient
 
+from dataverify.verification.probe_capabilities import (
+    policy_features,
+    sql_capabilities,
+    validate_policy,
+)
+from dataverify.verification.probe_guard import ProbeGuard
+from dataverify.verification.probe_runtime import TABLE_SCHEMA, ProbeData, ProbeTask
+
 from .dbgpt_bridge import UPSTREAM_COMMIT, ScriptedLLMClient, verify_upstream_files
-from .probe_capabilities import policy_features, sql_capabilities, validate_policy
-from .probe_guard import ProbeGuard
-from .probe_runtime import TABLE_SCHEMA, ProbeData, ProbeTask
 
 
 def probe_data_sha256(data: ProbeData) -> str:

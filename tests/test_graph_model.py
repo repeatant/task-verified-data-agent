@@ -8,14 +8,14 @@ from typing import Any
 import httpx
 import pytest
 
-from dataverify.graph_model import (
+from dataverify.agent.graph_model import (
     GraphModelError,
     InjectedFirstGraphModel,
     QwenGraphModel,
     ScriptedGraphModel,
     parse_graph_action,
 )
-from dataverify.qwen_config import QwenClientError, QwenConfig
+from dataverify.integrations.qwen_config import QwenClientError, QwenConfig
 
 SECRET = "sk-test-never-a-real-credential"
 ENDPOINT = "https://ws-example.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"

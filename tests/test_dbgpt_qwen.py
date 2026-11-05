@@ -15,15 +15,20 @@ if importlib.util.find_spec("dbgpt") is None:
 
 from dbgpt.core import ModelMessage, ModelRequest
 
-from dataverify.dbgpt_bridge import BAD_ORDER_SUM, GOOD_ORDER_SUM, run_native_case, sql_candidate
-from dataverify.dbgpt_qwen import (
+from dataverify.integrations.dbgpt_bridge import (
+    BAD_ORDER_SUM,
+    GOOD_ORDER_SUM,
+    run_native_case,
+    sql_candidate,
+)
+from dataverify.integrations.dbgpt_qwen import (
     InjectedFirstCandidateClient,
     QwenClientError,
     QwenConfig,
     QwenLLMClient,
     RequestBudget,
 )
-from dataverify.guarded_task import ConfirmedMetricTask
+from dataverify.verification.guarded_task import ConfirmedMetricTask
 
 SECRET = "sk-test-never-a-real-credential"
 ENDPOINT = "https://example.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"

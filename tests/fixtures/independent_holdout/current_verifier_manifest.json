@@ -1,0 +1,24 @@
+{
+  "files": {
+    "dataverify/verification/probe_runtime.py": "103faba2de918e8ee48559a1043df9ca519cfdaaea79531c55af38f03b0058ed",
+    "dataverify/verification/probe_testing.py": "c387edbfdc79a3bf7678e5eb72f6a2ffbcd5b33ee9b93f3918d6abe5af01ff99",
+    "dataverify/verification/probe_capabilities.py": "3b22236e6977802cabe6af298617db2122e0c3c5d6aaa112e42740316b758c4e",
+    "dataverify/verification/probe_guard.py": "f2f8c70278ecb98ed42b0a04c93468f0101def305bd113d210555ed75d2a90cb",
+    "dataverify/integrations/probe_agent_bridge.py": "c6ed3162a07eb724a498a0899f9d9d9e07505e65f91b043f4f4ec5f7d1a450ff",
+    "dataverify/integrations/dbgpt_qwen.py": "7136df05e4987061f503e476c4b0a88cb9976e2ea849f7b088e33613d0ac0e10",
+    "dataverify/runtime/probe_cost_budget.py": "504d99e9da8cf8ef9a59a4db8f39e633359677d6863a6dbfc414ad0d314f1868",
+    "dataverify/evaluation/probe_live_benchmark.py": "3426ec32bc1763ba670eead99b1ec8a357b7c7cc506094b2d28ecd68d6124b97",
+    "dataverify/evaluation/probe_cases.py": "8ffbb21b34176ec82141a47bf607695b0de2d0dcd73b12f7229a229b371f3b80",
+    "docs/research/dbgpt_pin.json": "1f78f7021ca2be647096ed5d7dec15530cdf737bafd6a2d00b33904550aacdc0",
+    "dataverify/agent/feedback_strategy.py": "61f6ad880a199fc143a4bedd9a2c1cc23c3ad9aae5b7f014d38d973406c9d17a",
+    "dataverify/runtime/reporting.py": "8a26c1a5bc7cd8cfd922cfc22172fa705654979eaa729d8b54db3ef6ebdff886",
+    "dataverify/runtime/experiment_budget.py": "63fd35b7aab4a2f3029686ff03675729373125b9554459b04ce772f9648b18bd",
+    "dataverify/integrations/qwen_config.py": "15b3bae502edbbac0e762d607a671afc993efe7ec38c8353fb0f033c5692ffbd",
+    "dataverify/evaluation/probe_grading.py": "e46c7bfb30fb9b611a7fd1c67b83f1184e6fe11c82fc15978de2310e4638fc50",
+    "dataverify/agent/graph_guard.py": "8cef1b8956d510f74ff62537d0248b5254e0b381c38624517a28d07e3a7dc6d3",
+    "dataverify/agent/graph_model.py": "88a40513b3d09dd32765f18b8b06fa92b44ad2c8d81980b419e44bb917a8788c",
+    "dataverify/agent/graph_checkpoint.py": "8b3fdc576d6e895852de0223cd9f4d04a934fbbf817d47bd9da52de6c1841695",
+    "dataverify/agent/probe_langgraph.py": "c252b37cb9cca7e4381a288e4624660b147449b94be24ced2e6c3f6c209232a0"
+  },
+  "scope": "Current post-feedback verifier; known converted regression only."
+}

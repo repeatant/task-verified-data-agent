@@ -7,8 +7,9 @@ SQL and expected acceptance never enter the runtime or model context.
 
 from dataclasses import dataclass, replace
 
+from dataverify.verification.probe_runtime import ProbeData, ProbeTask
+
 from .probe_cases import Case
-from .probe_runtime import ProbeData, ProbeTask
 
 
 @dataclass(frozen=True)

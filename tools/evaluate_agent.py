@@ -12,9 +12,9 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from dataverify.agent_benchmark import run_benchmark
-from dataverify.benchmark_tasks import TASKS
-from dataverify.dbgpt_qwen import QwenConfig
+from dataverify.evaluation.agent_benchmark import run_benchmark
+from dataverify.evaluation.benchmark_tasks import TASKS
+from dataverify.integrations.dbgpt_qwen import QwenConfig
 
 
 def main():

@@ -23,12 +23,12 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 from run_probe_workflow import restore_completed_budget, write
 
-from dataverify.capability_cases import get_capability_cases
-from dataverify.dbgpt_qwen import QwenConfig
-from dataverify.probe_cases import grade_rows, reference_result
-from dataverify.probe_cost_budget import MonetaryRequestBudget, validate_pricing
-from dataverify.probe_guard import ProbeGuard
-from dataverify.probe_live_benchmark import run_probe_benchmark
+from dataverify.evaluation.capability_cases import get_capability_cases
+from dataverify.evaluation.probe_cases import grade_rows, reference_result
+from dataverify.evaluation.probe_live_benchmark import run_probe_benchmark
+from dataverify.integrations.dbgpt_qwen import QwenConfig
+from dataverify.runtime.probe_cost_budget import MonetaryRequestBudget, validate_pricing
+from dataverify.verification.probe_guard import ProbeGuard
 
 
 async def validate(output: Path, *, live=False, previous_workflow: Path | None = None):
@@ -55,13 +55,13 @@ async def validate(output: Path, *, live=False, previous_workflow: Path | None =
     output.mkdir(parents=True, exist_ok=False)
     entries = get_capability_cases()
     sources = (
-        "dataverify/probe_capabilities.py",
-        "dataverify/probe_guard.py",
-        "dataverify/probe_agent_bridge.py",
-        "dataverify/probe_runtime.py",
-        "dataverify/probe_testing.py",
-        "dataverify/capability_cases.py",
-        "dataverify/probe_live_benchmark.py",
+        "dataverify/verification/probe_capabilities.py",
+        "dataverify/verification/probe_guard.py",
+        "dataverify/integrations/probe_agent_bridge.py",
+        "dataverify/verification/probe_runtime.py",
+        "dataverify/verification/probe_testing.py",
+        "dataverify/evaluation/capability_cases.py",
+        "dataverify/evaluation/probe_live_benchmark.py",
         "tools/validate_capability_feedback.py",
     )
     report_dirs = [

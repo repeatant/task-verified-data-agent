@@ -11,12 +11,13 @@ import json
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
+from dataverify.verification.probe_runtime import ProbeData, ProbeTask
+from dataverify.verification.probe_testing import ProbePair, pair_is_applicable
+
 from .feedback_strategy import FeedbackStrategy
-from .probe_runtime import ProbeData, ProbeTask
-from .probe_testing import ProbePair, pair_is_applicable
 
 if TYPE_CHECKING:
-    from .probe_guard import ProbeGuard
+    from dataverify.verification.probe_guard import ProbeGuard
 
 _STATE_FIELDS = {"version", "binding", "regressions", "feedback_strategy", "terminal_code"}
 _PAIR_FIELDS = {"property_id", "base", "added_orders", "added_lines", "record_count"}
@@ -103,7 +104,7 @@ def restore_guard(
     feedback_policy: str = "capability_v2",
 ) -> ProbeGuard:
     """Build a fresh guard with retained evidence and no accepted publication."""
-    from .probe_guard import ProbeGuard
+    from dataverify.verification.probe_guard import ProbeGuard
 
     guard = ProbeGuard(task, data, mode, seed, feedback_policy=feedback_policy)
     guard.restore_checkpoint_state(state)

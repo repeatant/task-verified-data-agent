@@ -12,8 +12,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from dataverify.dbgpt_qwen import QwenConfig
-from dataverify.feedback_experiment import load_prior_budget, run_feedback_experiment
+from dataverify.evaluation.feedback_experiment import load_prior_budget, run_feedback_experiment
+from dataverify.integrations.dbgpt_qwen import QwenConfig
 
 
 def main():

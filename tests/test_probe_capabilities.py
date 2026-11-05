@@ -17,9 +17,9 @@ import pytest
 
 pytest.importorskip("hypothesis", reason="Optional probe experiment")
 
-from dataverify.probe_capabilities import POLICIES, repair_guidance, sql_capabilities
-from dataverify.probe_guard import ProbeGuard, source_digest
-from dataverify.probe_runtime import ProbeData, ProbeTask, execute_sql, static_check
+from dataverify.verification.probe_capabilities import POLICIES, repair_guidance, sql_capabilities
+from dataverify.verification.probe_guard import ProbeGuard, source_digest
+from dataverify.verification.probe_runtime import ProbeData, ProbeTask, execute_sql, static_check
 
 TASK = ProbeTask(
     "capability-july-cancelled",
@@ -244,7 +244,7 @@ def test_unknown_feedback_policy_fails_before_any_action(policy):
 @pytest.fixture
 def native_types():
     pytest.importorskip("dbgpt", reason="Optional pinned DB-GPT runtime")
-    from dataverify.probe_agent_bridge import (
+    from dataverify.integrations.probe_agent_bridge import (
         ProbeResource,
         probe_sql_candidate,
         run_probe_native_case,

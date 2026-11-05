@@ -1,0 +1,2 @@
+# Frozen inputs and source manifests rely on the bytes in a fresh checkout.
+* -text

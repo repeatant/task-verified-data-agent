@@ -5,7 +5,7 @@ import json
 import httpx
 import pytest
 
-from dataverify.providers import ProviderError, QwenPlanner
+from dataverify.integrations.providers import ProviderError, QwenPlanner
 
 
 def test_qwen_transport_encodes_tools_without_leaking_key_to_body():

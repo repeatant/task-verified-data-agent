@@ -18,7 +18,7 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from .probe_runtime import ProbeData, ProbeTask
+    from dataverify.verification.probe_runtime import ProbeData, ProbeTask
 
 
 START = "2026-09-01T00:00:00"
@@ -88,7 +88,7 @@ class Case:
 @lru_cache(maxsize=1)
 def get_cases() -> tuple[Case, ...]:
     """Construct the frozen suite, importing runtime data types only on demand."""
-    from .probe_runtime import ProbeData, ProbeTask
+    from dataverify.verification.probe_runtime import ProbeData, ProbeTask
 
     scalar = ProbeTask(
         "p01",

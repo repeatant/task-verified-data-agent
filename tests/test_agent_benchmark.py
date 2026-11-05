@@ -10,9 +10,9 @@ import pytest
 if importlib.util.find_spec("dbgpt") is None:
     pytest.skip("Optional pinned DB-GPT runtime is not installed", allow_module_level=True)
 
-from dataverify.agent_benchmark import run_benchmark, summarize_rows
-from dataverify.benchmark_tasks import get_task, write_fixture
-from dataverify.dbgpt_bridge import ReadOnlyDemoResource, ScriptedLLMClient
+from dataverify.evaluation.agent_benchmark import run_benchmark, summarize_rows
+from dataverify.evaluation.benchmark_tasks import get_task, write_fixture
+from dataverify.integrations.dbgpt_bridge import ReadOnlyDemoResource, ScriptedLLMClient
 
 
 def grade(**kwargs):

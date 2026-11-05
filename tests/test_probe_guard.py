@@ -4,8 +4,8 @@ import pytest
 
 pytest.importorskip("hypothesis", reason="Optional probe experiment")
 
-from dataverify.probe_cases import get_case
-from dataverify.probe_guard import ProbeGuard
+from dataverify.evaluation.probe_cases import get_case
+from dataverify.verification.probe_guard import ProbeGuard
 
 
 @pytest.mark.parametrize("mode", ["code", "full", "compact"])

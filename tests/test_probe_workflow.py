@@ -9,7 +9,7 @@ if importlib.util.find_spec("dbgpt") is None:
     pytest.skip("Optional pinned DB-GPT runtime is not installed", allow_module_level=True)
 pytest.importorskip("hypothesis")
 
-from dataverify.probe_cost_budget import MonetaryRequestBudget
+from dataverify.runtime.probe_cost_budget import MonetaryRequestBudget
 
 spec = importlib.util.spec_from_file_location(
     "probe_workflow_tool", Path(__file__).resolve().parents[1] / "tools/run_probe_workflow.py"
