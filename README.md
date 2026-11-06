@@ -1,4 +1,4 @@
-# Task-Verified Data Agent
+# DataVerify：面向 SQL 数据分析的核验与纠错 Agent
 
 **用执行证据核验 SQL，定位分歧，并检查修复结果。**
 
