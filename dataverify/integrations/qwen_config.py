@@ -1,7 +1,7 @@
 """Ordinary Qwen configuration and request budgets without a model runtime.
 
-No credential lookup or network I/O occurs on import. Both native DB-GPT and
-LangGraph adapters share these types; environment lookup remains explicit.
+No credential lookup or network I/O occurs on import. LangGraph model adapters
+share these types; environment lookup remains explicit.
 """
 
 from __future__ import annotations

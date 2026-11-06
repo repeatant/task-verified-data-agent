@@ -2,7 +2,7 @@
 
 The graph owns generation and repair. These adapters perform at most one model
 request per call; they do not contain another agent or retry loop. Importing the
-module does not read credentials, initialize DB-GPT, or open network connections.
+module does not read credentials or open network connections.
 """
 
 from __future__ import annotations
@@ -190,12 +190,16 @@ class QwenGraphModel:
         self.http_events.append(event)
         text = await self._post_action(checked, event)
         try:
-            return parse_graph_action(text)
+            return self.parse_action(text)
         except GraphModelError as error:
             # The HTTP response and accounting succeeded. This is a candidate
             # formatting failure, so another budgeted graph turn may repair it.
             event["action_error_code"] = error.code
             raise
+
+    def parse_action(self, text: str) -> GraphAction:
+        """Role-specific adapters can reuse transport and accounting unchanged."""
+        return parse_graph_action(text)
 
     def _new_event(self, attempt: int) -> dict[str, Any]:
         return {

@@ -1,4 +1,4 @@
-"""Small frozen *development* suite for the three DB-GPT comparison arms.
+"""Frozen development tasks and model-independent record-based expectations.
 
 The row records and private expectations are evaluation data, never prompt data.
 ``Task.public_input()`` is the only task payload intended for a model message.

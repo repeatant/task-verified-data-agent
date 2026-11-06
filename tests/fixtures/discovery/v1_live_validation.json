@@ -1,0 +1,4177 @@
+{
+  "format_version": 1,
+  "scope": "Real Qwen development validation after removal of the active DB-GPT path. Includes the first failed run and a subsequent prompt-format revision; not a frozen benchmark or production accuracy.",
+  "runtime": "langgraph",
+  "model": "qwen3.8-flash",
+  "date": "2026-11-07",
+  "redaction": "Allowlisted projection of synthetic tasks, executable programs, fixtures, status and usage. No API keys, endpoints, account identifiers, raw messages/responses, request IDs, local paths or cumulative budget journals.",
+  "evaluation_boundary": "Gold SQL and scoring datasets remain evaluation-only and never enter runtime Agent contexts. Seven authored datasets comprise the bound source plus six additional datasets; these are disclosed development checks, not independent holdout.",
+  "runs_including_failures": [
+    {
+      "run": "01-wrong-reference",
+      "scenario": "wrong_reference_rounding",
+      "track": "controlled",
+      "revision": "before_audit_format_guidance",
+      "task": {
+        "task_id": "order_average",
+        "question": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额；无符合条件订单时返回0。",
+        "definitions": "Amounts are integer minor units. orders.total need not equal line amounts.",
+        "schema": {
+          "orders": [
+            "order_id",
+            "total",
+            "channel"
+          ],
+          "order_lines": [
+            "line_id",
+            "order_id",
+            "amount",
+            "status",
+            "settled_at"
+          ]
+        },
+        "data_constraints": "Unique positive primary keys; valid order_id foreign keys; status in settled/pending/cancelled; timestamps YYYY-MM-DDTHH:MM:SS; channel string or null; negative amounts allowed."
+      },
+      "source": {
+        "orders": [
+          [
+            1,
+            999,
+            "web"
+          ],
+          [
+            2,
+            999,
+            "web"
+          ],
+          [
+            3,
+            999,
+            "web"
+          ]
+        ],
+        "lines": [
+          [
+            1,
+            1,
+            10,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            2,
+            2,
+            10,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            3,
+            3,
+            11,
+            "settled",
+            "2026-09-10T00:00:00"
+          ]
+        ]
+      },
+      "status": "inconclusive",
+      "reason": "REFERENCE_ONLY_LOCAL_ASSIGNMENTS_ALLOWED",
+      "initial_sql": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)",
+      "candidate": {
+        "task_id": "order_average",
+        "sql": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)"
+      },
+      "publication": {
+        "status": "inconclusive",
+        "rows": null,
+        "reason": "REFERENCE_ONLY_LOCAL_ASSIGNMENTS_ALLOWED",
+        "sql": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)",
+        "scope": "Agreement with model-proposed tests; not a semantic proof. No automatic rule promotion.",
+        "reference_version": 1,
+        "reference_revisions": 0
+      },
+      "plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额；无符合条件订单时返回0。"
+          }
+        ],
+        "assumptions": [],
+        "reference": "[[round(sum(r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')/len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) if len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) else 0,2)]]",
+        "fixtures": [
+          {
+            "name": "initial",
+            "data": {
+              "orders": [
+                [
+                  1,
+                  999,
+                  "web"
+                ]
+              ],
+              "lines": [
+                [
+                  1,
+                  1,
+                  100,
+                  "settled",
+                  "2026-09-10T00:00:00"
+                ]
+              ]
+            }
+          }
+        ]
+      },
+      "audit_plan": null,
+      "plan_versions": [
+        {
+          "version": 1,
+          "status": "active",
+          "reason": "initial model proposal",
+          "plan": {
+            "action": "plan",
+            "basis": [
+              {
+                "source": "question",
+                "quote": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额；无符合条件订单时返回0。"
+              }
+            ],
+            "assumptions": [],
+            "reference": "[[round(sum(r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')/len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) if len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) else 0,2)]]",
+            "fixtures": [
+              {
+                "name": "initial",
+                "data": {
+                  "orders": [
+                    [
+                      1,
+                      999,
+                      "web"
+                    ]
+                  ],
+                  "lines": [
+                    [
+                      1,
+                      1,
+                      100,
+                      "settled",
+                      "2026-09-10T00:00:00"
+                    ]
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "reference_revisions": 0,
+      "fixtures": [
+        {
+          "name": "initial",
+          "data": {
+            "orders": [
+              [
+                1,
+                999,
+                "web"
+              ]
+            ],
+            "lines": [
+              [
+                1,
+                1,
+                100,
+                "settled",
+                "2026-09-10T00:00:00"
+              ]
+            ]
+          }
+        }
+      ],
+      "trace": [
+        {
+          "node": "plan",
+          "plan_digest": "1e06037fc2a67421d56b267ca0eea4fa7b4b88e8d4a2e518c04dfe77906b319b",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate",
+          "attempt": 1,
+          "sql": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "invalid_audit",
+          "error": "REFERENCE_FINAL_EXPRESSION_REQUIRED"
+        },
+        {
+          "node": "invalid_audit",
+          "error": "REFERENCE_FINAL_EXPRESSION_REQUIRED"
+        },
+        {
+          "node": "audit",
+          "error": "REFERENCE_ONLY_LOCAL_ASSIGNMENTS_ALLOWED"
+        },
+        {
+          "node": "finalize",
+          "status": "inconclusive"
+        }
+      ],
+      "http_events": [
+        {
+          "role": "auditor",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1002,
+            "completion_tokens": 673,
+            "total_tokens": 1675
+          }
+        },
+        {
+          "role": "auditor",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1635,
+            "completion_tokens": 587,
+            "total_tokens": 2222
+          }
+        },
+        {
+          "role": "auditor",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2268,
+            "completion_tokens": 590,
+            "total_tokens": 2858
+          }
+        }
+      ],
+      "controlled_injections": {
+        "initial_sql": true,
+        "initial_reference": true,
+        "independent_audit": "real_qwen"
+      },
+      "runtime_fingerprint": "b3bcb31e9535db6dd04e3c3f09f2e55d2819686551907e8e6507ff7576170e0a",
+      "three_way_development_grade": {
+        "scope": "Seven authored development datasets, not independent holdout or production accuracy.",
+        "gold_source": "AuditScenario.final_sql; evaluation-only author assumption, not model truth.",
+        "scenario": "wrong_reference_rounding",
+        "run_status": "inconclusive",
+        "candidate_origin": "publication_unpublished",
+        "gold_source_consistent": true,
+        "gold_valid_on_scoring_data": true,
+        "checks": [
+          {
+            "name": "source",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.33
+                ]
+              ],
+              "match": false
+            },
+            "independent": {
+              "status": "error",
+              "error": "SCORING_REFERENCE_MISSING",
+              "match": false
+            }
+          },
+          {
+            "name": "order_grain",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  100.0
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  100.0
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  100.0
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "error",
+              "error": "SCORING_REFERENCE_MISSING",
+              "match": false
+            }
+          },
+          {
+            "name": "empty",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  0
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  0
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  0
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "error",
+              "error": "SCORING_REFERENCE_MISSING",
+              "match": false
+            }
+          },
+          {
+            "name": "recurring_decimal",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.33
+                ]
+              ],
+              "match": false
+            },
+            "independent": {
+              "status": "error",
+              "error": "SCORING_REFERENCE_MISSING",
+              "match": false
+            }
+          },
+          {
+            "name": "half_tie",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.125
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.125
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.12
+                ]
+              ],
+              "match": false
+            },
+            "independent": {
+              "status": "error",
+              "error": "SCORING_REFERENCE_MISSING",
+              "match": false
+            }
+          },
+          {
+            "name": "refunds",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  -0.5
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  -0.5
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  -0.5
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "error",
+              "error": "SCORING_REFERENCE_MISSING",
+              "match": false
+            }
+          },
+          {
+            "name": "mixed_boundaries",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  17.0
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  17.0
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  17.0
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "error",
+              "error": "SCORING_REFERENCE_MISSING",
+              "match": false
+            }
+          }
+        ],
+        "candidate_passes_all": true,
+        "reference_passes_all": false,
+        "independent_passes_all": false
+      }
+    },
+    {
+      "run": "02-wrong-reference-format-fix",
+      "scenario": "wrong_reference_rounding",
+      "track": "controlled",
+      "revision": "after_audit_format_guidance",
+      "task": {
+        "task_id": "order_average",
+        "question": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额；无符合条件订单时返回0。",
+        "definitions": "Amounts are integer minor units. orders.total need not equal line amounts.",
+        "schema": {
+          "orders": [
+            "order_id",
+            "total",
+            "channel"
+          ],
+          "order_lines": [
+            "line_id",
+            "order_id",
+            "amount",
+            "status",
+            "settled_at"
+          ]
+        },
+        "data_constraints": "Unique positive primary keys; valid order_id foreign keys; status in settled/pending/cancelled; timestamps YYYY-MM-DDTHH:MM:SS; channel string or null; negative amounts allowed."
+      },
+      "source": {
+        "orders": [
+          [
+            1,
+            999,
+            "web"
+          ],
+          [
+            2,
+            999,
+            "web"
+          ],
+          [
+            3,
+            999,
+            "web"
+          ]
+        ],
+        "lines": [
+          [
+            1,
+            1,
+            10,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            2,
+            2,
+            10,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            3,
+            3,
+            11,
+            "settled",
+            "2026-09-10T00:00:00"
+          ]
+        ]
+      },
+      "status": "reviewed",
+      "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and September 2026 timestamps (inclusive start, exclusive end), groups by order_id to sum line amounts, and calculates the average of these sums. COALESCE handles the empty result case by returning 0. All provided fixtures match expected values, including boundary conditions, mixed statuses, negative amounts, and empty sets.",
+      "initial_sql": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)",
+      "candidate": {
+        "task_id": "order_average",
+        "sql": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)"
+      },
+      "publication": {
+        "status": "reviewed",
+        "rows": [
+          [
+            10.333333333333334
+          ]
+        ],
+        "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and September 2026 timestamps (inclusive start, exclusive end), groups by order_id to sum line amounts, and calculates the average of these sums. COALESCE handles the empty result case by returning 0. All provided fixtures match expected values, including boundary conditions, mixed statuses, negative amounts, and empty sets.",
+        "sql": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)",
+        "scope": "Agreement with model-proposed tests; not a semantic proof. No automatic rule promotion.",
+        "reference_version": 2,
+        "reference_revisions": 1
+      },
+      "plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细"
+          },
+          {
+            "source": "question",
+            "quote": "先按订单汇总明细金额"
+          },
+          {
+            "source": "question",
+            "quote": "再计算有符合条件明细的订单的平均金额"
+          }
+        ],
+        "assumptions": [],
+        "reference": "lines = tables['order_lines']\nvalid_lines = [r for r in lines if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\norder_ids = set(r['order_id'] for r in valid_lines)\nsums = {oid: sum(r['amount'] for r in valid_lines if r['order_id'] == oid) for oid in order_ids}\nvalues = [sums[oid] for oid in sums]\navg = sum(values) / len(values) if values else 0\n[[avg]]",
+        "fixtures": [
+          {
+            "name": "mixed_status_and_dates",
+            "data": {
+              "orders": [
+                {
+                  "order_id": 1,
+                  "total": 100,
+                  "channel": "web"
+                },
+                {
+                  "order_id": 2,
+                  "total": 200,
+                  "channel": "app"
+                }
+              ],
+              "order_lines": [
+                {
+                  "line_id": 1,
+                  "order_id": 1,
+                  "amount": 50,
+                  "status": "settled",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 2,
+                  "order_id": 1,
+                  "amount": 30,
+                  "status": "pending",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 3,
+                  "order_id": 2,
+                  "amount": 80,
+                  "status": "settled",
+                  "settled_at": "2026-10-01T00:00:00"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "audit_plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细"
+          },
+          {
+            "source": "question",
+            "quote": "先按订单汇总明细金额"
+          },
+          {
+            "source": "question",
+            "quote": "再计算有符合条件明细的订单的平均金额"
+          }
+        ],
+        "assumptions": [],
+        "reference": "lines = tables['order_lines']\nvalid_lines = [r for r in lines if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\norder_ids = set(r['order_id'] for r in valid_lines)\nsums = {oid: sum(r['amount'] for r in valid_lines if r['order_id'] == oid) for oid in order_ids}\nvalues = [sums[oid] for oid in sums]\navg = sum(values) / len(values) if values else 0\n[[avg]]",
+        "fixtures": [
+          {
+            "name": "mixed_status_and_dates",
+            "data": {
+              "orders": [
+                {
+                  "order_id": 1,
+                  "total": 100,
+                  "channel": "web"
+                },
+                {
+                  "order_id": 2,
+                  "total": 200,
+                  "channel": "app"
+                }
+              ],
+              "order_lines": [
+                {
+                  "line_id": 1,
+                  "order_id": 1,
+                  "amount": 50,
+                  "status": "settled",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 2,
+                  "order_id": 1,
+                  "amount": 30,
+                  "status": "pending",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 3,
+                  "order_id": 2,
+                  "amount": 80,
+                  "status": "settled",
+                  "settled_at": "2026-10-01T00:00:00"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "plan_versions": [
+        {
+          "version": 1,
+          "status": "superseded",
+          "reason": "initial model proposal",
+          "plan": {
+            "action": "plan",
+            "basis": [
+              {
+                "source": "question",
+                "quote": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额；无符合条件订单时返回0。"
+              }
+            ],
+            "assumptions": [],
+            "reference": "[[round(sum(r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')/len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) if len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) else 0,2)]]",
+            "fixtures": [
+              {
+                "name": "initial",
+                "data": {
+                  "orders": [
+                    [
+                      1,
+                      999,
+                      "web"
+                    ]
+                  ],
+                  "lines": [
+                    [
+                      1,
+                      1,
+                      100,
+                      "settled",
+                      "2026-09-10T00:00:00"
+                    ]
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "version": 2,
+          "status": "active",
+          "reason": "The task requires calculating the average amount of orders with qualifying details. It does not specify rounding to 2 decimal places. The reference program applies `round(..., 2)`, which truncates precision (e.g., returning 0.33 instead of 0.3333...). The candidate SQL and independent program return the full floating-point average, which is the standard interpretation of 'average' unless precision/rounding rules are explicitly stated. The disagreement in checks `data_f67cbfb2cdc504ae` and `data_7ee232fdb0723a8f` shows the reference losing precision due to this unrequested rounding.",
+          "plan": {
+            "action": "plan",
+            "basis": [
+              {
+                "source": "question",
+                "quote": "统计2026年9月已结算明细"
+              },
+              {
+                "source": "question",
+                "quote": "先按订单汇总明细金额"
+              },
+              {
+                "source": "question",
+                "quote": "再计算有符合条件明细的订单的平均金额"
+              }
+            ],
+            "assumptions": [],
+            "reference": "lines = tables['order_lines']\nvalid_lines = [r for r in lines if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\norder_ids = set(r['order_id'] for r in valid_lines)\nsums = {oid: sum(r['amount'] for r in valid_lines if r['order_id'] == oid) for oid in order_ids}\nvalues = [sums[oid] for oid in sums]\navg = sum(values) / len(values) if values else 0\n[[avg]]",
+            "fixtures": [
+              {
+                "name": "mixed_status_and_dates",
+                "data": {
+                  "orders": [
+                    {
+                      "order_id": 1,
+                      "total": 100,
+                      "channel": "web"
+                    },
+                    {
+                      "order_id": 2,
+                      "total": 200,
+                      "channel": "app"
+                    }
+                  ],
+                  "order_lines": [
+                    {
+                      "line_id": 1,
+                      "order_id": 1,
+                      "amount": 50,
+                      "status": "settled",
+                      "settled_at": "2026-09-15T10:00:00"
+                    },
+                    {
+                      "line_id": 2,
+                      "order_id": 1,
+                      "amount": 30,
+                      "status": "pending",
+                      "settled_at": "2026-09-15T10:00:00"
+                    },
+                    {
+                      "line_id": 3,
+                      "order_id": 2,
+                      "amount": 80,
+                      "status": "settled",
+                      "settled_at": "2026-10-01T00:00:00"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "reference_revisions": 1,
+      "fixtures": [
+        {
+          "name": "initial",
+          "data": {
+            "orders": [
+              [
+                1,
+                999,
+                "web"
+              ]
+            ],
+            "lines": [
+              [
+                1,
+                1,
+                100,
+                "settled",
+                "2026-09-10T00:00:00"
+              ]
+            ]
+          }
+        },
+        {
+          "name": "mixed_status_and_dates",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 100,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 200,
+                "channel": "app"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 1,
+                "order_id": 1,
+                "amount": 50,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 2,
+                "order_id": 1,
+                "amount": 30,
+                "status": "pending",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 3,
+                "order_id": 2,
+                "amount": 80,
+                "status": "settled",
+                "settled_at": "2026-10-01T00:00:00"
+              }
+            ]
+          }
+        },
+        {
+          "name": "searched_disagreement",
+          "data": {
+            "orders": [
+              [
+                1,
+                0,
+                null
+              ],
+              [
+                2,
+                0,
+                null
+              ],
+              [
+                3,
+                0,
+                null
+              ]
+            ],
+            "lines": [
+              [
+                1,
+                1,
+                1,
+                "settled",
+                "2026-09-01T00:00:00"
+              ],
+              [
+                2,
+                2,
+                0,
+                "settled",
+                "2026-09-01T00:00:00"
+              ],
+              [
+                3,
+                3,
+                0,
+                "settled",
+                "2026-09-01T00:00:00"
+              ]
+            ]
+          }
+        },
+        {
+          "name": "boundary_check",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 0,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 0,
+                "channel": "app"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 1,
+                "order_id": 1,
+                "amount": 100,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              },
+              {
+                "line_id": 2,
+                "order_id": 2,
+                "amount": 200,
+                "status": "settled",
+                "settled_at": "2026-10-01T00:00:00"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mixed_status_and_no_qualifying_order",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 0,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 0,
+                "channel": "app"
+              },
+              {
+                "order_id": 3,
+                "total": 0,
+                "channel": "web"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 1,
+                "order_id": 1,
+                "amount": 50,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 2,
+                "order_id": 1,
+                "amount": 30,
+                "status": "pending",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 3,
+                "order_id": 2,
+                "amount": 80,
+                "status": "cancelled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 4,
+                "order_id": 3,
+                "amount": 10,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              }
+            ]
+          }
+        },
+        {
+          "name": "negative_sums",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 0,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 0,
+                "channel": "app"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 1,
+                "order_id": 1,
+                "amount": -50,
+                "status": "settled",
+                "settled_at": "2026-09-10T00:00:00"
+              },
+              {
+                "line_id": 2,
+                "order_id": 2,
+                "amount": -30,
+                "status": "settled",
+                "settled_at": "2026-09-10T00:00:00"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mixed_signs",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 0,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 0,
+                "channel": "app"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 1,
+                "order_id": 1,
+                "amount": 100,
+                "status": "settled",
+                "settled_at": "2026-09-10T00:00:00"
+              },
+              {
+                "line_id": 2,
+                "order_id": 1,
+                "amount": -40,
+                "status": "settled",
+                "settled_at": "2026-09-10T00:00:00"
+              },
+              {
+                "line_id": 3,
+                "order_id": 2,
+                "amount": 10,
+                "status": "settled",
+                "settled_at": "2026-09-10T00:00:00"
+              }
+            ]
+          }
+        }
+      ],
+      "trace": [
+        {
+          "node": "plan",
+          "plan_digest": "1e06037fc2a67421d56b267ca0eea4fa7b4b88e8d4a2e518c04dfe77906b319b",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate",
+          "attempt": 1,
+          "sql": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "invalid_audit",
+          "error": "REFERENCE_ONLY_LOCAL_ASSIGNMENTS_ALLOWED"
+        },
+        {
+          "node": "audit",
+          "plan_digest": "3f36798a907a9612d179326539bb7277104e53b70db0aac4e31f7a1ab5bc6551",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": true
+        },
+        {
+          "node": "attribute",
+          "decision": {
+            "target": "reference",
+            "evidence_level": "model_supported_not_proven",
+            "checks": [
+              "data_f67cbfb2cdc504ae",
+              "data_7ee232fdb0723a8f"
+            ],
+            "reason": "The task requires calculating the average amount of orders with qualifying details. It does not specify rounding to 2 decimal places. The reference program applies `round(..., 2)`, which truncates precision (e.g., returning 0.33 instead of 0.3333...). The candidate SQL and independent program return the full floating-point average, which is the standard interpretation of 'average' unless precision/rounding rules are explicitly stated. The disagreement in checks `data_f67cbfb2cdc504ae` and `data_7ee232fdb0723a8f` shows the reference losing precision due to this unrequested rounding.",
+            "basis": [
+              {
+                "source": "question",
+                "quote": "计算有符合条件明细的订单的平均金额"
+              },
+              {
+                "source": "definitions",
+                "quote": "Amounts are integer minor units."
+              }
+            ]
+          }
+        },
+        {
+          "node": "replace_reference",
+          "version": 2,
+          "retained_fixture_count": 3,
+          "candidate_unchanged": true
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "probe",
+            "reason": "Verify boundary conditions for settled_at (inclusive start, exclusive end) and ensure only 'settled' status lines are aggregated per order. Also check if orders with no qualifying lines are excluded from the average calculation.",
+            "fixture_names": [
+              "boundary_check",
+              "mixed_status_and_no_qualifying_order"
+            ]
+          }
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "probe",
+            "reason": "Verify handling of orders with only negative settled amounts and ensure AVG is over order sums, not line counts.",
+            "fixture_names": [
+              "negative_sums",
+              "mixed_signs"
+            ]
+          }
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "finish",
+            "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and September 2026 timestamps (inclusive start, exclusive end), groups by order_id to sum line amounts, and calculates the average of these sums. COALESCE handles the empty result case by returning 0. All provided fixtures match expected values, including boundary conditions, mixed statuses, negative amounts, and empty sets.",
+            "fixture_names": []
+          }
+        },
+        {
+          "node": "finalize",
+          "status": "reviewed"
+        }
+      ],
+      "http_events": [
+        {
+          "role": "auditor",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1072,
+            "completion_tokens": 562,
+            "total_tokens": 1634
+          }
+        },
+        {
+          "role": "auditor",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1908,
+            "completion_tokens": 470,
+            "total_tokens": 2378
+          }
+        },
+        {
+          "role": "reviewer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2339,
+            "completion_tokens": 214,
+            "total_tokens": 2553
+          }
+        },
+        {
+          "role": "reviewer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1678,
+            "completion_tokens": 416,
+            "total_tokens": 2094
+          }
+        },
+        {
+          "role": "reviewer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2214,
+            "completion_tokens": 336,
+            "total_tokens": 2550
+          }
+        },
+        {
+          "role": "reviewer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2671,
+            "completion_tokens": 89,
+            "total_tokens": 2760
+          }
+        }
+      ],
+      "controlled_injections": {
+        "initial_sql": true,
+        "initial_reference": true,
+        "independent_audit": "real_qwen"
+      },
+      "runtime_fingerprint": "4565bddf2e623f481de534a50069f380bf497ea50a62c29eedf7d7b5af2e54a9",
+      "three_way_development_grade": {
+        "scope": "Seven authored development datasets, not independent holdout or production accuracy.",
+        "gold_source": "AuditScenario.final_sql; evaluation-only author assumption, not model truth.",
+        "scenario": "wrong_reference_rounding",
+        "run_status": "reviewed",
+        "candidate_origin": "publication_published",
+        "gold_source_consistent": true,
+        "gold_valid_on_scoring_data": true,
+        "checks": [
+          {
+            "name": "source",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "order_grain",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  100.0
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  100.0
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  100.0
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  100.0
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "empty",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  0
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  0
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  0
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  0
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "recurring_decimal",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "half_tie",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.125
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.125
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.125
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.125
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "refunds",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  -0.5
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  -0.5
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  -0.5
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  -0.5
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "mixed_boundaries",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  17.0
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  17.0
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  17.0
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  17.0
+                ]
+              ],
+              "match": true
+            }
+          }
+        ],
+        "candidate_passes_all": true,
+        "reference_passes_all": true,
+        "independent_passes_all": true
+      }
+    },
+    {
+      "run": "03-sql-and-rounding",
+      "scenario": "wrong_sql_grain",
+      "track": "controlled",
+      "revision": "after_audit_format_guidance",
+      "task": {
+        "task_id": "order_average",
+        "question": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额；无符合条件订单时返回0。",
+        "definitions": "Amounts are integer minor units. orders.total need not equal line amounts.",
+        "schema": {
+          "orders": [
+            "order_id",
+            "total",
+            "channel"
+          ],
+          "order_lines": [
+            "line_id",
+            "order_id",
+            "amount",
+            "status",
+            "settled_at"
+          ]
+        },
+        "data_constraints": "Unique positive primary keys; valid order_id foreign keys; status in settled/pending/cancelled; timestamps YYYY-MM-DDTHH:MM:SS; channel string or null; negative amounts allowed."
+      },
+      "source": {
+        "orders": [
+          [
+            1,
+            999,
+            "web"
+          ],
+          [
+            2,
+            999,
+            "web"
+          ],
+          [
+            3,
+            999,
+            "web"
+          ]
+        ],
+        "lines": [
+          [
+            1,
+            1,
+            120,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            2,
+            2,
+            20,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            3,
+            2,
+            60,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            4,
+            3,
+            -20,
+            "settled",
+            "2026-09-10T00:00:00"
+          ]
+        ]
+      },
+      "status": "reviewed",
+      "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and September 2026 timestamps, groups by order_id to sum amounts, calculates the average of these sums, and returns 0 if no orders match. All provided fixtures and the bound source test case yield matching results.",
+      "initial_sql": "SELECT COALESCE(AVG(amount),0) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+      "candidate": {
+        "task_id": "order_average",
+        "sql": "SELECT COALESCE(AVG(order_sum), 0) FROM (SELECT SUM(amount) AS order_sum FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00' GROUP BY order_id)"
+      },
+      "publication": {
+        "status": "reviewed",
+        "rows": [
+          [
+            60.0
+          ]
+        ],
+        "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and September 2026 timestamps, groups by order_id to sum amounts, calculates the average of these sums, and returns 0 if no orders match. All provided fixtures and the bound source test case yield matching results.",
+        "sql": "SELECT COALESCE(AVG(order_sum), 0) FROM (SELECT SUM(amount) AS order_sum FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00' GROUP BY order_id)",
+        "scope": "Agreement with model-proposed tests; not a semantic proof. No automatic rule promotion.",
+        "reference_version": 1,
+        "reference_revisions": 0
+      },
+      "plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额；无符合条件订单时返回0。"
+          }
+        ],
+        "assumptions": [],
+        "reference": "[[sum(r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')/len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) if len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) else 0]]",
+        "fixtures": [
+          {
+            "name": "initial",
+            "data": {
+              "orders": [
+                [
+                  1,
+                  999,
+                  "web"
+                ]
+              ],
+              "lines": [
+                [
+                  1,
+                  1,
+                  100,
+                  "settled",
+                  "2026-09-10T00:00:00"
+                ]
+              ]
+            }
+          }
+        ]
+      },
+      "audit_plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细"
+          },
+          {
+            "source": "question",
+            "quote": "先按订单汇总明细金额"
+          },
+          {
+            "source": "question",
+            "quote": "计算有符合条件明细的订单的平均金额"
+          }
+        ],
+        "assumptions": [],
+        "reference": "qualified_lines = [r for r in tables['order_lines'] if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\norder_ids = sorted(set(r['order_id'] for r in qualified_lines))\nsums = [sum(r['amount'] for r in qualified_lines if r['order_id'] == oid) for oid in order_ids]\navg_val = sum(sums) / len(sums) if sums else 0\n[[avg_val]]",
+        "fixtures": [
+          {
+            "name": "mixed_status_and_time",
+            "data": {
+              "orders": [
+                {
+                  "order_id": 1,
+                  "total": 100,
+                  "channel": "web"
+                },
+                {
+                  "order_id": 2,
+                  "total": 50,
+                  "channel": null
+                },
+                {
+                  "order_id": 3,
+                  "total": 80,
+                  "channel": "app"
+                }
+              ],
+              "order_lines": [
+                {
+                  "line_id": 101,
+                  "order_id": 1,
+                  "amount": 40,
+                  "status": "settled",
+                  "settled_at": "2026-09-01T00:00:00"
+                },
+                {
+                  "line_id": 102,
+                  "order_id": 1,
+                  "amount": 60,
+                  "status": "pending",
+                  "settled_at": "2026-09-02T00:00:00"
+                },
+                {
+                  "line_id": 103,
+                  "order_id": 2,
+                  "amount": 50,
+                  "status": "settled",
+                  "settled_at": "2026-09-30T23:59:59"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "plan_versions": [
+        {
+          "version": 1,
+          "status": "active",
+          "reason": "initial model proposal",
+          "plan": {
+            "action": "plan",
+            "basis": [
+              {
+                "source": "question",
+                "quote": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额；无符合条件订单时返回0。"
+              }
+            ],
+            "assumptions": [],
+            "reference": "[[sum(r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')/len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) if len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) else 0]]",
+            "fixtures": [
+              {
+                "name": "initial",
+                "data": {
+                  "orders": [
+                    [
+                      1,
+                      999,
+                      "web"
+                    ]
+                  ],
+                  "lines": [
+                    [
+                      1,
+                      1,
+                      100,
+                      "settled",
+                      "2026-09-10T00:00:00"
+                    ]
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "reference_revisions": 0,
+      "fixtures": [
+        {
+          "name": "initial",
+          "data": {
+            "orders": [
+              [
+                1,
+                999,
+                "web"
+              ]
+            ],
+            "lines": [
+              [
+                1,
+                1,
+                100,
+                "settled",
+                "2026-09-10T00:00:00"
+              ]
+            ]
+          }
+        },
+        {
+          "name": "mixed_status_and_time",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 100,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 50,
+                "channel": null
+              },
+              {
+                "order_id": 3,
+                "total": 80,
+                "channel": "app"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 101,
+                "order_id": 1,
+                "amount": 40,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              },
+              {
+                "line_id": 102,
+                "order_id": 1,
+                "amount": 60,
+                "status": "pending",
+                "settled_at": "2026-09-02T00:00:00"
+              },
+              {
+                "line_id": 103,
+                "order_id": 2,
+                "amount": 50,
+                "status": "settled",
+                "settled_at": "2026-09-30T23:59:59"
+              }
+            ]
+          }
+        },
+        {
+          "name": "searched_disagreement",
+          "data": {
+            "orders": [
+              [
+                1,
+                0,
+                null
+              ]
+            ],
+            "lines": [
+              [
+                1,
+                1,
+                0,
+                "settled",
+                "2026-09-01T00:00:00"
+              ],
+              [
+                2,
+                1,
+                1,
+                "settled",
+                "2026-09-01T00:00:00"
+              ]
+            ]
+          }
+        },
+        {
+          "name": "exclude_no_lines_and_negatives",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 0,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 0,
+                "channel": "app"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 1,
+                "order_id": 1,
+                "amount": -50,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 2,
+                "order_id": 1,
+                "amount": -50,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              }
+            ]
+          }
+        },
+        {
+          "name": "empty_result_set",
+          "data": {
+            "orders": [
+              [
+                1,
+                100,
+                "web"
+              ]
+            ],
+            "lines": [
+              [
+                1,
+                1,
+                50,
+                "pending",
+                "2026-09-10T00:00:00"
+              ]
+            ]
+          }
+        },
+        {
+          "name": "mixed_qualifying_and_non_qualifying_orders",
+          "data": {
+            "orders": [
+              [
+                1,
+                100,
+                "web"
+              ],
+              [
+                2,
+                200,
+                "app"
+              ]
+            ],
+            "lines": [
+              [
+                1,
+                1,
+                100,
+                "settled",
+                "2026-09-10T00:00:00"
+              ],
+              [
+                2,
+                2,
+                50,
+                "pending",
+                "2026-09-10T00:00:00"
+              ]
+            ]
+          }
+        }
+      ],
+      "trace": [
+        {
+          "node": "plan",
+          "plan_digest": "1ad3b5a675af4a895b537440eae61881ef8f04c43f7ca3905100eed1c1df2a06",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate",
+          "attempt": 1,
+          "sql": "SELECT COALESCE(AVG(amount),0) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "plan_digest": "07fa05f83e59429a1c98d426e5cae654f7c839c92b94af4220302148c58cce20",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": true
+        },
+        {
+          "node": "attribute",
+          "decision": {
+            "target": "candidate",
+            "evidence_level": "model_supported_not_proven",
+            "checks": [
+              "data_e0384765d5a2184d",
+              "data_65e5612e500b7ca2"
+            ],
+            "reason": "The task requires aggregating line amounts by order first, then calculating the average of those order totals. The candidate SQL calculates the average of individual line amounts (AVG(amount)), ignoring the grouping step. This contradicts the requirement '先按订单汇总明细金额，再计算...平均金额'. The reference and independent programs correctly group by order_id before averaging. Evidence check data_e0384765d5a2184d shows candidate returns 0.5 (avg of lines 0,1) while reference/independent return 1.0 (sum 1 / count 1). Check data_65e5612e500b7ca2 shows candidate returns 45.0 (avg of lines 120,20,60,-20) while reference/independent return 60.0 (avg of order sums: 120, 80, -20).",
+            "basis": [
+              {
+                "source": "question",
+                "quote": "先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额"
+              },
+              {
+                "source": "definitions",
+                "quote": "orders.total need not equal line amounts"
+              }
+            ]
+          }
+        },
+        {
+          "node": "repair_feedback"
+        },
+        {
+          "node": "generate",
+          "attempt": 2,
+          "sql": "SELECT COALESCE(AVG(order_sum), 0) FROM (SELECT SUM(amount) AS order_sum FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00' GROUP BY order_id)"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "probe",
+            "reason": "Verify handling of orders with no qualifying lines (should be excluded from average) and ensure negative sums are included in the average calculation correctly.",
+            "fixture_names": [
+              "exclude_no_lines_and_negatives"
+            ]
+          }
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "probe",
+            "reason": "Verify if orders with no qualifying lines are excluded from the average (denominator) and if NULL handling for empty result sets is correct.",
+            "fixture_names": [
+              "empty_result_set",
+              "mixed_qualifying_and_non_qualifying_orders"
+            ]
+          }
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "finish",
+            "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and September 2026 timestamps, groups by order_id to sum amounts, calculates the average of these sums, and returns 0 if no orders match. All provided fixtures and the bound source test case yield matching results.",
+            "fixture_names": []
+          }
+        },
+        {
+          "node": "finalize",
+          "status": "reviewed"
+        }
+      ],
+      "http_events": [
+        {
+          "role": "auditor",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1108,
+            "completion_tokens": 626,
+            "total_tokens": 1734
+          }
+        },
+        {
+          "role": "reviewer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2264,
+            "completion_tokens": 304,
+            "total_tokens": 2568
+          }
+        },
+        {
+          "role": "writer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2650,
+            "completion_tokens": 183,
+            "total_tokens": 2833
+          }
+        },
+        {
+          "role": "reviewer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1640,
+            "completion_tokens": 170,
+            "total_tokens": 1810
+          }
+        },
+        {
+          "role": "reviewer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1851,
+            "completion_tokens": 190,
+            "total_tokens": 2041
+          }
+        },
+        {
+          "role": "reviewer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2099,
+            "completion_tokens": 78,
+            "total_tokens": 2177
+          }
+        }
+      ],
+      "controlled_injections": {
+        "initial_sql": true,
+        "initial_reference": true,
+        "independent_audit": "real_qwen"
+      },
+      "runtime_fingerprint": "4565bddf2e623f481de534a50069f380bf497ea50a62c29eedf7d7b5af2e54a9",
+      "three_way_development_grade": {
+        "scope": "Seven authored development datasets, not independent holdout or production accuracy.",
+        "gold_source": "AuditScenario.final_sql; evaluation-only author assumption, not model truth.",
+        "scenario": "wrong_sql_grain",
+        "run_status": "reviewed",
+        "candidate_origin": "publication_published",
+        "gold_source_consistent": true,
+        "gold_valid_on_scoring_data": true,
+        "checks": [
+          {
+            "name": "source",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  60.0
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  60.0
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  60.0
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  60.0
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "order_grain",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  100.0
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  100.0
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  100.0
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  100.0
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "empty",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  0
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  0
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  0
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  0
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "recurring_decimal",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.333333333333334
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "half_tie",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.125
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.125
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.125
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.125
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "refunds",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  -0.5
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  -0.5
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  -0.5
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  -0.5
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "mixed_boundaries",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  17.0
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  17.0
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  17.0
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  17.0
+                ]
+              ],
+              "match": true
+            }
+          }
+        ],
+        "candidate_passes_all": true,
+        "reference_passes_all": true,
+        "independent_passes_all": true
+      }
+    },
+    {
+      "run": "03-sql-and-rounding",
+      "scenario": "requested_rounding",
+      "track": "controlled",
+      "revision": "after_audit_format_guidance",
+      "task": {
+        "task_id": "order_average",
+        "question": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额；无符合条件订单时返回0。最终平均值四舍五入保留两位小数。",
+        "definitions": "Amounts are integer minor units. orders.total need not equal line amounts.",
+        "schema": {
+          "orders": [
+            "order_id",
+            "total",
+            "channel"
+          ],
+          "order_lines": [
+            "line_id",
+            "order_id",
+            "amount",
+            "status",
+            "settled_at"
+          ]
+        },
+        "data_constraints": "Unique positive primary keys; valid order_id foreign keys; status in settled/pending/cancelled; timestamps YYYY-MM-DDTHH:MM:SS; channel string or null; negative amounts allowed."
+      },
+      "source": {
+        "orders": [
+          [
+            1,
+            999,
+            "web"
+          ],
+          [
+            2,
+            999,
+            "web"
+          ],
+          [
+            3,
+            999,
+            "web"
+          ]
+        ],
+        "lines": [
+          [
+            1,
+            1,
+            10,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            2,
+            2,
+            10,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            3,
+            3,
+            11,
+            "settled",
+            "2026-09-10T00:00:00"
+          ]
+        ]
+      },
+      "status": "reviewed",
+      "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and date range [2026-09-01, 2026-10-01), groups by order_id to sum amounts, calculates the average of these sums (handling empty sets via COALESCE to return 0), and rounds to 2 decimal places. All provided fixtures match expected results, including edge cases for boundaries, negative values, and integer division.",
+      "initial_sql": "SELECT ROUND(mean_value,2) FROM (SELECT COALESCE(AVG(net),0) AS mean_value FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id))",
+      "candidate": {
+        "task_id": "order_average",
+        "sql": "SELECT ROUND(mean_value,2) FROM (SELECT COALESCE(AVG(net),0) AS mean_value FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id))"
+      },
+      "publication": {
+        "status": "reviewed",
+        "rows": [
+          [
+            10.33
+          ]
+        ],
+        "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and date range [2026-09-01, 2026-10-01), groups by order_id to sum amounts, calculates the average of these sums (handling empty sets via COALESCE to return 0), and rounds to 2 decimal places. All provided fixtures match expected results, including edge cases for boundaries, negative values, and integer division.",
+        "sql": "SELECT ROUND(mean_value,2) FROM (SELECT COALESCE(AVG(net),0) AS mean_value FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id))",
+        "scope": "Agreement with model-proposed tests; not a semantic proof. No automatic rule promotion.",
+        "reference_version": 1,
+        "reference_revisions": 0
+      },
+      "plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额；无符合条件订单时返回0。最终平均值四舍五入保留两位小数。"
+          }
+        ],
+        "assumptions": [],
+        "reference": "[[round_half_up(sum(r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')/len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) if len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) else 0,2)]]",
+        "fixtures": [
+          {
+            "name": "initial",
+            "data": {
+              "orders": [
+                [
+                  1,
+                  999,
+                  "web"
+                ]
+              ],
+              "lines": [
+                [
+                  1,
+                  1,
+                  100,
+                  "settled",
+                  "2026-09-10T00:00:00"
+                ]
+              ]
+            }
+          }
+        ]
+      },
+      "audit_plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细"
+          },
+          {
+            "source": "question",
+            "quote": "先按订单汇总明细金额"
+          },
+          {
+            "source": "question",
+            "quote": "计算有符合条件明细的订单的平均金额"
+          },
+          {
+            "source": "question",
+            "quote": "最终平均值四舍五入保留两位小数"
+          }
+        ],
+        "assumptions": [],
+        "reference": "lines = tables['order_lines']\nvalid_lines = [r for r in lines if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\norder_ids = set(r['order_id'] for r in valid_lines)\nsums = {oid: sum(r['amount'] for r in valid_lines if r['order_id'] == oid) for oid in order_ids}\ncount = len(sums)\navg_raw = sum([sums[oid] for oid in sums]) / count if count > 0 else 0\n[[round_half_up(avg_raw, 2)]]",
+        "fixtures": [
+          {
+            "name": "mixed_status_and_dates",
+            "data": {
+              "orders": [
+                {
+                  "order_id": 1,
+                  "total": 100,
+                  "channel": "web"
+                },
+                {
+                  "order_id": 2,
+                  "total": 200,
+                  "channel": null
+                },
+                {
+                  "order_id": 3,
+                  "total": 300,
+                  "channel": "app"
+                }
+              ],
+              "order_lines": [
+                {
+                  "line_id": 1,
+                  "order_id": 1,
+                  "amount": 50,
+                  "status": "settled",
+                  "settled_at": "2026-09-01T00:00:00"
+                },
+                {
+                  "line_id": 2,
+                  "order_id": 1,
+                  "amount": 10,
+                  "status": "pending",
+                  "settled_at": "2026-09-02T00:00:00"
+                },
+                {
+                  "line_id": 3,
+                  "order_id": 2,
+                  "amount": 40,
+                  "status": "settled",
+                  "settled_at": "2026-08-31T23:59:59"
+                },
+                {
+                  "line_id": 4,
+                  "order_id": 3,
+                  "amount": 20,
+                  "status": "settled",
+                  "settled_at": "2026-09-15T12:00:00"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "plan_versions": [
+        {
+          "version": 1,
+          "status": "active",
+          "reason": "initial model proposal",
+          "plan": {
+            "action": "plan",
+            "basis": [
+              {
+                "source": "question",
+                "quote": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额；无符合条件订单时返回0。最终平均值四舍五入保留两位小数。"
+              }
+            ],
+            "assumptions": [],
+            "reference": "[[round_half_up(sum(r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')/len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) if len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) else 0,2)]]",
+            "fixtures": [
+              {
+                "name": "initial",
+                "data": {
+                  "orders": [
+                    [
+                      1,
+                      999,
+                      "web"
+                    ]
+                  ],
+                  "lines": [
+                    [
+                      1,
+                      1,
+                      100,
+                      "settled",
+                      "2026-09-10T00:00:00"
+                    ]
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "reference_revisions": 0,
+      "fixtures": [
+        {
+          "name": "initial",
+          "data": {
+            "orders": [
+              [
+                1,
+                999,
+                "web"
+              ]
+            ],
+            "lines": [
+              [
+                1,
+                1,
+                100,
+                "settled",
+                "2026-09-10T00:00:00"
+              ]
+            ]
+          }
+        },
+        {
+          "name": "mixed_status_and_dates",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 100,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 200,
+                "channel": null
+              },
+              {
+                "order_id": 3,
+                "total": 300,
+                "channel": "app"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 1,
+                "order_id": 1,
+                "amount": 50,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              },
+              {
+                "line_id": 2,
+                "order_id": 1,
+                "amount": 10,
+                "status": "pending",
+                "settled_at": "2026-09-02T00:00:00"
+              },
+              {
+                "line_id": 3,
+                "order_id": 2,
+                "amount": 40,
+                "status": "settled",
+                "settled_at": "2026-08-31T23:59:59"
+              },
+              {
+                "line_id": 4,
+                "order_id": 3,
+                "amount": 20,
+                "status": "settled",
+                "settled_at": "2026-09-15T12:00:00"
+              }
+            ]
+          }
+        },
+        {
+          "name": "boundary_check",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 0,
+                "channel": null
+              },
+              {
+                "order_id": 2,
+                "total": 0,
+                "channel": null
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 1,
+                "order_id": 1,
+                "amount": 100,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              },
+              {
+                "line_id": 2,
+                "order_id": 2,
+                "amount": 200,
+                "status": "settled",
+                "settled_at": "2026-10-01T00:00:00"
+              }
+            ]
+          }
+        },
+        {
+          "name": "status_filter_check",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 0,
+                "channel": null
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 1,
+                "order_id": 1,
+                "amount": 50,
+                "status": "pending",
+                "settled_at": "2026-09-10T00:00:00"
+              },
+              {
+                "line_id": 2,
+                "order_id": 1,
+                "amount": 30,
+                "status": "cancelled",
+                "settled_at": "2026-09-10T00:00:00"
+              }
+            ]
+          }
+        },
+        {
+          "name": "negative_and_fractional",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 0,
+                "channel": null
+              },
+              {
+                "order_id": 2,
+                "total": 0,
+                "channel": null
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 1,
+                "order_id": 1,
+                "amount": -10,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              },
+              {
+                "line_id": 2,
+                "order_id": 2,
+                "amount": -11,
+                "status": "settled",
+                "settled_at": "2026-09-02T00:00:00"
+              }
+            ]
+          }
+        },
+        {
+          "name": "integer_division_check",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 0,
+                "channel": null
+              },
+              {
+                "order_id": 2,
+                "total": 0,
+                "channel": null
+              },
+              {
+                "order_id": 3,
+                "total": 0,
+                "channel": null
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 1,
+                "order_id": 1,
+                "amount": 10,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              },
+              {
+                "line_id": 2,
+                "order_id": 2,
+                "amount": 10,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              },
+              {
+                "line_id": 3,
+                "order_id": 3,
+                "amount": 11,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              }
+            ]
+          }
+        }
+      ],
+      "trace": [
+        {
+          "node": "plan",
+          "plan_digest": "21f5f38ddbb79f2a01a147c8c1ac1e83242c6e06c1dc266627cd6d064761ae0e",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate",
+          "attempt": 1,
+          "sql": "SELECT ROUND(mean_value,2) FROM (SELECT COALESCE(AVG(net),0) AS mean_value FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id))"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "invalid_audit",
+          "error": "REFERENCE_FINAL_EXPRESSION_REQUIRED"
+        },
+        {
+          "node": "audit",
+          "plan_digest": "40bc2ebf3b5ff18ca22ca7a0145ac3ed1c3d232bfc1a011f5237e305a9b5d3a7",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "probe",
+            "reason": "Verify boundary conditions (inclusive start, exclusive end) and status filtering logic.",
+            "fixture_names": [
+              "boundary_check",
+              "status_filter_check"
+            ]
+          }
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "probe",
+            "reason": "Verify rounding behavior for negative sums and ensure AVG handles integer division correctly in the target SQL dialect (e.g., SQLite vs Postgres). The current tests only use positive integers. If the engine performs integer division, 10/3 would be 3 instead of 3.33. Also checks if ROUND(-10.5, 2) behaves as expected.",
+            "fixture_names": [
+              "negative_and_fractional",
+              "integer_division_check"
+            ]
+          }
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "finish",
+            "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and date range [2026-09-01, 2026-10-01), groups by order_id to sum amounts, calculates the average of these sums (handling empty sets via COALESCE to return 0), and rounds to 2 decimal places. All provided fixtures match expected results, including edge cases for boundaries, negative values, and integer division.",
+            "fixture_names": []
+          }
+        },
+        {
+          "node": "finalize",
+          "status": "reviewed"
+        }
+      ],
+      "http_events": [
+        {
+          "role": "auditor",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1082,
+            "completion_tokens": 663,
+            "total_tokens": 1745
+          }
+        },
+        {
+          "role": "auditor",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1950,
+            "completion_tokens": 575,
+            "total_tokens": 2525
+          }
+        },
+        {
+          "role": "reviewer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1523,
+            "completion_tokens": 271,
+            "total_tokens": 1794
+          }
+        },
+        {
+          "role": "reviewer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1931,
+            "completion_tokens": 405,
+            "total_tokens": 2336
+          }
+        },
+        {
+          "role": "reviewer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2405,
+            "completion_tokens": 114,
+            "total_tokens": 2519
+          }
+        }
+      ],
+      "controlled_injections": {
+        "initial_sql": true,
+        "initial_reference": true,
+        "independent_audit": "real_qwen"
+      },
+      "runtime_fingerprint": "4565bddf2e623f481de534a50069f380bf497ea50a62c29eedf7d7b5af2e54a9",
+      "three_way_development_grade": {
+        "scope": "Seven authored development datasets, not independent holdout or production accuracy.",
+        "gold_source": "AuditScenario.final_sql; evaluation-only author assumption, not model truth.",
+        "scenario": "requested_rounding",
+        "run_status": "reviewed",
+        "candidate_origin": "publication_published",
+        "gold_source_consistent": true,
+        "gold_valid_on_scoring_data": true,
+        "checks": [
+          {
+            "name": "source",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.33
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.33
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.33
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.33
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "order_grain",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  100.0
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  100.0
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  100.0
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  100.0
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "empty",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.0
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.0
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.0
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.0
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "recurring_decimal",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.33
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.33
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.33
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  10.33
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "half_tie",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.13
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.13
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.13
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  0.13
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "refunds",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  -0.5
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  -0.5
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  -0.5
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  -0.5
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "mixed_boundaries",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  17.0
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  17.0
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  17.0
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  17.0
+                ]
+              ],
+              "match": true
+            }
+          }
+        ],
+        "candidate_passes_all": true,
+        "reference_passes_all": true,
+        "independent_passes_all": true
+      }
+    },
+    {
+      "run": "04-natural",
+      "scenario": "distinct_orders",
+      "track": "natural",
+      "revision": "after_audit_format_guidance",
+      "task": {
+        "task_id": "distinct_orders",
+        "question": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。返回至少有一条符合条件明细的订单数量；同一订单只计算一次。",
+        "definitions": "Amounts are integer minor units. orders.total need not equal line amounts.",
+        "schema": {
+          "orders": [
+            "order_id",
+            "total",
+            "channel"
+          ],
+          "order_lines": [
+            "line_id",
+            "order_id",
+            "amount",
+            "status",
+            "settled_at"
+          ]
+        },
+        "data_constraints": "Unique positive primary keys; valid order_id foreign keys; status in settled/pending/cancelled; timestamps YYYY-MM-DDTHH:MM:SS; channel string or null; negative amounts allowed."
+      },
+      "source": {
+        "orders": [
+          [
+            1,
+            999,
+            "web"
+          ],
+          [
+            2,
+            999,
+            "web"
+          ],
+          [
+            3,
+            999,
+            "web"
+          ]
+        ],
+        "lines": [
+          [
+            1,
+            1,
+            20,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            2,
+            1,
+            30,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            3,
+            2,
+            60,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            4,
+            3,
+            10,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            5,
+            3,
+            -5,
+            "settled",
+            "2026-09-10T00:00:00"
+          ]
+        ]
+      },
+      "status": "reviewed",
+      "reason": "The candidate SQL correctly implements the requirement: it counts distinct order IDs from order_lines where status is 'settled' and settled_at falls within [2026-09-01T00:00:00, 2026-10-01T00:00:00). The logic handles negative amounts (by not filtering on amount) and multiple lines per order (via COUNT(DISTINCT)). Both provided fixtures yield expected results matching manual verification.",
+      "initial_sql": "SELECT COUNT(DISTINCT ol.order_id) FROM order_lines AS ol WHERE ol.status = 'settled' AND ol.settled_at >= '2026-09-01T00:00:00' AND ol.settled_at < '2026-10-01T00:00:00'",
+      "candidate": {
+        "task_id": "distinct_orders",
+        "sql": "SELECT COUNT(DISTINCT ol.order_id) FROM order_lines AS ol WHERE ol.status = 'settled' AND ol.settled_at >= '2026-09-01T00:00:00' AND ol.settled_at < '2026-10-01T00:00:00'"
+      },
+      "publication": {
+        "status": "reviewed",
+        "rows": [
+          [
+            3
+          ]
+        ],
+        "reason": "The candidate SQL correctly implements the requirement: it counts distinct order IDs from order_lines where status is 'settled' and settled_at falls within [2026-09-01T00:00:00, 2026-10-01T00:00:00). The logic handles negative amounts (by not filtering on amount) and multiple lines per order (via COUNT(DISTINCT)). Both provided fixtures yield expected results matching manual verification.",
+        "sql": "SELECT COUNT(DISTINCT ol.order_id) FROM order_lines AS ol WHERE ol.status = 'settled' AND ol.settled_at >= '2026-09-01T00:00:00' AND ol.settled_at < '2026-10-01T00:00:00'",
+        "scope": "Agreement with model-proposed tests; not a semantic proof. No automatic rule promotion.",
+        "reference_version": 1,
+        "reference_revisions": 0
+      },
+      "plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细"
+          },
+          {
+            "source": "question",
+            "quote": "返回至少有一条符合条件明细的订单数量"
+          }
+        ],
+        "assumptions": [],
+        "reference": "qualified_lines = [line for line in tables['order_lines'] if line['status'] == 'settled' and '2026-09-01T00:00:00' <= line['settled_at'] < '2026-10-01T00:00:00']\nunique_order_ids = set(line['order_id'] for line in qualified_lines)\ncount = len(unique_order_ids)\n[[count]]",
+        "fixtures": [
+          {
+            "name": "mixed_status_and_dates",
+            "data": {
+              "orders": [
+                {
+                  "order_id": 1,
+                  "total": 100,
+                  "channel": "web"
+                },
+                {
+                  "order_id": 2,
+                  "total": 200,
+                  "channel": null
+                },
+                {
+                  "order_id": 3,
+                  "total": 300,
+                  "channel": "app"
+                }
+              ],
+              "order_lines": [
+                {
+                  "line_id": 101,
+                  "order_id": 1,
+                  "amount": 50,
+                  "status": "settled",
+                  "settled_at": "2026-09-01T00:00:00"
+                },
+                {
+                  "line_id": 102,
+                  "order_id": 1,
+                  "amount": 50,
+                  "status": "pending",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 103,
+                  "order_id": 2,
+                  "amount": 200,
+                  "status": "settled",
+                  "settled_at": "2026-08-31T23:59:59"
+                },
+                {
+                  "line_id": 104,
+                  "order_id": 3,
+                  "amount": -10,
+                  "status": "settled",
+                  "settled_at": "2026-09-30T23:59:59"
+                },
+                {
+                  "line_id": 105,
+                  "order_id": 3,
+                  "amount": 310,
+                  "status": "cancelled",
+                  "settled_at": "2026-09-20T12:00:00"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "audit_plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细"
+          },
+          {
+            "source": "question",
+            "quote": "时间为9月1日零点（含）到10月1日零点（不含）"
+          },
+          {
+            "source": "question",
+            "quote": "返回至少有一条符合条件明细的订单数量"
+          }
+        ],
+        "assumptions": [],
+        "reference": "qualified_lines = [r for r in tables['order_lines'] if r['status'] == 'settled' and r['settled_at'] >= '2026-09-01T00:00:00' and r['settled_at'] < '2026-10-01T00:00:00']\nunique_order_ids = set(r['order_id'] for r in qualified_lines)\ncount = len(unique_order_ids)\n[[count]]",
+        "fixtures": [
+          {
+            "name": "distinct_orders_sept_2026",
+            "data": {
+              "orders": [
+                {
+                  "order_id": 1,
+                  "total": 100,
+                  "channel": "web"
+                },
+                {
+                  "order_id": 2,
+                  "total": 200,
+                  "channel": null
+                },
+                {
+                  "order_id": 3,
+                  "total": 300,
+                  "channel": "app"
+                }
+              ],
+              "order_lines": [
+                {
+                  "line_id": 101,
+                  "order_id": 1,
+                  "amount": 50,
+                  "status": "settled",
+                  "settled_at": "2026-09-01T00:00:00"
+                },
+                {
+                  "line_id": 102,
+                  "order_id": 1,
+                  "amount": 50,
+                  "status": "pending",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 103,
+                  "order_id": 2,
+                  "amount": 200,
+                  "status": "settled",
+                  "settled_at": "2026-08-31T23:59:59"
+                },
+                {
+                  "line_id": 104,
+                  "order_id": 3,
+                  "amount": -10,
+                  "status": "settled",
+                  "settled_at": "2026-09-30T23:59:59"
+                },
+                {
+                  "line_id": 105,
+                  "order_id": 3,
+                  "amount": 310,
+                  "status": "cancelled",
+                  "settled_at": "2026-09-20T12:00:00"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "plan_versions": [
+        {
+          "version": 1,
+          "status": "active",
+          "reason": "initial model proposal",
+          "plan": {
+            "action": "plan",
+            "basis": [
+              {
+                "source": "question",
+                "quote": "统计2026年9月已结算明细"
+              },
+              {
+                "source": "question",
+                "quote": "返回至少有一条符合条件明细的订单数量"
+              }
+            ],
+            "assumptions": [],
+            "reference": "qualified_lines = [line for line in tables['order_lines'] if line['status'] == 'settled' and '2026-09-01T00:00:00' <= line['settled_at'] < '2026-10-01T00:00:00']\nunique_order_ids = set(line['order_id'] for line in qualified_lines)\ncount = len(unique_order_ids)\n[[count]]",
+            "fixtures": [
+              {
+                "name": "mixed_status_and_dates",
+                "data": {
+                  "orders": [
+                    {
+                      "order_id": 1,
+                      "total": 100,
+                      "channel": "web"
+                    },
+                    {
+                      "order_id": 2,
+                      "total": 200,
+                      "channel": null
+                    },
+                    {
+                      "order_id": 3,
+                      "total": 300,
+                      "channel": "app"
+                    }
+                  ],
+                  "order_lines": [
+                    {
+                      "line_id": 101,
+                      "order_id": 1,
+                      "amount": 50,
+                      "status": "settled",
+                      "settled_at": "2026-09-01T00:00:00"
+                    },
+                    {
+                      "line_id": 102,
+                      "order_id": 1,
+                      "amount": 50,
+                      "status": "pending",
+                      "settled_at": "2026-09-15T10:00:00"
+                    },
+                    {
+                      "line_id": 103,
+                      "order_id": 2,
+                      "amount": 200,
+                      "status": "settled",
+                      "settled_at": "2026-08-31T23:59:59"
+                    },
+                    {
+                      "line_id": 104,
+                      "order_id": 3,
+                      "amount": -10,
+                      "status": "settled",
+                      "settled_at": "2026-09-30T23:59:59"
+                    },
+                    {
+                      "line_id": 105,
+                      "order_id": 3,
+                      "amount": 310,
+                      "status": "cancelled",
+                      "settled_at": "2026-09-20T12:00:00"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "reference_revisions": 0,
+      "fixtures": [
+        {
+          "name": "mixed_status_and_dates",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 100,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 200,
+                "channel": null
+              },
+              {
+                "order_id": 3,
+                "total": 300,
+                "channel": "app"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 101,
+                "order_id": 1,
+                "amount": 50,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              },
+              {
+                "line_id": 102,
+                "order_id": 1,
+                "amount": 50,
+                "status": "pending",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 103,
+                "order_id": 2,
+                "amount": 200,
+                "status": "settled",
+                "settled_at": "2026-08-31T23:59:59"
+              },
+              {
+                "line_id": 104,
+                "order_id": 3,
+                "amount": -10,
+                "status": "settled",
+                "settled_at": "2026-09-30T23:59:59"
+              },
+              {
+                "line_id": 105,
+                "order_id": 3,
+                "amount": 310,
+                "status": "cancelled",
+                "settled_at": "2026-09-20T12:00:00"
+              }
+            ]
+          }
+        }
+      ],
+      "trace": [
+        {
+          "node": "invalid_plan",
+          "error": "REFERENCE_ONLY_LOCAL_ASSIGNMENTS_ALLOWED",
+          "action": {
+            "action": "plan",
+            "fixture_names": [
+              "mixed_status_and_dates"
+            ]
+          }
+        },
+        {
+          "node": "plan",
+          "plan_digest": "46ed8c1251094a685438679ce76d7556dc3c8a9b4b20d96b7b7856c73b989802",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate",
+          "attempt": 1,
+          "sql": "SELECT COUNT(DISTINCT ol.order_id) FROM order_lines AS ol WHERE ol.status = 'settled' AND ol.settled_at >= '2026-09-01T00:00:00' AND ol.settled_at < '2026-10-01T00:00:00'"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "plan_digest": "84c94e6a2ec3b0539ee8e9eade7f76758cc5a3203c85c6a0a8fa893cf069ccc1",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "finish",
+            "reason": "The candidate SQL correctly implements the requirement: it counts distinct order IDs from order_lines where status is 'settled' and settled_at falls within [2026-09-01T00:00:00, 2026-10-01T00:00:00). The logic handles negative amounts (by not filtering on amount) and multiple lines per order (via COUNT(DISTINCT)). Both provided fixtures yield expected results matching manual verification.",
+            "fixture_names": []
+          }
+        },
+        {
+          "node": "finalize",
+          "status": "reviewed"
+        }
+      ],
+      "http_events": [
+        {
+          "role": "reviewer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 753,
+            "completion_tokens": 609,
+            "total_tokens": 1362
+          }
+        },
+        {
+          "role": "reviewer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1594,
+            "completion_tokens": 534,
+            "total_tokens": 2128
+          }
+        },
+        {
+          "role": "writer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 248,
+            "completion_tokens": 97,
+            "total_tokens": 345
+          }
+        },
+        {
+          "role": "auditor",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1428,
+            "completion_tokens": 640,
+            "total_tokens": 2068
+          }
+        },
+        {
+          "role": "reviewer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1513,
+            "completion_tokens": 115,
+            "total_tokens": 1628
+          }
+        }
+      ],
+      "controlled_injections": {
+        "initial_sql": false,
+        "initial_reference": false,
+        "independent_audit": "real_qwen"
+      },
+      "runtime_fingerprint": "4565bddf2e623f481de534a50069f380bf497ea50a62c29eedf7d7b5af2e54a9",
+      "three_way_development_grade": {
+        "scope": "Seven authored development datasets, not independent holdout or production accuracy.",
+        "gold_source": "AuditScenario.final_sql; evaluation-only author assumption, not model truth.",
+        "scenario": "distinct_orders",
+        "run_status": "reviewed",
+        "candidate_origin": "publication_published",
+        "gold_source_consistent": true,
+        "gold_valid_on_scoring_data": true,
+        "checks": [
+          {
+            "name": "source",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  3
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  3
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  3
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  3
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "order_grain",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  2
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  2
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  2
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  2
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "empty",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  0
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  0
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  0
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  0
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "recurring_decimal",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  3
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  3
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  3
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  3
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "half_tie",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  8
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  8
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  8
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  8
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "refunds",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  2
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  2
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  2
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  2
+                ]
+              ],
+              "match": true
+            }
+          },
+          {
+            "name": "mixed_boundaries",
+            "gold": {
+              "status": "ok",
+              "rows": [
+                [
+                  3
+                ]
+              ]
+            },
+            "candidate": {
+              "status": "ok",
+              "rows": [
+                [
+                  3
+                ]
+              ],
+              "match": true
+            },
+            "reference": {
+              "status": "ok",
+              "rows": [
+                [
+                  3
+                ]
+              ],
+              "match": true
+            },
+            "independent": {
+              "status": "ok",
+              "rows": [
+                [
+                  3
+                ]
+              ],
+              "match": true
+            }
+          }
+        ],
+        "candidate_passes_all": true,
+        "reference_passes_all": true,
+        "independent_passes_all": true
+      }
+    }
+  ],
+  "fixed_checkpoint_processes": [
+    {
+      "phase": "paused",
+      "runtime": "langgraph",
+      "case_id": "d03",
+      "track": "natural",
+      "status": "paused",
+      "model_attempts": 1,
+      "source_unchanged": true,
+      "source_integrity_ok": true,
+      "audit_ledger_complete": true,
+      "operational_error": null,
+      "publication": {
+        "status": "unverified",
+        "task_id": "p02",
+        "rows": null,
+        "verified_sql": null,
+        "error_code": "RUN_PAUSED",
+        "scope": "registered necessary properties only; not a semantic proof"
+      },
+      "trace": [
+        {
+          "node": "prepare_call",
+          "attempt": 1
+        },
+        {
+          "node": "generate",
+          "attempt": 1
+        },
+        {
+          "node": "verify",
+          "attempt": 1,
+          "status": "verified"
+        }
+      ],
+      "http_events": [
+        {
+          "role": "writer",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 654,
+            "completion_tokens": 203,
+            "total_tokens": 857
+          }
+        }
+      ]
+    },
+    {
+      "phase": "resumed",
+      "runtime": "langgraph",
+      "case_id": "d03",
+      "track": "natural",
+      "status": "completed",
+      "model_attempts": 1,
+      "source_unchanged": true,
+      "source_integrity_ok": true,
+      "audit_ledger_complete": true,
+      "operational_error": null,
+      "publication": {
+        "status": "verified",
+        "task_id": "p02",
+        "rows": [
+          [
+            1,
+            20000
+          ],
+          [
+            2,
+            15000
+          ]
+        ],
+        "verified_sql": "SELECT orders.order_id, COALESCE(SUM(order_lines.amount), 0) FROM orders LEFT JOIN order_lines ON orders.order_id = order_lines.order_id AND order_lines.status = 'settled' AND order_lines.settled_at >= '2026-09-01T00:00:00' AND order_lines.settled_at < '2026-10-01T00:00:00' GROUP BY orders.order_id",
+        "error_code": null,
+        "scope": "registered necessary properties only; complete correctness independently evaluated"
+      },
+      "trace": [
+        {
+          "node": "prepare_call",
+          "attempt": 1
+        },
+        {
+          "node": "generate",
+          "attempt": 1
+        },
+        {
+          "node": "verify",
+          "attempt": 1,
+          "status": "verified"
+        },
+        {
+          "node": "publish",
+          "status": "verified"
+        }
+      ],
+      "http_events": []
+    }
+  ],
+  "incremental_usage": {
+    "http_requests": 26,
+    "prompt_tokens": 43480,
+    "completion_tokens": 9714,
+    "total_tokens": 53194,
+    "estimated_cost_cny": "0.0610118",
+    "reserved_upper_cny": "0.5059224",
+    "usage_complete": true,
+    "cost_note": "Local estimate and conservative reservation delta, not a cloud billing reconciliation."
+  }
+}

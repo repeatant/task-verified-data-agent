@@ -25,7 +25,7 @@ MESSAGES = [{"role": "system", "content": "Return a JSON SQL action."}]
 
 @dataclass
 class FakeBudget:
-    """Small accounting spy, independent of optional DB-GPT dependencies."""
+    """Small accounting spy for the graph model transport."""
 
     limit: int = 2
     used: int = 0

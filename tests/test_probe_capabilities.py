@@ -8,7 +8,6 @@ No credentials are read and no real model client is constructed.
 
 from __future__ import annotations
 
-import asyncio
 import json
 from copy import deepcopy
 from dataclasses import replace
@@ -239,72 +238,3 @@ def test_capability_and_guidance_objects_cannot_be_mutated_across_tasks():
 def test_unknown_feedback_policy_fails_before_any_action(policy):
     with pytest.raises(ValueError):
         ProbeGuard(TASK, DATA, feedback_policy=policy)
-
-
-@pytest.fixture
-def native_types():
-    pytest.importorskip("dbgpt", reason="Optional pinned DB-GPT runtime")
-    from dataverify.integrations.probe_agent_bridge import (
-        ProbeResource,
-        probe_sql_candidate,
-        run_probe_native_case,
-    )
-
-    return ProbeResource, probe_sql_candidate, run_probe_native_case
-
-
-def test_resource_contract_matches_what_guard_accepts(native_types):
-    resource_type, _, _ = native_types
-    resource = resource_type(TASK, feedback_policy="capability_v2")
-    try:
-        payload = json.loads(resource.get_schema_link(resource._db_name))
-        contract = payload["execution_contract"]
-        assert contract == sql_capabilities()
-        assert contract["version"] == "probe-sql-v1"
-        assert contract["aggregate"]["argument"] == "order_lines.amount"
-        assert {"WHERE", "JOIN_ON"}.issubset(contract["filter_locations"])
-        assert "CASE" in contract["unsupported"]
-        assert static_check(GOOD, TASK)["accepted"]
-        assert not static_check(CASE_AGGREGATE, TASK)["accepted"]
-        assert payload["confirmed_task"] == TASK.to_dict()
-        assert "reference_sql" not in json.dumps(payload)
-    finally:
-        resource.close()
-
-
-def test_legacy_resource_contains_no_v2_contract(native_types):
-    resource_type, _, _ = native_types
-    resource = resource_type(TASK, feedback_policy="legacy_v1")
-    try:
-        payload = json.loads(resource.get_schema_link(resource._db_name))
-        assert "execution_contract" not in payload
-        assert payload["confirmed_task"] == TASK.to_dict()
-    finally:
-        resource.close()
-
-
-def test_native_retry_receives_guidance_without_reference_answer(native_types, tmp_path):
-    _, candidate, run_native = native_types
-    record = asyncio.run(
-        run_native(
-            TASK,
-            DATA,
-            feedback_policy="capability_v2",
-            output_dir=tmp_path,
-            responses=[candidate(BAD_WHERE, TASK.task_id), candidate(GOOD, TASK.task_id)],
-        )
-    )
-    assert record["feedback_policy"] == "capability_v2"
-    assert record["publication"]["status"] == "verified"
-    assert ordered(record["publication"]["rows"]) == EXPECTED
-    assert record["llm_calls"] == 2
-    assert record["http_events"] == []
-    assert record["raw_resource_queries"] == 0
-    assert record["source_unchanged"]
-    retry_context = json.dumps(record["llm_requests"][1], ensure_ascii=False)
-    assert "repair_guidance" in retry_context
-    assert "execution_contract" in retry_context
-    assert GOOD not in retry_context
-    assert "reference_sql" not in retry_context
-    assert "fault_label" not in retry_context
-    assert record["actions"][1]["regression_checks"]

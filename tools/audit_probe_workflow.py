@@ -1,4 +1,9 @@
-"""Audit saved probe evidence and summarize paired costs; never calls a model."""
+"""Audit historical DB-GPT report files offline; never calls a model.
+
+This compatibility reader checks the old report format without importing its
+removed runtime. Its measurements describe only those historical experiments,
+not the current LangGraph implementation or provider billing.
+"""
 
 from __future__ import annotations
 

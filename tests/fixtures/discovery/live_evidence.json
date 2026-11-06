@@ -1,0 +1,4912 @@
+{
+  "scope": "Development traces, including controlled first SQL; not independent benchmark performance",
+  "successful_traces": [
+    {
+      "run": "final_controlled",
+      "task": {
+        "task_id": "order_average",
+        "question": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额；无符合条件订单时返回0。",
+        "definitions": "Amounts are integer minor units. orders.total need not equal line amounts.",
+        "schema": {
+          "orders": [
+            "order_id",
+            "total",
+            "channel"
+          ],
+          "order_lines": [
+            "line_id",
+            "order_id",
+            "amount",
+            "status",
+            "settled_at"
+          ]
+        },
+        "data_constraints": "Unique positive primary keys; valid order_id foreign keys; status in settled/pending/cancelled; timestamps YYYY-MM-DDTHH:MM:SS; channel string or null; negative amounts allowed."
+      },
+      "source": {
+        "orders": [
+          [
+            1,
+            999,
+            "web"
+          ],
+          [
+            2,
+            999,
+            "web"
+          ],
+          [
+            3,
+            999,
+            "web"
+          ]
+        ],
+        "lines": [
+          [
+            1,
+            1,
+            120,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            2,
+            2,
+            20,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            3,
+            2,
+            60,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            4,
+            3,
+            -20,
+            "settled",
+            "2026-09-10T00:00:00"
+          ]
+        ]
+      },
+      "plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细"
+          },
+          {
+            "source": "question",
+            "quote": "先按订单汇总明细金额"
+          },
+          {
+            "source": "question",
+            "quote": "计算有符合条件明细的订单的平均金额"
+          }
+        ],
+        "assumptions": [],
+        "reference": "valid_lines = [l for l in tables['order_lines'] if l['status'] == 'settled' and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']; order_ids = set(l['order_id'] for l in valid_lines); sums = [sum(l['amount'] for l in valid_lines if l['order_id'] == oid) for oid in order_ids]; avg = round(sum(sums) / len(sums), 2) if sums else 0; [[avg]]",
+        "fixtures": [
+          {
+            "name": "mixed_status_and_dates",
+            "data": {
+              "orders": [
+                {
+                  "order_id": 1,
+                  "total": 100,
+                  "channel": "web"
+                },
+                {
+                  "order_id": 2,
+                  "total": 200,
+                  "channel": null
+                }
+              ],
+              "order_lines": [
+                {
+                  "line_id": 101,
+                  "order_id": 1,
+                  "amount": 50,
+                  "status": "settled",
+                  "settled_at": "2026-09-01T00:00:00"
+                },
+                {
+                  "line_id": 102,
+                  "order_id": 1,
+                  "amount": 30,
+                  "status": "pending",
+                  "settled_at": "2026-09-15T12:00:00"
+                },
+                {
+                  "line_id": 103,
+                  "order_id": 2,
+                  "amount": 80,
+                  "status": "settled",
+                  "settled_at": "2026-09-30T23:59:59"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "fixtures": [
+        {
+          "name": "mixed_status_and_dates",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 100,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 200,
+                "channel": null
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 101,
+                "order_id": 1,
+                "amount": 50,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              },
+              {
+                "line_id": 102,
+                "order_id": 1,
+                "amount": 30,
+                "status": "pending",
+                "settled_at": "2026-09-15T12:00:00"
+              },
+              {
+                "line_id": 103,
+                "order_id": 2,
+                "amount": 80,
+                "status": "settled",
+                "settled_at": "2026-09-30T23:59:59"
+              }
+            ]
+          }
+        }
+      ],
+      "sql_before": "SELECT COALESCE(AVG(amount),0) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+      "sql_after": "SELECT COALESCE(AVG(order_sum), 0) FROM (SELECT SUM(amount) AS order_sum FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00' GROUP BY order_id)",
+      "trace": [
+        {
+          "node": "invalid_plan",
+          "error": "REFERENCE_SYNTAX",
+          "action": {
+            "action": "plan",
+            "basis": [
+              {
+                "source": "question",
+                "quote": "统计2026年9月已结算明细"
+              },
+              {
+                "source": "question",
+                "quote": "先按订单汇总明细金额"
+              },
+              {
+                "source": "question",
+                "quote": "计算有符合条件明细的订单的平均金额"
+              }
+            ],
+            "assumptions": [],
+            "reference": "valid_lines = [l for l in tables['order_lines'] if l['status'] == 'settled' and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']; order_ids = set(l['order_id'] for l in valid_lines); sums = {}; for oid in order_ids: sums[oid] = sum(l['amount'] for l in valid_lines if l['order_id'] == oid); avg = round(sum(sums.values()) / len(sums), 2) if sums else 0; [[avg]]",
+            "fixtures": [
+              {
+                "name": "mixed_status_and_dates",
+                "data": {
+                  "orders": [
+                    {
+                      "order_id": 1,
+                      "total": 100,
+                      "channel": "web"
+                    },
+                    {
+                      "order_id": 2,
+                      "total": 200,
+                      "channel": null
+                    }
+                  ],
+                  "order_lines": [
+                    {
+                      "line_id": 101,
+                      "order_id": 1,
+                      "amount": 50,
+                      "status": "settled",
+                      "settled_at": "2026-09-01T00:00:00"
+                    },
+                    {
+                      "line_id": 102,
+                      "order_id": 1,
+                      "amount": 30,
+                      "status": "pending",
+                      "settled_at": "2026-09-15T12:00:00"
+                    },
+                    {
+                      "line_id": 103,
+                      "order_id": 2,
+                      "amount": 80,
+                      "status": "settled",
+                      "settled_at": "2026-09-30T23:59:59"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "node": "plan",
+          "plan_digest": "4c9f4096e177986f11282937c218b16957f047b6b649b5074d3f403fb5f48b45",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate",
+          "attempt": 1,
+          "sql": "SELECT COALESCE(AVG(amount),0) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'"
+        },
+        {
+          "node": "execute",
+          "observation": {
+            "sql_digest": "584687a2a188ce7356f1414986bce98f4663e99c0812454637cd00efef610121",
+            "plan_digest": "4c9f4096e177986f11282937c218b16957f047b6b649b5074d3f403fb5f48b45",
+            "checks": [
+              {
+                "fixture": "mixed_status_and_dates",
+                "status": "match",
+                "actual": [
+                  [
+                    65.0
+                  ]
+                ],
+                "expected": [
+                  [
+                    65.0
+                  ]
+                ]
+              },
+              {
+                "fixture": "bound_source",
+                "status": "disagreement",
+                "actual": [
+                  [
+                    45.0
+                  ]
+                ],
+                "expected": [
+                  [
+                    60.0
+                  ]
+                ]
+              }
+            ],
+            "all_match": false,
+            "interpretation_status": "model_proposed_not_proven"
+          }
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "repair",
+            "reason": "The candidate SQL calculates the average of individual line amounts, but the requirement explicitly states to 'first aggregate detail amounts by order' (先按订单汇总明细金额) and then calculate the average of those order totals. The bound_source fixture confirms this: Order 1 sum=120, Order 2 sum=80, Order 3 sum=-20. Average of sums = (120+80-20)/3 = 60. Candidate returns avg of lines = (120+20+60-20)/4 = 45."
+          }
+        },
+        {
+          "node": "repair_feedback"
+        },
+        {
+          "node": "generate",
+          "attempt": 2,
+          "sql": "SELECT COALESCE(AVG(order_sum), 0) FROM (SELECT SUM(amount) AS order_sum FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00' GROUP BY order_id)"
+        },
+        {
+          "node": "execute",
+          "observation": {
+            "sql_digest": "13a3dfe6719ec9667534cc8bccfa8c26441b0c061be09257859bc84144272be0",
+            "plan_digest": "4c9f4096e177986f11282937c218b16957f047b6b649b5074d3f403fb5f48b45",
+            "checks": [
+              {
+                "fixture": "mixed_status_and_dates",
+                "status": "match",
+                "actual": [
+                  [
+                    65.0
+                  ]
+                ],
+                "expected": [
+                  [
+                    65.0
+                  ]
+                ]
+              },
+              {
+                "fixture": "bound_source",
+                "status": "match",
+                "actual": [
+                  [
+                    60.0
+                  ]
+                ],
+                "expected": [
+                  [
+                    60.0
+                  ]
+                ]
+              }
+            ],
+            "all_match": true,
+            "interpretation_status": "model_proposed_not_proven"
+          }
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "finish",
+            "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and September 2026 timestamps, groups by order_id to sum amounts, and calculates the average of these sums. The COALESCE handles the empty result case by returning 0. Both provided fixtures (mixed_status_and_dates and bound_source) match the expected outputs derived from the logic."
+          }
+        },
+        {
+          "node": "finalize",
+          "status": "reviewed"
+        }
+      ],
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                60.0
+              ]
+            ],
+            "expected": [
+              [
+                60.0
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                100.0
+              ]
+            ],
+            "expected": [
+              [
+                100.0
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0
+              ]
+            ],
+            "expected": [
+              [
+                0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                10.333333333333334
+              ]
+            ],
+            "expected": [
+              [
+                10.333333333333334
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                17.0
+              ]
+            ],
+            "expected": [
+              [
+                17.0
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "run": "final_controlled",
+      "task": {
+        "task_id": "web_scope",
+        "question": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。只统计orders.channel为web的订单，返回明细金额合计；无符合条件明细时返回0。",
+        "definitions": "Amounts are integer minor units. orders.total need not equal line amounts.",
+        "schema": {
+          "orders": [
+            "order_id",
+            "total",
+            "channel"
+          ],
+          "order_lines": [
+            "line_id",
+            "order_id",
+            "amount",
+            "status",
+            "settled_at"
+          ]
+        },
+        "data_constraints": "Unique positive primary keys; valid order_id foreign keys; status in settled/pending/cancelled; timestamps YYYY-MM-DDTHH:MM:SS; channel string or null; negative amounts allowed."
+      },
+      "source": {
+        "orders": [
+          [
+            1,
+            999,
+            "web"
+          ],
+          [
+            2,
+            999,
+            "store"
+          ],
+          [
+            3,
+            999,
+            "web"
+          ]
+        ],
+        "lines": [
+          [
+            1,
+            1,
+            90,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            2,
+            2,
+            40,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            3,
+            3,
+            -10,
+            "settled",
+            "2026-09-10T00:00:00"
+          ]
+        ]
+      },
+      "plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细"
+          },
+          {
+            "source": "question",
+            "quote": "orders.channel为web"
+          }
+        ],
+        "assumptions": [],
+        "reference": "valid_lines = [l for l in tables['order_lines'] if l['status'] == 'settled' and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']\nweb_order_ids = {o['order_id'] for o in tables['orders'] if o['channel'] == 'web'}\nfiltered_amounts = [l['amount'] for l in valid_lines if l['order_id'] in web_order_ids]\ntotal_sum = sum(filtered_amounts)\n[[total_sum]]",
+        "fixtures": [
+          {
+            "name": "mixed_web_and_other",
+            "data": {
+              "orders": [
+                {
+                  "order_id": 1,
+                  "total": 100,
+                  "channel": "web"
+                },
+                {
+                  "order_id": 2,
+                  "total": 200,
+                  "channel": "app"
+                }
+              ],
+              "order_lines": [
+                {
+                  "line_id": 10,
+                  "order_id": 1,
+                  "amount": 50,
+                  "status": "settled",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 11,
+                  "order_id": 2,
+                  "amount": 80,
+                  "status": "settled",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 12,
+                  "order_id": 1,
+                  "amount": 30,
+                  "status": "pending",
+                  "settled_at": "2026-09-15T10:00:00"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "fixtures": [
+        {
+          "name": "mixed_web_and_other",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 100,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 200,
+                "channel": "app"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 10,
+                "order_id": 1,
+                "amount": 50,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 11,
+                "order_id": 2,
+                "amount": 80,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 12,
+                "order_id": 1,
+                "amount": 30,
+                "status": "pending",
+                "settled_at": "2026-09-15T10:00:00"
+              }
+            ]
+          }
+        },
+        {
+          "name": "boundary_check",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 100,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 200,
+                "channel": "web"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 10,
+                "order_id": 1,
+                "amount": 50,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              },
+              {
+                "line_id": 11,
+                "order_id": 2,
+                "amount": 70,
+                "status": "settled",
+                "settled_at": "2026-10-01T00:00:00"
+              }
+            ]
+          }
+        },
+        {
+          "name": "null_channel_and_status",
+          "data": {
+            "orders": [
+              {
+                "order_id": 3,
+                "total": 100,
+                "channel": null
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 12,
+                "order_id": 3,
+                "amount": 40,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              }
+            ]
+          }
+        }
+      ],
+      "sql_before": "SELECT COALESCE(SUM(amount),0) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+      "sql_after": "SELECT COALESCE(SUM(T1.amount),0) FROM order_lines AS T1 JOIN orders AS T2 ON T1.order_id = T2.order_id WHERE T1.status='settled' AND T1.settled_at>='2026-09-01T00:00:00' AND T1.settled_at<'2026-10-01T00:00:00' AND T2.channel='web'",
+      "trace": [
+        {
+          "node": "invalid_plan",
+          "error": "DISCOVERY_INVALID_REVIEW_ACTION",
+          "action": null
+        },
+        {
+          "node": "plan",
+          "plan_digest": "7a73ecae7c60aa455c0009ae060221f5eca1c518bfbd71a9c14dbd5d49f76c08",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate",
+          "attempt": 1,
+          "sql": "SELECT COALESCE(SUM(amount),0) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'"
+        },
+        {
+          "node": "execute",
+          "observation": {
+            "sql_digest": "95ee81e8f226bd98a1d18084a2f6d79e267e68d740190b0d854da22540826680",
+            "plan_digest": "7a73ecae7c60aa455c0009ae060221f5eca1c518bfbd71a9c14dbd5d49f76c08",
+            "checks": [
+              {
+                "fixture": "mixed_web_and_other",
+                "status": "disagreement",
+                "actual": [
+                  [
+                    130
+                  ]
+                ],
+                "expected": [
+                  [
+                    50
+                  ]
+                ]
+              },
+              {
+                "fixture": "bound_source",
+                "status": "disagreement",
+                "actual": [
+                  [
+                    120
+                  ]
+                ],
+                "expected": [
+                  [
+                    80
+                  ]
+                ]
+              }
+            ],
+            "all_match": false,
+            "interpretation_status": "model_proposed_not_proven"
+          }
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "repair",
+            "reason": "The candidate SQL fails to filter by orders.channel='web' as required by the question. It currently sums all settled lines in September regardless of channel. The observed disagreements (130 vs 50, 120 vs 80) confirm that non-web orders are being included. A JOIN with the orders table is necessary."
+          }
+        },
+        {
+          "node": "repair_feedback"
+        },
+        {
+          "node": "generate",
+          "attempt": 2,
+          "sql": "SELECT COALESCE(SUM(T1.amount),0) FROM order_lines AS T1 JOIN orders AS T2 ON T1.order_id = T2.order_id WHERE T1.status='settled' AND T1.settled_at>='2026-09-01T00:00:00' AND T1.settled_at<'2026-10-01T00:00:00' AND T2.channel='web'"
+        },
+        {
+          "node": "execute",
+          "observation": {
+            "sql_digest": "3e0633735edcc222d64a73e6ed714fb2b9a01b818fe1892bf87db34dc1d4e3b9",
+            "plan_digest": "7a73ecae7c60aa455c0009ae060221f5eca1c518bfbd71a9c14dbd5d49f76c08",
+            "checks": [
+              {
+                "fixture": "mixed_web_and_other",
+                "status": "match",
+                "actual": [
+                  [
+                    50
+                  ]
+                ],
+                "expected": [
+                  [
+                    50
+                  ]
+                ]
+              },
+              {
+                "fixture": "bound_source",
+                "status": "match",
+                "actual": [
+                  [
+                    80
+                  ]
+                ],
+                "expected": [
+                  [
+                    80
+                  ]
+                ]
+              }
+            ],
+            "all_match": true,
+            "interpretation_status": "model_proposed_not_proven"
+          }
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "probe",
+            "reason": "Verify boundary conditions (start inclusive, end exclusive) and channel filtering with edge cases like null channels or lines outside the date range.",
+            "fixtures": [
+              {
+                "name": "boundary_check",
+                "data": {
+                  "orders": [
+                    {
+                      "order_id": 1,
+                      "total": 100,
+                      "channel": "web"
+                    },
+                    {
+                      "order_id": 2,
+                      "total": 200,
+                      "channel": "web"
+                    }
+                  ],
+                  "order_lines": [
+                    {
+                      "line_id": 10,
+                      "order_id": 1,
+                      "amount": 50,
+                      "status": "settled",
+                      "settled_at": "2026-09-01T00:00:00"
+                    },
+                    {
+                      "line_id": 11,
+                      "order_id": 2,
+                      "amount": 70,
+                      "status": "settled",
+                      "settled_at": "2026-10-01T00:00:00"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "null_channel_and_status",
+                "data": {
+                  "orders": [
+                    {
+                      "order_id": 3,
+                      "total": 100,
+                      "channel": null
+                    }
+                  ],
+                  "order_lines": [
+                    {
+                      "line_id": 12,
+                      "order_id": 3,
+                      "amount": 40,
+                      "status": "settled",
+                      "settled_at": "2026-09-15T10:00:00"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "node": "execute",
+          "observation": {
+            "sql_digest": "3e0633735edcc222d64a73e6ed714fb2b9a01b818fe1892bf87db34dc1d4e3b9",
+            "plan_digest": "7a73ecae7c60aa455c0009ae060221f5eca1c518bfbd71a9c14dbd5d49f76c08",
+            "checks": [
+              {
+                "fixture": "mixed_web_and_other",
+                "status": "match",
+                "actual": [
+                  [
+                    50
+                  ]
+                ],
+                "expected": [
+                  [
+                    50
+                  ]
+                ]
+              },
+              {
+                "fixture": "boundary_check",
+                "status": "match",
+                "actual": [
+                  [
+                    50
+                  ]
+                ],
+                "expected": [
+                  [
+                    50
+                  ]
+                ]
+              },
+              {
+                "fixture": "null_channel_and_status",
+                "status": "match",
+                "actual": [
+                  [
+                    0
+                  ]
+                ],
+                "expected": [
+                  [
+                    0
+                  ]
+                ]
+              },
+              {
+                "fixture": "bound_source",
+                "status": "match",
+                "actual": [
+                  [
+                    80
+                  ]
+                ],
+                "expected": [
+                  [
+                    80
+                  ]
+                ]
+              }
+            ],
+            "all_match": true,
+            "interpretation_status": "model_proposed_not_proven"
+          }
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "finish",
+            "reason": "The candidate SQL correctly implements the requirement: it filters for 'settled' status, joins with orders to filter by channel='web', and applies the correct date range (>= 2026-09-01T00:00:00 AND < 2026-10-01T00:00:00). It uses COALESCE(SUM(...), 0) to return 0 when no rows match. All provided fixtures and the bound source data yield results consistent with the manual calculation based on the original question's definitions."
+          }
+        },
+        {
+          "node": "finalize",
+          "status": "reviewed"
+        }
+      ],
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                80
+              ]
+            ],
+            "expected": [
+              [
+                80
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                100
+              ]
+            ],
+            "expected": [
+              [
+                100
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0
+              ]
+            ],
+            "expected": [
+              [
+                0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                31
+              ]
+            ],
+            "expected": [
+              [
+                31
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                22
+              ]
+            ],
+            "expected": [
+              [
+                22
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "run": "final_controlled",
+      "task": {
+        "task_id": "distinct_orders",
+        "question": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。返回至少有一条符合条件明细的订单数量；同一订单只计算一次。",
+        "definitions": "Amounts are integer minor units. orders.total need not equal line amounts.",
+        "schema": {
+          "orders": [
+            "order_id",
+            "total",
+            "channel"
+          ],
+          "order_lines": [
+            "line_id",
+            "order_id",
+            "amount",
+            "status",
+            "settled_at"
+          ]
+        },
+        "data_constraints": "Unique positive primary keys; valid order_id foreign keys; status in settled/pending/cancelled; timestamps YYYY-MM-DDTHH:MM:SS; channel string or null; negative amounts allowed."
+      },
+      "source": {
+        "orders": [
+          [
+            1,
+            999,
+            "web"
+          ],
+          [
+            2,
+            999,
+            "web"
+          ],
+          [
+            3,
+            999,
+            "web"
+          ]
+        ],
+        "lines": [
+          [
+            1,
+            1,
+            20,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            2,
+            1,
+            30,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            3,
+            2,
+            60,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            4,
+            3,
+            10,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            5,
+            3,
+            -5,
+            "settled",
+            "2026-09-10T00:00:00"
+          ]
+        ]
+      },
+      "plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细"
+          },
+          {
+            "source": "question",
+            "quote": "返回至少有一条符合条件明细的订单数量"
+          }
+        ],
+        "assumptions": [],
+        "reference": "valid_lines = [l for l in tables['order_lines'] if l['status'] == 'settled' and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']; distinct_order_ids = set(l['order_id'] for l in valid_lines); count = len(distinct_order_ids); [[count]]",
+        "fixtures": [
+          {
+            "name": "mixed_status_and_dates",
+            "data": {
+              "orders": [
+                {
+                  "order_id": 1,
+                  "total": 100,
+                  "channel": "web"
+                },
+                {
+                  "order_id": 2,
+                  "total": 200,
+                  "channel": null
+                },
+                {
+                  "order_id": 3,
+                  "total": 50,
+                  "channel": "app"
+                }
+              ],
+              "order_lines": [
+                {
+                  "line_id": 101,
+                  "order_id": 1,
+                  "amount": 50,
+                  "status": "settled",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 102,
+                  "order_id": 1,
+                  "amount": 50,
+                  "status": "pending",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 103,
+                  "order_id": 2,
+                  "amount": 200,
+                  "status": "settled",
+                  "settled_at": "2026-08-31T23:59:59"
+                },
+                {
+                  "line_id": 104,
+                  "order_id": 3,
+                  "amount": -10,
+                  "status": "settled",
+                  "settled_at": "2026-09-01T00:00:00"
+                },
+                {
+                  "line_id": 105,
+                  "order_id": 3,
+                  "amount": 60,
+                  "status": "settled",
+                  "settled_at": "2026-10-01T00:00:00"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "fixtures": [
+        {
+          "name": "mixed_status_and_dates",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 100,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 200,
+                "channel": null
+              },
+              {
+                "order_id": 3,
+                "total": 50,
+                "channel": "app"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 101,
+                "order_id": 1,
+                "amount": 50,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 102,
+                "order_id": 1,
+                "amount": 50,
+                "status": "pending",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 103,
+                "order_id": 2,
+                "amount": 200,
+                "status": "settled",
+                "settled_at": "2026-08-31T23:59:59"
+              },
+              {
+                "line_id": 104,
+                "order_id": 3,
+                "amount": -10,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              },
+              {
+                "line_id": 105,
+                "order_id": 3,
+                "amount": 60,
+                "status": "settled",
+                "settled_at": "2026-10-01T00:00:00"
+              }
+            ]
+          }
+        }
+      ],
+      "sql_before": "SELECT COUNT(*) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+      "sql_after": "SELECT COUNT(DISTINCT order_id) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+      "trace": [
+        {
+          "node": "plan",
+          "plan_digest": "028f6a890ed6598cc4cdf59ce49d6e999e27b12405577dc25d22c3e15b5c98ae",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate",
+          "attempt": 1,
+          "sql": "SELECT COUNT(*) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'"
+        },
+        {
+          "node": "execute",
+          "observation": {
+            "sql_digest": "eceb2c9a381aaab1b67a5473db9ec88ddfa2631f57b26a971b783f7fb985b2ed",
+            "plan_digest": "028f6a890ed6598cc4cdf59ce49d6e999e27b12405577dc25d22c3e15b5c98ae",
+            "checks": [
+              {
+                "fixture": "mixed_status_and_dates",
+                "status": "match",
+                "actual": [
+                  [
+                    2
+                  ]
+                ],
+                "expected": [
+                  [
+                    2
+                  ]
+                ]
+              },
+              {
+                "fixture": "bound_source",
+                "status": "disagreement",
+                "actual": [
+                  [
+                    5
+                  ]
+                ],
+                "expected": [
+                  [
+                    3
+                  ]
+                ]
+              }
+            ],
+            "all_match": false,
+            "interpretation_status": "model_proposed_not_proven"
+          }
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "repair",
+            "reason": "The candidate SQL counts lines, but the question asks for the number of distinct orders ('同一订单只计算一次'). The bound_source fixture shows 5 settled lines belonging to 3 distinct orders; expected is 3, actual is 5. Need to count distinct order_ids."
+          }
+        },
+        {
+          "node": "repair_feedback"
+        },
+        {
+          "node": "generate",
+          "attempt": 2,
+          "sql": "SELECT COUNT(DISTINCT order_id) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'"
+        },
+        {
+          "node": "execute",
+          "observation": {
+            "sql_digest": "5523e8a7785f4ff15379574c53b8b57c1e59b93063d07092c869f6d0bd135b13",
+            "plan_digest": "028f6a890ed6598cc4cdf59ce49d6e999e27b12405577dc25d22c3e15b5c98ae",
+            "checks": [
+              {
+                "fixture": "mixed_status_and_dates",
+                "status": "match",
+                "actual": [
+                  [
+                    2
+                  ]
+                ],
+                "expected": [
+                  [
+                    2
+                  ]
+                ]
+              },
+              {
+                "fixture": "bound_source",
+                "status": "match",
+                "actual": [
+                  [
+                    3
+                  ]
+                ],
+                "expected": [
+                  [
+                    3
+                  ]
+                ]
+              }
+            ],
+            "all_match": true,
+            "interpretation_status": "model_proposed_not_proven"
+          }
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "finish",
+            "reason": "The candidate SQL correctly implements the requirement: it filters for 'settled' status and applies the half-open interval [2026-09-01T00:00:00, 2026-10-01T00:00:00) on settled_at. It uses COUNT(DISTINCT order_id) to ensure each order is counted only once if it has at least one matching line. The provided fixtures confirm boundary handling (inclusive start, exclusive end) and correct filtering of non-settled lines. No ambiguities or errors detected."
+          }
+        },
+        {
+          "node": "finalize",
+          "status": "reviewed"
+        }
+      ],
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                3
+              ]
+            ],
+            "expected": [
+              [
+                3
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                2
+              ]
+            ],
+            "expected": [
+              [
+                2
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0
+              ]
+            ],
+            "expected": [
+              [
+                0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                3
+              ]
+            ],
+            "expected": [
+              [
+                3
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                3
+              ]
+            ],
+            "expected": [
+              [
+                3
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "run": "final_correct",
+      "task": {
+        "task_id": "order_average",
+        "question": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额；无符合条件订单时返回0。",
+        "definitions": "Amounts are integer minor units. orders.total need not equal line amounts.",
+        "schema": {
+          "orders": [
+            "order_id",
+            "total",
+            "channel"
+          ],
+          "order_lines": [
+            "line_id",
+            "order_id",
+            "amount",
+            "status",
+            "settled_at"
+          ]
+        },
+        "data_constraints": "Unique positive primary keys; valid order_id foreign keys; status in settled/pending/cancelled; timestamps YYYY-MM-DDTHH:MM:SS; channel string or null; negative amounts allowed."
+      },
+      "source": {
+        "orders": [
+          [
+            1,
+            999,
+            "web"
+          ],
+          [
+            2,
+            999,
+            "web"
+          ],
+          [
+            3,
+            999,
+            "web"
+          ]
+        ],
+        "lines": [
+          [
+            1,
+            1,
+            120,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            2,
+            2,
+            20,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            3,
+            2,
+            60,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            4,
+            3,
+            -20,
+            "settled",
+            "2026-09-10T00:00:00"
+          ]
+        ]
+      },
+      "plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细"
+          },
+          {
+            "source": "question",
+            "quote": "先按订单汇总明细金额"
+          }
+        ],
+        "assumptions": [],
+        "reference": "lines = tables['order_lines']\nvalid_lines = [l for l in lines if l['status'] == 'settled' and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']\norder_ids = set(l['order_id'] for l in valid_lines)\ntotals = [sum(l['amount'] for l in valid_lines if l['order_id'] == oid) for oid in order_ids]\navg_val = round(sum(totals) / len(totals), 2) if totals else 0\n[[avg_val]]",
+        "fixtures": [
+          {
+            "name": "mixed_status_and_dates",
+            "data": {
+              "orders": [
+                {
+                  "order_id": 1,
+                  "total": 100,
+                  "channel": "web"
+                },
+                {
+                  "order_id": 2,
+                  "total": 200,
+                  "channel": null
+                },
+                {
+                  "order_id": 3,
+                  "total": 50,
+                  "channel": "app"
+                }
+              ],
+              "order_lines": [
+                {
+                  "line_id": 101,
+                  "order_id": 1,
+                  "amount": 40,
+                  "status": "settled",
+                  "settled_at": "2026-09-01T00:00:00"
+                },
+                {
+                  "line_id": 102,
+                  "order_id": 1,
+                  "amount": 60,
+                  "status": "settled",
+                  "settled_at": "2026-09-15T12:00:00"
+                },
+                {
+                  "line_id": 103,
+                  "order_id": 2,
+                  "amount": 200,
+                  "status": "pending",
+                  "settled_at": "2026-09-10T10:00:00"
+                },
+                {
+                  "line_id": 104,
+                  "order_id": 3,
+                  "amount": 50,
+                  "status": "settled",
+                  "settled_at": "2026-10-01T00:00:00"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "fixtures": [
+        {
+          "name": "mixed_status_and_dates",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 100,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 200,
+                "channel": null
+              },
+              {
+                "order_id": 3,
+                "total": 50,
+                "channel": "app"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 101,
+                "order_id": 1,
+                "amount": 40,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              },
+              {
+                "line_id": 102,
+                "order_id": 1,
+                "amount": 60,
+                "status": "settled",
+                "settled_at": "2026-09-15T12:00:00"
+              },
+              {
+                "line_id": 103,
+                "order_id": 2,
+                "amount": 200,
+                "status": "pending",
+                "settled_at": "2026-09-10T10:00:00"
+              },
+              {
+                "line_id": 104,
+                "order_id": 3,
+                "amount": 50,
+                "status": "settled",
+                "settled_at": "2026-10-01T00:00:00"
+              }
+            ]
+          }
+        }
+      ],
+      "sql_before": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)",
+      "sql_after": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)",
+      "trace": [
+        {
+          "node": "invalid_plan",
+          "error": "REFERENCE_ONLY_LOCAL_ASSIGNMENTS_ALLOWED",
+          "action": {
+            "action": "plan",
+            "basis": [
+              {
+                "source": "question",
+                "quote": "统计2026年9月已结算明细"
+              },
+              {
+                "source": "question",
+                "quote": "先按订单汇总明细金额"
+              }
+            ],
+            "assumptions": [],
+            "reference": "orders = tables['orders']\nlines = tables['order_lines']\nvalid_lines = [l for l in lines if l['status'] == 'settled' and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']\norder_ids_with_valid_lines = set(l['order_id'] for l in valid_lines)\nsums_by_order = {}\nfor oid in order_ids_with_valid_lines:\n    sums_by_order[oid] = sum(l['amount'] for l in valid_lines if l['order_id'] == oid)\navg_amount = round(sum(sums_by_order.values()) / len(sums_by_order), 2) if sums_by_order else 0\n[[avg_amount]]",
+            "fixtures": [
+              {
+                "name": "mixed_status_and_dates",
+                "data": {
+                  "orders": [
+                    {
+                      "order_id": 1,
+                      "total": 100,
+                      "channel": "web"
+                    },
+                    {
+                      "order_id": 2,
+                      "total": 200,
+                      "channel": null
+                    },
+                    {
+                      "order_id": 3,
+                      "total": 50,
+                      "channel": "app"
+                    }
+                  ],
+                  "order_lines": [
+                    {
+                      "line_id": 101,
+                      "order_id": 1,
+                      "amount": 40,
+                      "status": "settled",
+                      "settled_at": "2026-09-01T00:00:00"
+                    },
+                    {
+                      "line_id": 102,
+                      "order_id": 1,
+                      "amount": 60,
+                      "status": "settled",
+                      "settled_at": "2026-09-15T12:00:00"
+                    },
+                    {
+                      "line_id": 103,
+                      "order_id": 2,
+                      "amount": 200,
+                      "status": "pending",
+                      "settled_at": "2026-09-10T10:00:00"
+                    },
+                    {
+                      "line_id": 104,
+                      "order_id": 3,
+                      "amount": 50,
+                      "status": "settled",
+                      "settled_at": "2026-10-01T00:00:00"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "node": "plan",
+          "plan_digest": "591a847a4f2510316df84b5d3d4f9bd40b252b57965f7ecd6360dbb051224166",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate",
+          "attempt": 1,
+          "sql": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)"
+        },
+        {
+          "node": "execute",
+          "observation": {
+            "sql_digest": "f1eab543e3acb185f6205c62f79d1b1e6db78782526d3be278e7a3acdbdd0eb5",
+            "plan_digest": "591a847a4f2510316df84b5d3d4f9bd40b252b57965f7ecd6360dbb051224166",
+            "checks": [
+              {
+                "fixture": "mixed_status_and_dates",
+                "status": "match",
+                "actual": [
+                  [
+                    100.0
+                  ]
+                ],
+                "expected": [
+                  [
+                    100.0
+                  ]
+                ]
+              },
+              {
+                "fixture": "bound_source",
+                "status": "match",
+                "actual": [
+                  [
+                    60.0
+                  ]
+                ],
+                "expected": [
+                  [
+                    60.0
+                  ]
+                ]
+              }
+            ],
+            "all_match": true,
+            "interpretation_status": "model_proposed_not_proven"
+          }
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "finish",
+            "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and September 2026 date range, groups by order_id to sum amounts, calculates the average of these sums, and returns 0 if no orders match (via COALESCE). The logic aligns with the provided fixtures and definitions."
+          }
+        },
+        {
+          "node": "finalize",
+          "status": "reviewed"
+        }
+      ],
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                60.0
+              ]
+            ],
+            "expected": [
+              [
+                60.0
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                100.0
+              ]
+            ],
+            "expected": [
+              [
+                100.0
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0
+              ]
+            ],
+            "expected": [
+              [
+                0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                10.333333333333334
+              ]
+            ],
+            "expected": [
+              [
+                10.333333333333334
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                17.0
+              ]
+            ],
+            "expected": [
+              [
+                17.0
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "run": "final_correct",
+      "task": {
+        "task_id": "web_scope",
+        "question": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。只统计orders.channel为web的订单，返回明细金额合计；无符合条件明细时返回0。",
+        "definitions": "Amounts are integer minor units. orders.total need not equal line amounts.",
+        "schema": {
+          "orders": [
+            "order_id",
+            "total",
+            "channel"
+          ],
+          "order_lines": [
+            "line_id",
+            "order_id",
+            "amount",
+            "status",
+            "settled_at"
+          ]
+        },
+        "data_constraints": "Unique positive primary keys; valid order_id foreign keys; status in settled/pending/cancelled; timestamps YYYY-MM-DDTHH:MM:SS; channel string or null; negative amounts allowed."
+      },
+      "source": {
+        "orders": [
+          [
+            1,
+            999,
+            "web"
+          ],
+          [
+            2,
+            999,
+            "store"
+          ],
+          [
+            3,
+            999,
+            "web"
+          ]
+        ],
+        "lines": [
+          [
+            1,
+            1,
+            90,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            2,
+            2,
+            40,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            3,
+            3,
+            -10,
+            "settled",
+            "2026-09-10T00:00:00"
+          ]
+        ]
+      },
+      "plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细"
+          },
+          {
+            "source": "question",
+            "quote": "orders.channel为web的订单"
+          }
+        ],
+        "assumptions": [],
+        "reference": "web_order_ids = set(r['order_id'] for r in tables['orders'] if r['channel'] == 'web')\nvalid_lines = [r for r in tables['order_lines'] if r['status'] == 'settled' and r['order_id'] in web_order_ids and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\ntotal_amount = sum(r['amount'] for r in valid_lines)\n[[total_amount]]",
+        "fixtures": [
+          {
+            "name": "mixed_channels_and_dates",
+            "data": {
+              "orders": [
+                {
+                  "order_id": 1,
+                  "total": 100,
+                  "channel": "web"
+                },
+                {
+                  "order_id": 2,
+                  "total": 200,
+                  "channel": "app"
+                },
+                {
+                  "order_id": 3,
+                  "total": 50,
+                  "channel": "web"
+                }
+              ],
+              "order_lines": [
+                {
+                  "line_id": 101,
+                  "order_id": 1,
+                  "amount": 40,
+                  "status": "settled",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 102,
+                  "order_id": 2,
+                  "amount": 200,
+                  "status": "settled",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 103,
+                  "order_id": 3,
+                  "amount": -10,
+                  "status": "pending",
+                  "settled_at": "2026-09-15T10:00:00"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "fixtures": [
+        {
+          "name": "mixed_channels_and_dates",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 100,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 200,
+                "channel": "app"
+              },
+              {
+                "order_id": 3,
+                "total": 50,
+                "channel": "web"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 101,
+                "order_id": 1,
+                "amount": 40,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 102,
+                "order_id": 2,
+                "amount": 200,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 103,
+                "order_id": 3,
+                "amount": -10,
+                "status": "pending",
+                "settled_at": "2026-09-15T10:00:00"
+              }
+            ]
+          }
+        },
+        {
+          "name": "boundary_and_status_check",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 0,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 0,
+                "channel": "web"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 1,
+                "order_id": 1,
+                "amount": 10,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              },
+              {
+                "line_id": 2,
+                "order_id": 1,
+                "amount": 20,
+                "status": "settled",
+                "settled_at": "2026-10-01T00:00:00"
+              },
+              {
+                "line_id": 3,
+                "order_id": 2,
+                "amount": 5,
+                "status": "pending",
+                "settled_at": "2026-09-15T00:00:00"
+              }
+            ]
+          }
+        }
+      ],
+      "sql_before": "SELECT COALESCE(SUM(amount),0) FROM order_lines JOIN orders ON orders.order_id=order_lines.order_id WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' AND channel='web'",
+      "sql_after": "SELECT COALESCE(SUM(amount),0) FROM order_lines JOIN orders ON orders.order_id=order_lines.order_id WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' AND channel='web'",
+      "trace": [
+        {
+          "node": "plan",
+          "plan_digest": "bc3060bcef8f464cee3deb923d8196c18efee669904cab6629c0acd0d36e1a11",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate",
+          "attempt": 1,
+          "sql": "SELECT COALESCE(SUM(amount),0) FROM order_lines JOIN orders ON orders.order_id=order_lines.order_id WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' AND channel='web'"
+        },
+        {
+          "node": "execute",
+          "observation": {
+            "sql_digest": "1dca6190b53d1786914332eeffcc3ae595d643e5a54baa35fe9525ee5dc20a73",
+            "plan_digest": "bc3060bcef8f464cee3deb923d8196c18efee669904cab6629c0acd0d36e1a11",
+            "checks": [
+              {
+                "fixture": "mixed_channels_and_dates",
+                "status": "match",
+                "actual": [
+                  [
+                    40
+                  ]
+                ],
+                "expected": [
+                  [
+                    40
+                  ]
+                ]
+              },
+              {
+                "fixture": "bound_source",
+                "status": "match",
+                "actual": [
+                  [
+                    80
+                  ]
+                ],
+                "expected": [
+                  [
+                    80
+                  ]
+                ]
+              }
+            ],
+            "all_match": true,
+            "interpretation_status": "model_proposed_not_proven"
+          }
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "probe",
+            "reason": "Verify boundary conditions (start inclusive, end exclusive) and status filtering logic with edge cases.",
+            "fixtures": [
+              {
+                "name": "boundary_and_status_check",
+                "data": {
+                  "orders": [
+                    {
+                      "order_id": 1,
+                      "total": 0,
+                      "channel": "web"
+                    },
+                    {
+                      "order_id": 2,
+                      "total": 0,
+                      "channel": "web"
+                    }
+                  ],
+                  "order_lines": [
+                    {
+                      "line_id": 1,
+                      "order_id": 1,
+                      "amount": 10,
+                      "status": "settled",
+                      "settled_at": "2026-09-01T00:00:00"
+                    },
+                    {
+                      "line_id": 2,
+                      "order_id": 1,
+                      "amount": 20,
+                      "status": "settled",
+                      "settled_at": "2026-10-01T00:00:00"
+                    },
+                    {
+                      "line_id": 3,
+                      "order_id": 2,
+                      "amount": 5,
+                      "status": "pending",
+                      "settled_at": "2026-09-15T00:00:00"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "node": "execute",
+          "observation": {
+            "sql_digest": "1dca6190b53d1786914332eeffcc3ae595d643e5a54baa35fe9525ee5dc20a73",
+            "plan_digest": "bc3060bcef8f464cee3deb923d8196c18efee669904cab6629c0acd0d36e1a11",
+            "checks": [
+              {
+                "fixture": "mixed_channels_and_dates",
+                "status": "match",
+                "actual": [
+                  [
+                    40
+                  ]
+                ],
+                "expected": [
+                  [
+                    40
+                  ]
+                ]
+              },
+              {
+                "fixture": "boundary_and_status_check",
+                "status": "match",
+                "actual": [
+                  [
+                    10
+                  ]
+                ],
+                "expected": [
+                  [
+                    10
+                  ]
+                ]
+              },
+              {
+                "fixture": "bound_source",
+                "status": "match",
+                "actual": [
+                  [
+                    80
+                  ]
+                ],
+                "expected": [
+                  [
+                    80
+                  ]
+                ]
+              }
+            ],
+            "all_match": true,
+            "interpretation_status": "model_proposed_not_proven"
+          }
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "finish",
+            "reason": "The candidate SQL correctly implements the requirements: filters for 'settled' status, channel 'web', and the date range [2026-09-01T00:00:00, 2026-10-01T00:00:00). It sums line amounts and returns 0 if no rows match. All provided fixtures (including boundary cases and negative amounts) yield expected results."
+          }
+        },
+        {
+          "node": "finalize",
+          "status": "reviewed"
+        }
+      ],
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                80
+              ]
+            ],
+            "expected": [
+              [
+                80
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                100
+              ]
+            ],
+            "expected": [
+              [
+                100
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0
+              ]
+            ],
+            "expected": [
+              [
+                0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                31
+              ]
+            ],
+            "expected": [
+              [
+                31
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                22
+              ]
+            ],
+            "expected": [
+              [
+                22
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "run": "final_money",
+      "task": {
+        "task_id": "money_units",
+        "question": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。金额字段单位为分，返回以元为单位的净额合计，100分等于1元；无明细返回0。",
+        "definitions": "Amounts are integer minor units. orders.total need not equal line amounts.",
+        "schema": {
+          "orders": [
+            "order_id",
+            "total",
+            "channel"
+          ],
+          "order_lines": [
+            "line_id",
+            "order_id",
+            "amount",
+            "status",
+            "settled_at"
+          ]
+        },
+        "data_constraints": "Unique positive primary keys; valid order_id foreign keys; status in settled/pending/cancelled; timestamps YYYY-MM-DDTHH:MM:SS; channel string or null; negative amounts allowed."
+      },
+      "source": {
+        "orders": [
+          [
+            1,
+            999,
+            "web"
+          ],
+          [
+            2,
+            999,
+            "web"
+          ]
+        ],
+        "lines": [
+          [
+            1,
+            1,
+            230,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            2,
+            2,
+            -15,
+            "settled",
+            "2026-09-10T00:00:00"
+          ]
+        ]
+      },
+      "plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细"
+          },
+          {
+            "source": "question",
+            "quote": "金额字段单位为分，返回以元为单位的净额合计"
+          }
+        ],
+        "assumptions": [],
+        "reference": "settled_lines = [r for r in tables['order_lines'] if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']; total_cents = sum(r['amount'] for r in settled_lines); result_yuan = total_cents / 100.0; [[result_yuan]]",
+        "fixtures": [
+          {
+            "name": "mixed_settlement_and_units",
+            "data": {
+              "orders": [
+                {
+                  "order_id": 1,
+                  "total": 5000,
+                  "channel": "web"
+                },
+                {
+                  "order_id": 2,
+                  "total": 3000,
+                  "channel": null
+                }
+              ],
+              "order_lines": [
+                {
+                  "line_id": 101,
+                  "order_id": 1,
+                  "amount": 1500,
+                  "status": "settled",
+                  "settled_at": "2026-09-01T00:00:00"
+                },
+                {
+                  "line_id": 102,
+                  "order_id": 1,
+                  "amount": -200,
+                  "status": "settled",
+                  "settled_at": "2026-09-15T12:00:00"
+                },
+                {
+                  "line_id": 103,
+                  "order_id": 2,
+                  "amount": 500,
+                  "status": "pending",
+                  "settled_at": "2026-09-20T10:00:00"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "fixtures": [
+        {
+          "name": "mixed_settlement_and_units",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 5000,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 3000,
+                "channel": null
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 101,
+                "order_id": 1,
+                "amount": 1500,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              },
+              {
+                "line_id": 102,
+                "order_id": 1,
+                "amount": -200,
+                "status": "settled",
+                "settled_at": "2026-09-15T12:00:00"
+              },
+              {
+                "line_id": 103,
+                "order_id": 2,
+                "amount": 500,
+                "status": "pending",
+                "settled_at": "2026-09-20T10:00:00"
+              }
+            ]
+          }
+        }
+      ],
+      "sql_before": "SELECT COALESCE(SUM(amount),0) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+      "sql_after": "SELECT COALESCE(SUM(amount),0)/100.0 FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+      "trace": [
+        {
+          "node": "plan",
+          "plan_digest": "7a11f5867a647531376698f95cc10247666e7b770e82a03d5329388c4304927f",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate",
+          "attempt": 1,
+          "sql": "SELECT COALESCE(SUM(amount),0) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'"
+        },
+        {
+          "node": "execute",
+          "observation": {
+            "sql_digest": "95ee81e8f226bd98a1d18084a2f6d79e267e68d740190b0d854da22540826680",
+            "plan_digest": "7a11f5867a647531376698f95cc10247666e7b770e82a03d5329388c4304927f",
+            "checks": [
+              {
+                "fixture": "mixed_settlement_and_units",
+                "status": "disagreement",
+                "actual": [
+                  [
+                    1300
+                  ]
+                ],
+                "expected": [
+                  [
+                    13.0
+                  ]
+                ]
+              },
+              {
+                "fixture": "bound_source",
+                "status": "disagreement",
+                "actual": [
+                  [
+                    215
+                  ]
+                ],
+                "expected": [
+                  [
+                    2.15
+                  ]
+                ]
+              }
+            ],
+            "all_match": false,
+            "interpretation_status": "model_proposed_not_proven"
+          }
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "repair",
+            "reason": "The question explicitly requires converting amounts from cents to yuan (100 cents = 1 yuan). The candidate SQL returns the raw sum of integer minor units (cents) without dividing by 100. The observations confirm this discrepancy: actual values are 1300 and 215, while expected values are 13.0 and 2.15."
+          }
+        },
+        {
+          "node": "repair_feedback"
+        },
+        {
+          "node": "generate",
+          "attempt": 2,
+          "sql": "SELECT COALESCE(SUM(amount),0)/100.0 FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'"
+        },
+        {
+          "node": "execute",
+          "observation": {
+            "sql_digest": "68f809b30fd1428c83d3662be054dab4aaf33999f1f32270b32a5a371ea6f8ec",
+            "plan_digest": "7a11f5867a647531376698f95cc10247666e7b770e82a03d5329388c4304927f",
+            "checks": [
+              {
+                "fixture": "mixed_settlement_and_units",
+                "status": "match",
+                "actual": [
+                  [
+                    13.0
+                  ]
+                ],
+                "expected": [
+                  [
+                    13.0
+                  ]
+                ]
+              },
+              {
+                "fixture": "bound_source",
+                "status": "match",
+                "actual": [
+                  [
+                    2.15
+                  ]
+                ],
+                "expected": [
+                  [
+                    2.15
+                  ]
+                ]
+              }
+            ],
+            "all_match": true,
+            "interpretation_status": "model_proposed_not_proven"
+          }
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "finish",
+            "reason": "SQL correctly filters for 'settled' status and September 2026 timestamps (inclusive start, exclusive end). It sums the line amounts in cents and divides by 100.0 to convert to yuan, returning 0 if no rows match via COALESCE. The logic aligns with the requirement to sum net amounts of settled details in the specified period. Tests confirm correct handling of negative amounts and unit conversion."
+          }
+        },
+        {
+          "node": "finalize",
+          "status": "reviewed"
+        }
+      ],
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                2.15
+              ]
+            ],
+            "expected": [
+              [
+                2.15
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                1.23
+              ]
+            ],
+            "expected": [
+              [
+                1.23
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0.0
+              ]
+            ],
+            "expected": [
+              [
+                0.0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                0.31
+              ]
+            ],
+            "expected": [
+              [
+                0.31
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                0.51
+              ]
+            ],
+            "expected": [
+              [
+                0.51
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "run": "final_natural",
+      "task": {
+        "task_id": "distinct_orders",
+        "question": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。返回至少有一条符合条件明细的订单数量；同一订单只计算一次。",
+        "definitions": "Amounts are integer minor units. orders.total need not equal line amounts.",
+        "schema": {
+          "orders": [
+            "order_id",
+            "total",
+            "channel"
+          ],
+          "order_lines": [
+            "line_id",
+            "order_id",
+            "amount",
+            "status",
+            "settled_at"
+          ]
+        },
+        "data_constraints": "Unique positive primary keys; valid order_id foreign keys; status in settled/pending/cancelled; timestamps YYYY-MM-DDTHH:MM:SS; channel string or null; negative amounts allowed."
+      },
+      "source": {
+        "orders": [
+          [
+            1,
+            999,
+            "web"
+          ],
+          [
+            2,
+            999,
+            "web"
+          ],
+          [
+            3,
+            999,
+            "web"
+          ]
+        ],
+        "lines": [
+          [
+            1,
+            1,
+            20,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            2,
+            1,
+            30,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            3,
+            2,
+            60,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            4,
+            3,
+            10,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            5,
+            3,
+            -5,
+            "settled",
+            "2026-09-10T00:00:00"
+          ]
+        ]
+      },
+      "plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细"
+          },
+          {
+            "source": "question",
+            "quote": "返回至少有一条符合条件明细的订单数量"
+          }
+        ],
+        "assumptions": [],
+        "reference": "valid_order_ids = set([line['order_id'] for line in tables['order_lines'] if line['status'] == 'settled' and '2026-09-01T00:00:00' <= line['settled_at'] < '2026-10-01T00:00:00'])\ncount = len(valid_order_ids)\n[[count]]",
+        "fixtures": [
+          {
+            "name": "mixed_status_and_dates",
+            "data": {
+              "orders": [
+                {
+                  "order_id": 1,
+                  "total": 100,
+                  "channel": "web"
+                },
+                {
+                  "order_id": 2,
+                  "total": 200,
+                  "channel": null
+                },
+                {
+                  "order_id": 3,
+                  "total": 300,
+                  "channel": "app"
+                }
+              ],
+              "order_lines": [
+                {
+                  "line_id": 101,
+                  "order_id": 1,
+                  "amount": 50,
+                  "status": "settled",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 102,
+                  "order_id": 1,
+                  "amount": 50,
+                  "status": "pending",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 103,
+                  "order_id": 2,
+                  "amount": 200,
+                  "status": "settled",
+                  "settled_at": "2026-08-31T23:59:59"
+                },
+                {
+                  "line_id": 104,
+                  "order_id": 3,
+                  "amount": -10,
+                  "status": "settled",
+                  "settled_at": "2026-09-01T00:00:00"
+                },
+                {
+                  "line_id": 105,
+                  "order_id": 3,
+                  "amount": 310,
+                  "status": "cancelled",
+                  "settled_at": "2026-09-02T00:00:00"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "fixtures": [
+        {
+          "name": "mixed_status_and_dates",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 100,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 200,
+                "channel": null
+              },
+              {
+                "order_id": 3,
+                "total": 300,
+                "channel": "app"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 101,
+                "order_id": 1,
+                "amount": 50,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 102,
+                "order_id": 1,
+                "amount": 50,
+                "status": "pending",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 103,
+                "order_id": 2,
+                "amount": 200,
+                "status": "settled",
+                "settled_at": "2026-08-31T23:59:59"
+              },
+              {
+                "line_id": 104,
+                "order_id": 3,
+                "amount": -10,
+                "status": "settled",
+                "settled_at": "2026-09-01T00:00:00"
+              },
+              {
+                "line_id": 105,
+                "order_id": 3,
+                "amount": 310,
+                "status": "cancelled",
+                "settled_at": "2026-09-02T00:00:00"
+              }
+            ]
+          }
+        }
+      ],
+      "sql_before": "SELECT COUNT(DISTINCT order_id) FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00'",
+      "sql_after": "SELECT COUNT(DISTINCT order_id) FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00'",
+      "trace": [
+        {
+          "node": "invalid_plan",
+          "error": "REFERENCE_ONLY_LOCAL_ASSIGNMENTS_ALLOWED",
+          "action": {
+            "action": "plan",
+            "basis": [
+              {
+                "source": "question",
+                "quote": "统计2026年9月已结算明细"
+              },
+              {
+                "source": "question",
+                "quote": "返回至少有一条符合条件明细的订单数量"
+              }
+            ],
+            "assumptions": [],
+            "reference": "valid_order_ids = set()\nfor line in tables['order_lines']:\n    if line['status'] == 'settled' and '2026-09-01T00:00:00' <= line['settled_at'] < '2026-10-01T00:00:00':\n        valid_order_ids.add(line['order_id'])\ncount = len(valid_order_ids)\n[[count]]",
+            "fixtures": [
+              {
+                "name": "mixed_status_and_dates",
+                "data": {
+                  "orders": [
+                    {
+                      "order_id": 1,
+                      "total": 100,
+                      "channel": "web"
+                    },
+                    {
+                      "order_id": 2,
+                      "total": 200,
+                      "channel": null
+                    },
+                    {
+                      "order_id": 3,
+                      "total": 300,
+                      "channel": "app"
+                    }
+                  ],
+                  "order_lines": [
+                    {
+                      "line_id": 101,
+                      "order_id": 1,
+                      "amount": 50,
+                      "status": "settled",
+                      "settled_at": "2026-09-15T10:00:00"
+                    },
+                    {
+                      "line_id": 102,
+                      "order_id": 1,
+                      "amount": 50,
+                      "status": "pending",
+                      "settled_at": "2026-09-15T10:00:00"
+                    },
+                    {
+                      "line_id": 103,
+                      "order_id": 2,
+                      "amount": 200,
+                      "status": "settled",
+                      "settled_at": "2026-08-31T23:59:59"
+                    },
+                    {
+                      "line_id": 104,
+                      "order_id": 3,
+                      "amount": -10,
+                      "status": "settled",
+                      "settled_at": "2026-09-01T00:00:00"
+                    },
+                    {
+                      "line_id": 105,
+                      "order_id": 3,
+                      "amount": 310,
+                      "status": "cancelled",
+                      "settled_at": "2026-09-02T00:00:00"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "node": "plan",
+          "plan_digest": "68264e684dc85bcd13cd412b9cb22d9a813566e93097fd775c9f461fafe28091",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate",
+          "attempt": 1,
+          "sql": "SELECT COUNT(DISTINCT order_id) FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00'"
+        },
+        {
+          "node": "execute",
+          "observation": {
+            "sql_digest": "03f5f3c1d854396ce6592ab6c53eedef3ec5ceba5c3b0959b032852efd9727d9",
+            "plan_digest": "68264e684dc85bcd13cd412b9cb22d9a813566e93097fd775c9f461fafe28091",
+            "checks": [
+              {
+                "fixture": "mixed_status_and_dates",
+                "status": "match",
+                "actual": [
+                  [
+                    2
+                  ]
+                ],
+                "expected": [
+                  [
+                    2
+                  ]
+                ]
+              },
+              {
+                "fixture": "bound_source",
+                "status": "match",
+                "actual": [
+                  [
+                    3
+                  ]
+                ],
+                "expected": [
+                  [
+                    3
+                  ]
+                ]
+              }
+            ],
+            "all_match": true,
+            "interpretation_status": "model_proposed_not_proven"
+          }
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "finish",
+            "reason": "The candidate SQL correctly implements the requirement: it filters for 'settled' status and uses a half-open interval [2026-09-01T00:00:00, 2026-10-01T00:00:00) on settled_at. It counts distinct order_ids, satisfying the condition that each order is counted only once if it has at least one matching line. The fixture tests confirm correct handling of boundary dates (Aug 31 excluded, Sep 1 included), mixed statuses (pending/cancelled ignored), and negative amounts (included as long as status/date match)."
+          }
+        },
+        {
+          "node": "finalize",
+          "status": "reviewed"
+        }
+      ],
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                3
+              ]
+            ],
+            "expected": [
+              [
+                3
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                2
+              ]
+            ],
+            "expected": [
+              [
+                2
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0
+              ]
+            ],
+            "expected": [
+              [
+                0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                3
+              ]
+            ],
+            "expected": [
+              [
+                3
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                3
+              ]
+            ],
+            "expected": [
+              [
+                3
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "run": "custom_task",
+      "task": {
+        "task_id": "web_positive_order_totals",
+        "question": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。仅考虑渠道为web的订单，先按订单汇总明细净额，再合计净额严格大于0的订单净额；无符合条件订单返回0。",
+        "definitions": "金额为整数分，结果仍以分表示。不使用orders.total。负金额明细表示退款，先纳入订单汇总，再判断该订单净额是否大于0。",
+        "schema": {
+          "orders": [
+            "order_id",
+            "total",
+            "channel"
+          ],
+          "order_lines": [
+            "line_id",
+            "order_id",
+            "amount",
+            "status",
+            "settled_at"
+          ]
+        },
+        "data_constraints": "Unique positive primary keys; valid order_id foreign keys; status in settled/pending/cancelled; timestamps YYYY-MM-DDTHH:MM:SS; channel string or null; negative amounts allowed."
+      },
+      "source": {
+        "orders": [
+          [
+            1,
+            999,
+            "web"
+          ],
+          [
+            2,
+            999,
+            "web"
+          ],
+          [
+            3,
+            999,
+            "store"
+          ]
+        ],
+        "lines": [
+          [
+            1,
+            1,
+            100,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            2,
+            1,
+            -20,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            3,
+            2,
+            -30,
+            "settled",
+            "2026-09-10T00:00:00"
+          ],
+          [
+            4,
+            3,
+            200,
+            "settled",
+            "2026-09-10T00:00:00"
+          ]
+        ]
+      },
+      "plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细"
+          },
+          {
+            "source": "question",
+            "quote": "仅考虑渠道为web的订单"
+          },
+          {
+            "source": "question",
+            "quote": "合计净额严格大于0的订单净额"
+          }
+        ],
+        "assumptions": [],
+        "reference": "web_order_ids = {o['order_id'] for o in tables['orders'] if o['channel'] == 'web'}; valid_lines = [l for l in tables['order_lines'] if l['status'] == 'settled' and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00' and l['order_id'] in web_order_ids]; order_ids = sorted({l['order_id'] for l in valid_lines}); net_amounts = [sum(l['amount'] for l in valid_lines if l['order_id'] == oid) for oid in order_ids]; positive_net_amounts = [n for n in net_amounts if n > 0]; [[sum(positive_net_amounts)]]",
+        "fixtures": [
+          {
+            "name": "mixed_refunds_and_non_web",
+            "data": {
+              "orders": [
+                {
+                  "order_id": 1,
+                  "total": 500,
+                  "channel": "web"
+                },
+                {
+                  "order_id": 2,
+                  "total": 300,
+                  "channel": "app"
+                },
+                {
+                  "order_id": 3,
+                  "total": -100,
+                  "channel": "web"
+                }
+              ],
+              "order_lines": [
+                {
+                  "line_id": 101,
+                  "order_id": 1,
+                  "amount": 300,
+                  "status": "settled",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 102,
+                  "order_id": 1,
+                  "amount": 200,
+                  "status": "settled",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 103,
+                  "order_id": 2,
+                  "amount": 300,
+                  "status": "settled",
+                  "settled_at": "2026-09-15T10:00:00"
+                },
+                {
+                  "line_id": 104,
+                  "order_id": 3,
+                  "amount": -100,
+                  "status": "settled",
+                  "settled_at": "2026-09-15T10:00:00"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "fixtures": [
+        {
+          "name": "mixed_refunds_and_non_web",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 500,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 300,
+                "channel": "app"
+              },
+              {
+                "order_id": 3,
+                "total": -100,
+                "channel": "web"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 101,
+                "order_id": 1,
+                "amount": 300,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 102,
+                "order_id": 1,
+                "amount": 200,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 103,
+                "order_id": 2,
+                "amount": 300,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 104,
+                "order_id": 3,
+                "amount": -100,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              }
+            ]
+          }
+        },
+        {
+          "name": "zero_net_and_mixed_status",
+          "data": {
+            "orders": [
+              {
+                "order_id": 1,
+                "total": 0,
+                "channel": "web"
+              },
+              {
+                "order_id": 2,
+                "total": 100,
+                "channel": "web"
+              }
+            ],
+            "order_lines": [
+              {
+                "line_id": 101,
+                "order_id": 1,
+                "amount": 50,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 102,
+                "order_id": 1,
+                "amount": -50,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 103,
+                "order_id": 2,
+                "amount": 100,
+                "status": "settled",
+                "settled_at": "2026-09-15T10:00:00"
+              },
+              {
+                "line_id": 104,
+                "order_id": 2,
+                "amount": 50,
+                "status": "pending",
+                "settled_at": "2026-09-15T10:00:00"
+              }
+            ]
+          }
+        }
+      ],
+      "sql_before": "SELECT COALESCE(SUM(net_amount), 0) FROM (SELECT T1.order_id, SUM(T2.amount) AS net_amount FROM orders AS T1 INNER JOIN order_lines AS T2 ON T1.order_id = T2.order_id WHERE T1.channel = 'web' AND T2.status = 'settled' AND T2.settled_at >= '2026-09-01T00:00:00' AND T2.settled_at < '2026-10-01T00:00:00' GROUP BY T1.order_id HAVING SUM(T2.amount) > 0)",
+      "sql_after": "SELECT COALESCE(SUM(net_amount), 0) FROM (SELECT T1.order_id, SUM(T2.amount) AS net_amount FROM orders AS T1 INNER JOIN order_lines AS T2 ON T1.order_id = T2.order_id WHERE T1.channel = 'web' AND T2.status = 'settled' AND T2.settled_at >= '2026-09-01T00:00:00' AND T2.settled_at < '2026-10-01T00:00:00' GROUP BY T1.order_id HAVING SUM(T2.amount) > 0)",
+      "trace": [
+        {
+          "node": "invalid_plan",
+          "error": "REFERENCE_FINAL_EXPRESSION_REQUIRED",
+          "action": {
+            "action": "plan",
+            "basis": [
+              {
+                "source": "question",
+                "quote": "统计2026年9月已结算明细"
+              },
+              {
+                "source": "question",
+                "quote": "仅考虑渠道为web的订单"
+              },
+              {
+                "source": "question",
+                "quote": "合计净额严格大于0的订单净额"
+              }
+            ],
+            "assumptions": [],
+            "reference": "valid_lines = [l for l in tables['order_lines'] if l['status'] == 'settled' and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']; web_orders = {o['order_id'] for o in tables['orders'] if o['channel'] == 'web'}; order_totals = {}; [order_totals.update({l['order_id']: order_totals.get(l['order_id'], 0) + l['amount']}) for l in valid_lines if l['order_id'] in web_orders]; positive_totals = [t for t in order_totals.values() if t > 0]; result = sum(positive_totals)",
+            "fixtures": [
+              {
+                "name": "mixed_refunds_and_non_web",
+                "data": {
+                  "orders": [
+                    {
+                      "order_id": 1,
+                      "total": 500,
+                      "channel": "web"
+                    },
+                    {
+                      "order_id": 2,
+                      "total": 300,
+                      "channel": "app"
+                    },
+                    {
+                      "order_id": 3,
+                      "total": -100,
+                      "channel": "web"
+                    }
+                  ],
+                  "order_lines": [
+                    {
+                      "line_id": 101,
+                      "order_id": 1,
+                      "amount": 300,
+                      "status": "settled",
+                      "settled_at": "2026-09-15T10:00:00"
+                    },
+                    {
+                      "line_id": 102,
+                      "order_id": 1,
+                      "amount": 200,
+                      "status": "settled",
+                      "settled_at": "2026-09-15T10:00:00"
+                    },
+                    {
+                      "line_id": 103,
+                      "order_id": 2,
+                      "amount": 300,
+                      "status": "settled",
+                      "settled_at": "2026-09-15T10:00:00"
+                    },
+                    {
+                      "line_id": 104,
+                      "order_id": 3,
+                      "amount": -100,
+                      "status": "settled",
+                      "settled_at": "2026-09-15T10:00:00"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "node": "invalid_plan",
+          "error": "REFERENCE_ONLY_LOCAL_ASSIGNMENTS_ALLOWED",
+          "action": {
+            "action": "plan",
+            "basis": [
+              {
+                "source": "question",
+                "quote": "统计2026年9月已结算明细"
+              },
+              {
+                "source": "question",
+                "quote": "仅考虑渠道为web的订单"
+              },
+              {
+                "source": "question",
+                "quote": "合计净额严格大于0的订单净额"
+              }
+            ],
+            "assumptions": [],
+            "reference": "valid_lines = [l for l in tables['order_lines'] if l['status'] == 'settled' and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']; web_order_ids = {o['order_id'] for o in tables['orders'] if o['channel'] == 'web'}; relevant_lines = [l for l in valid_lines if l['order_id'] in web_order_ids]; order_totals = {}; [order_totals.update({l['order_id']: order_totals.get(l['order_id'], 0) + l['amount']}) for l in relevant_lines]; positive_net_amounts = [t for t in order_totals.values() if t > 0]; [[sum(positive_net_amounts)]]",
+            "fixtures": [
+              {
+                "name": "mixed_refunds_and_non_web",
+                "data": {
+                  "orders": [
+                    {
+                      "order_id": 1,
+                      "total": 500,
+                      "channel": "web"
+                    },
+                    {
+                      "order_id": 2,
+                      "total": 300,
+                      "channel": "app"
+                    },
+                    {
+                      "order_id": 3,
+                      "total": -100,
+                      "channel": "web"
+                    }
+                  ],
+                  "order_lines": [
+                    {
+                      "line_id": 101,
+                      "order_id": 1,
+                      "amount": 300,
+                      "status": "settled",
+                      "settled_at": "2026-09-15T10:00:00"
+                    },
+                    {
+                      "line_id": 102,
+                      "order_id": 1,
+                      "amount": 200,
+                      "status": "settled",
+                      "settled_at": "2026-09-15T10:00:00"
+                    },
+                    {
+                      "line_id": 103,
+                      "order_id": 2,
+                      "amount": 300,
+                      "status": "settled",
+                      "settled_at": "2026-09-15T10:00:00"
+                    },
+                    {
+                      "line_id": 104,
+                      "order_id": 3,
+                      "amount": -100,
+                      "status": "settled",
+                      "settled_at": "2026-09-15T10:00:00"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "node": "plan",
+          "plan_digest": "fc5c8192e9cc7a013d31ede4ee9462178168479ce628d02feab825a68ed2e6fc",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate",
+          "attempt": 1,
+          "sql": "SELECT COALESCE(SUM(net_amount), 0) FROM (SELECT T1.order_id, SUM(T2.amount) AS net_amount FROM orders AS T1 INNER JOIN order_lines AS T2 ON T1.order_id = T2.order_id WHERE T1.channel = 'web' AND T2.status = 'settled' AND T2.settled_at >= '2026-09-01T00:00:00' AND T2.settled_at < '2026-10-01T00:00:00' GROUP BY T1.order_id HAVING SUM(T2.amount) > 0)"
+        },
+        {
+          "node": "execute",
+          "observation": {
+            "sql_digest": "837a116d0bb0fbb9a582d23b9a1255b6b66128fcb449f1d3e93b26bcb53cb946",
+            "plan_digest": "fc5c8192e9cc7a013d31ede4ee9462178168479ce628d02feab825a68ed2e6fc",
+            "checks": [
+              {
+                "fixture": "mixed_refunds_and_non_web",
+                "status": "match",
+                "actual": [
+                  [
+                    500
+                  ]
+                ],
+                "expected": [
+                  [
+                    500
+                  ]
+                ]
+              },
+              {
+                "fixture": "bound_source",
+                "status": "match",
+                "actual": [
+                  [
+                    80
+                  ]
+                ],
+                "expected": [
+                  [
+                    80
+                  ]
+                ]
+              }
+            ],
+            "all_match": true,
+            "interpretation_status": "model_proposed_not_proven"
+          }
+        },
+        {
+          "node": "invalid_review_action",
+          "error": "settled_at must use canonical timezone-free ISO seconds"
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "probe",
+            "reason": "Verify boundary condition for 'strictly greater than 0' (net=0 excluded) and ensure non-settled lines are ignored in aggregation.",
+            "fixtures": [
+              {
+                "name": "zero_net_and_mixed_status",
+                "data": {
+                  "orders": [
+                    {
+                      "order_id": 1,
+                      "total": 0,
+                      "channel": "web"
+                    },
+                    {
+                      "order_id": 2,
+                      "total": 100,
+                      "channel": "web"
+                    }
+                  ],
+                  "order_lines": [
+                    {
+                      "line_id": 101,
+                      "order_id": 1,
+                      "amount": 50,
+                      "status": "settled",
+                      "settled_at": "2026-09-15T10:00:00"
+                    },
+                    {
+                      "line_id": 102,
+                      "order_id": 1,
+                      "amount": -50,
+                      "status": "settled",
+                      "settled_at": "2026-09-15T10:00:00"
+                    },
+                    {
+                      "line_id": 103,
+                      "order_id": 2,
+                      "amount": 100,
+                      "status": "settled",
+                      "settled_at": "2026-09-15T10:00:00"
+                    },
+                    {
+                      "line_id": 104,
+                      "order_id": 2,
+                      "amount": 50,
+                      "status": "pending",
+                      "settled_at": "2026-09-15T10:00:00"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "node": "execute",
+          "observation": {
+            "sql_digest": "837a116d0bb0fbb9a582d23b9a1255b6b66128fcb449f1d3e93b26bcb53cb946",
+            "plan_digest": "fc5c8192e9cc7a013d31ede4ee9462178168479ce628d02feab825a68ed2e6fc",
+            "checks": [
+              {
+                "fixture": "mixed_refunds_and_non_web",
+                "status": "match",
+                "actual": [
+                  [
+                    500
+                  ]
+                ],
+                "expected": [
+                  [
+                    500
+                  ]
+                ]
+              },
+              {
+                "fixture": "zero_net_and_mixed_status",
+                "status": "match",
+                "actual": [
+                  [
+                    100
+                  ]
+                ],
+                "expected": [
+                  [
+                    100
+                  ]
+                ]
+              },
+              {
+                "fixture": "bound_source",
+                "status": "match",
+                "actual": [
+                  [
+                    80
+                  ]
+                ],
+                "expected": [
+                  [
+                    80
+                  ]
+                ]
+              }
+            ],
+            "all_match": true,
+            "interpretation_status": "model_proposed_not_proven"
+          }
+        },
+        {
+          "node": "review",
+          "action": {
+            "action": "finish",
+            "reason": "The candidate SQL correctly implements the requirement: filters for 'web' channel and 'settled' status within the specified date range, aggregates line amounts per order, includes only orders with net amount > 0, and sums these nets. The use of COALESCE ensures 0 is returned if no orders match. All provided fixtures (including edge cases like zero net, mixed statuses, and negative totals) yield results consistent with the original question's logic."
+          }
+        },
+        {
+          "node": "finalize",
+          "status": "reviewed"
+        }
+      ],
+      "post_run_grade": {
+        "scope": "Manually computed source result only; not the five-instance scoring suite",
+        "all_match": true,
+        "expected": [
+          [
+            80
+          ]
+        ]
+      }
+    }
+  ],
+  "runs_including_failures": [
+    {
+      "run": "discovery_live_20261106/controlled_average",
+      "task": "order_average",
+      "status": "inconclusive",
+      "reason": "REFERENCE_OPERATION_NOT_ALLOWED",
+      "http_calls": 1,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": false,
+        "checks": [
+          {
+            "name": "source",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "distinguishing",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "empty",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "precision",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "mixed",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          }
+        ]
+      },
+      "writer_attempts": 0
+    },
+    {
+      "run": "discovery_live_20261106/controlled_average_retry",
+      "task": "order_average",
+      "status": "inconclusive",
+      "reason": "GRAPH_QWEN_RESPONSE_TRUNCATED",
+      "http_calls": 1,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": false,
+        "checks": [
+          {
+            "name": "source",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "distinguishing",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "empty",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "precision",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "mixed",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          }
+        ]
+      },
+      "writer_attempts": 0
+    },
+    {
+      "run": "discovery_live_20261107/average",
+      "task": "order_average",
+      "status": "inconclusive",
+      "reason": "REFERENCE_SYNTAX",
+      "http_calls": 3,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": false,
+        "checks": [
+          {
+            "name": "source",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "distinguishing",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "empty",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "precision",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "mixed",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          }
+        ]
+      },
+      "writer_attempts": 0
+    },
+    {
+      "run": "discovery_live_20261107/controlled",
+      "task": "order_average",
+      "status": "inconclusive",
+      "reason": "REFERENCE_SYNTAX",
+      "http_calls": 3,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": false,
+        "checks": [
+          {
+            "name": "source",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "distinguishing",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "empty",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "precision",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "mixed",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          }
+        ]
+      },
+      "writer_attempts": 0
+    },
+    {
+      "run": "discovery_live_20261107/controlled",
+      "task": "web_scope",
+      "status": "inconclusive",
+      "reason": "FIXTURE_FIELDS",
+      "http_calls": 3,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": false,
+        "checks": [
+          {
+            "name": "source",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "distinguishing",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "empty",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "precision",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "mixed",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          }
+        ]
+      },
+      "writer_attempts": 0
+    },
+    {
+      "run": "discovery_live_20261107/controlled",
+      "task": "distinct_orders",
+      "status": "inconclusive",
+      "reason": "FIXTURE_FIELDS",
+      "http_calls": 3,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": false,
+        "checks": [
+          {
+            "name": "source",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "distinguishing",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "empty",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "precision",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "mixed",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          }
+        ]
+      },
+      "writer_attempts": 0
+    },
+    {
+      "run": "discovery_live_20261107/controlled",
+      "task": "money_units",
+      "status": "reviewed",
+      "reason": "Checked scope: The candidate SQL correctly filters for 'settled' status and the date range [2026-09-01T00:00:00, 2026-10-01T00:00:00). It sums the amount column (in cents) from order_lines, divides by 100.0 to convert to yuan, and uses COALESCE to return 0 if no rows match. This aligns with the reference interpretation which ignores orders.total and focuses on line-level settled amounts. The fixture test passed.",
+      "http_calls": 4,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                2.15
+              ]
+            ],
+            "expected": [
+              [
+                2.15
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                1.23
+              ]
+            ],
+            "expected": [
+              [
+                1.23
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0.0
+              ]
+            ],
+            "expected": [
+              [
+                0.0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                0.31
+              ]
+            ],
+            "expected": [
+              [
+                0.31
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                0.51
+              ]
+            ],
+            "expected": [
+              [
+                0.51
+              ]
+            ]
+          }
+        ]
+      },
+      "writer_attempts": 2
+    },
+    {
+      "run": "discovery_live_20261107/controlled_v2",
+      "task": "order_average",
+      "status": "inconclusive",
+      "reason": "LIVE_HTTP_REQUEST_LIMIT",
+      "http_calls": 8,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": false,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                60.0
+              ]
+            ],
+            "expected": [
+              [
+                60.0
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                100.0
+              ]
+            ],
+            "expected": [
+              [
+                100.0
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0.0
+              ]
+            ],
+            "expected": [
+              [
+                0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": false,
+            "actual": [
+              [
+                10.33
+              ]
+            ],
+            "expected": [
+              [
+                10.333333333333334
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                17.0
+              ]
+            ],
+            "expected": [
+              [
+                17.0
+              ]
+            ]
+          }
+        ]
+      },
+      "writer_attempts": 3
+    },
+    {
+      "run": "discovery_live_20261107/controlled_v2",
+      "task": "web_scope",
+      "status": "inconclusive",
+      "reason": "LIVE_HTTP_REQUEST_LIMIT",
+      "http_calls": 0,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": false,
+        "checks": [
+          {
+            "name": "source",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "distinguishing",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "empty",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "precision",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          },
+          {
+            "name": "mixed",
+            "match": false,
+            "error": "NO_EXECUTABLE_CANDIDATE"
+          }
+        ]
+      },
+      "writer_attempts": 0
+    },
+    {
+      "run": "discovery_live_20261107/final_controlled",
+      "task": "order_average",
+      "status": "reviewed",
+      "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and September 2026 timestamps, groups by order_id to sum amounts, and calculates the average of these sums. The COALESCE handles the empty result case by returning 0. Both provided fixtures (mixed_status_and_dates and bound_source) match the expected outputs derived from the logic.",
+      "http_calls": 5,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                60.0
+              ]
+            ],
+            "expected": [
+              [
+                60.0
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                100.0
+              ]
+            ],
+            "expected": [
+              [
+                100.0
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0
+              ]
+            ],
+            "expected": [
+              [
+                0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                10.333333333333334
+              ]
+            ],
+            "expected": [
+              [
+                10.333333333333334
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                17.0
+              ]
+            ],
+            "expected": [
+              [
+                17.0
+              ]
+            ]
+          }
+        ]
+      },
+      "writer_attempts": 2
+    },
+    {
+      "run": "discovery_live_20261107/final_controlled",
+      "task": "web_scope",
+      "status": "reviewed",
+      "reason": "The candidate SQL correctly implements the requirement: it filters for 'settled' status, joins with orders to filter by channel='web', and applies the correct date range (>= 2026-09-01T00:00:00 AND < 2026-10-01T00:00:00). It uses COALESCE(SUM(...), 0) to return 0 when no rows match. All provided fixtures and the bound source data yield results consistent with the manual calculation based on the original question's definitions.",
+      "http_calls": 6,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                80
+              ]
+            ],
+            "expected": [
+              [
+                80
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                100
+              ]
+            ],
+            "expected": [
+              [
+                100
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0
+              ]
+            ],
+            "expected": [
+              [
+                0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                31
+              ]
+            ],
+            "expected": [
+              [
+                31
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                22
+              ]
+            ],
+            "expected": [
+              [
+                22
+              ]
+            ]
+          }
+        ]
+      },
+      "writer_attempts": 2
+    },
+    {
+      "run": "discovery_live_20261107/final_controlled",
+      "task": "distinct_orders",
+      "status": "reviewed",
+      "reason": "The candidate SQL correctly implements the requirement: it filters for 'settled' status and applies the half-open interval [2026-09-01T00:00:00, 2026-10-01T00:00:00) on settled_at. It uses COUNT(DISTINCT order_id) to ensure each order is counted only once if it has at least one matching line. The provided fixtures confirm boundary handling (inclusive start, exclusive end) and correct filtering of non-settled lines. No ambiguities or errors detected.",
+      "http_calls": 4,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                3
+              ]
+            ],
+            "expected": [
+              [
+                3
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                2
+              ]
+            ],
+            "expected": [
+              [
+                2
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0
+              ]
+            ],
+            "expected": [
+              [
+                0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                3
+              ]
+            ],
+            "expected": [
+              [
+                3
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                3
+              ]
+            ],
+            "expected": [
+              [
+                3
+              ]
+            ]
+          }
+        ]
+      },
+      "writer_attempts": 2
+    },
+    {
+      "run": "discovery_live_20261107/final_controlled",
+      "task": "money_units",
+      "status": "inconclusive",
+      "reason": "order_lines.order_id must reference an existing order",
+      "http_calls": 4,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                2.15
+              ]
+            ],
+            "expected": [
+              [
+                2.15
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                1.23
+              ]
+            ],
+            "expected": [
+              [
+                1.23
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0.0
+              ]
+            ],
+            "expected": [
+              [
+                0.0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                0.31
+              ]
+            ],
+            "expected": [
+              [
+                0.31
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                0.51
+              ]
+            ],
+            "expected": [
+              [
+                0.51
+              ]
+            ]
+          }
+        ]
+      },
+      "writer_attempts": 2
+    },
+    {
+      "run": "discovery_live_20261107/final_correct",
+      "task": "order_average",
+      "status": "reviewed",
+      "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and September 2026 date range, groups by order_id to sum amounts, calculates the average of these sums, and returns 0 if no orders match (via COALESCE). The logic aligns with the provided fixtures and definitions.",
+      "http_calls": 3,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                60.0
+              ]
+            ],
+            "expected": [
+              [
+                60.0
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                100.0
+              ]
+            ],
+            "expected": [
+              [
+                100.0
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0
+              ]
+            ],
+            "expected": [
+              [
+                0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                10.333333333333334
+              ]
+            ],
+            "expected": [
+              [
+                10.333333333333334
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                17.0
+              ]
+            ],
+            "expected": [
+              [
+                17.0
+              ]
+            ]
+          }
+        ]
+      },
+      "writer_attempts": 1
+    },
+    {
+      "run": "discovery_live_20261107/final_correct",
+      "task": "web_scope",
+      "status": "reviewed",
+      "reason": "The candidate SQL correctly implements the requirements: filters for 'settled' status, channel 'web', and the date range [2026-09-01T00:00:00, 2026-10-01T00:00:00). It sums line amounts and returns 0 if no rows match. All provided fixtures (including boundary cases and negative amounts) yield expected results.",
+      "http_calls": 3,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                80
+              ]
+            ],
+            "expected": [
+              [
+                80
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                100
+              ]
+            ],
+            "expected": [
+              [
+                100
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0
+              ]
+            ],
+            "expected": [
+              [
+                0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                31
+              ]
+            ],
+            "expected": [
+              [
+                31
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                22
+              ]
+            ],
+            "expected": [
+              [
+                22
+              ]
+            ]
+          }
+        ]
+      },
+      "writer_attempts": 1
+    },
+    {
+      "run": "discovery_live_20261107/final_money",
+      "task": "money_units",
+      "status": "reviewed",
+      "reason": "SQL correctly filters for 'settled' status and September 2026 timestamps (inclusive start, exclusive end). It sums the line amounts in cents and divides by 100.0 to convert to yuan, returning 0 if no rows match via COALESCE. The logic aligns with the requirement to sum net amounts of settled details in the specified period. Tests confirm correct handling of negative amounts and unit conversion.",
+      "http_calls": 4,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                2.15
+              ]
+            ],
+            "expected": [
+              [
+                2.15
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                1.23
+              ]
+            ],
+            "expected": [
+              [
+                1.23
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0.0
+              ]
+            ],
+            "expected": [
+              [
+                0.0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                0.31
+              ]
+            ],
+            "expected": [
+              [
+                0.31
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                0.51
+              ]
+            ],
+            "expected": [
+              [
+                0.51
+              ]
+            ]
+          }
+        ]
+      },
+      "writer_attempts": 2
+    },
+    {
+      "run": "discovery_live_20261107/final_natural",
+      "task": "distinct_orders",
+      "status": "reviewed",
+      "reason": "The candidate SQL correctly implements the requirement: it filters for 'settled' status and uses a half-open interval [2026-09-01T00:00:00, 2026-10-01T00:00:00) on settled_at. It counts distinct order_ids, satisfying the condition that each order is counted only once if it has at least one matching line. The fixture tests confirm correct handling of boundary dates (Aug 31 excluded, Sep 1 included), mixed statuses (pending/cancelled ignored), and negative amounts (included as long as status/date match).",
+      "http_calls": 4,
+      "post_run_grade": {
+        "scope": "Five authored scoring datasets; gold SQL is an evaluation assumption, not a formal proof.",
+        "all_match": true,
+        "checks": [
+          {
+            "name": "source",
+            "match": true,
+            "actual": [
+              [
+                3
+              ]
+            ],
+            "expected": [
+              [
+                3
+              ]
+            ]
+          },
+          {
+            "name": "distinguishing",
+            "match": true,
+            "actual": [
+              [
+                2
+              ]
+            ],
+            "expected": [
+              [
+                2
+              ]
+            ]
+          },
+          {
+            "name": "empty",
+            "match": true,
+            "actual": [
+              [
+                0
+              ]
+            ],
+            "expected": [
+              [
+                0
+              ]
+            ]
+          },
+          {
+            "name": "precision",
+            "match": true,
+            "actual": [
+              [
+                3
+              ]
+            ],
+            "expected": [
+              [
+                3
+              ]
+            ]
+          },
+          {
+            "name": "mixed",
+            "match": true,
+            "actual": [
+              [
+                3
+              ]
+            ],
+            "expected": [
+              [
+                3
+              ]
+            ]
+          }
+        ]
+      },
+      "writer_attempts": 1
+    },
+    {
+      "run": "discovery_live_20261107/custom_task",
+      "task": "web_positive_order_totals",
+      "status": "reviewed",
+      "reason": "The candidate SQL correctly implements the requirement: filters for 'web' channel and 'settled' status within the specified date range, aggregates line amounts per order, includes only orders with net amount > 0, and sums these nets. The use of COALESCE ensures 0 is returned if no orders match. All provided fixtures (including edge cases like zero net, mixed statuses, and negative totals) yield results consistent with the original question's logic.",
+      "http_calls": 7,
+      "writer_attempts": 1,
+      "post_run_grade": {
+        "scope": "Custom input: source result checked by explicit manual arithmetic, not the five development scoring datasets.",
+        "source_match": true,
+        "actual": [
+          [
+            80
+          ]
+        ],
+        "expected": [
+          [
+            80
+          ]
+        ]
+      }
+    }
+  ],
+  "oracle_fault": {
+    "task": {
+      "task_id": "order_average",
+      "question": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额；无符合条件订单时返回0。",
+      "definitions": "Amounts are integer minor units. orders.total need not equal line amounts.",
+      "schema": {
+        "orders": [
+          "order_id",
+          "total",
+          "channel"
+        ],
+        "order_lines": [
+          "line_id",
+          "order_id",
+          "amount",
+          "status",
+          "settled_at"
+        ]
+      },
+      "data_constraints": "Unique positive primary keys; valid order_id foreign keys; status in settled/pending/cancelled; timestamps YYYY-MM-DDTHH:MM:SS; channel string or null; negative amounts allowed."
+    },
+    "state": {
+      "plan": {
+        "action": "plan",
+        "basis": [
+          {
+            "source": "question",
+            "quote": "统计2026年9月已结算明细，时间为9月1日零点（含）到10月1日零点（不含）。先按订单汇总明细金额，再计算有符合条件明细的订单的平均金额；无符合条件订单时返回0。"
+          }
+        ],
+        "assumptions": [],
+        "reference": "rs = tables['order_lines']\nids = set(r['order_id'] for r in rs)\n[[round(sum(r['amount'] for r in rs)/len(ids),2) if ids else 0]]",
+        "fixtures": [
+          {
+            "name": "initial",
+            "data": {
+              "orders": [
+                [
+                  1,
+                  999,
+                  "web"
+                ]
+              ],
+              "lines": [
+                [
+                  1,
+                  1,
+                  100,
+                  "settled",
+                  "2026-09-10T00:00:00"
+                ]
+              ]
+            }
+          }
+        ]
+      },
+      "fixtures": [
+        {
+          "name": "precision",
+          "data": {
+            "orders": [
+              [
+                1,
+                999,
+                "web"
+              ],
+              [
+                2,
+                999,
+                "web"
+              ],
+              [
+                3,
+                999,
+                "web"
+              ]
+            ],
+            "lines": [
+              [
+                1,
+                1,
+                10,
+                "settled",
+                "2026-09-10T00:00:00"
+              ],
+              [
+                2,
+                2,
+                10,
+                "settled",
+                "2026-09-10T00:00:00"
+              ],
+              [
+                3,
+                3,
+                11,
+                "settled",
+                "2026-09-10T00:00:00"
+              ]
+            ]
+          }
+        }
+      ],
+      "candidate": {
+        "sql": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)"
+      },
+      "observation": {
+        "sql_digest": "f1eab543e3acb185f6205c62f79d1b1e6db78782526d3be278e7a3acdbdd0eb5",
+        "plan_digest": "e6a1364794301ee6b2d725f4a0701561f0875959ffc0ac8b5a0a94641a7ebb3c",
+        "checks": [
+          {
+            "fixture": "precision",
+            "status": "disagreement",
+            "actual": [
+              [
+                10.333333333333334
+              ]
+            ],
+            "expected": [
+              [
+                10.33
+              ]
+            ]
+          }
+        ],
+        "all_match": false,
+        "interpretation_status": "model_proposed_not_proven"
+      },
+      "reviews": 1,
+      "attempts": 1,
+      "trace": [],
+      "tool_error": null
+    },
+    "decision": {
+      "action": "clarify",
+      "reason": "The question asks for the average amount of orders with qualifying lines. The candidate SQL returns a raw floating-point average (e.g., 10.3333...). The expected value in the fixture is 10.33, implying rounding to 2 decimal places. However, the original question text does not explicitly specify any rounding or precision requirements for the final result. It only states 'calculate the average amount'. Without an explicit instruction to round to 2 decimals, returning the exact mathematical average is also a valid interpretation. I need clarification on whether the output should be rounded to 2 decimal places."
+    }
+  },
+  "usage": {
+    "http_calls": 67,
+    "tokens": 94185,
+    "estimated_cny": 0.1143816,
+    "cumulative_estimated_cny": 0.3386017,
+    "cumulative_reserved_cny": 4.0390252,
+    "allowance_cny": 5.0,
+    "usage_complete": true
+  }
+}

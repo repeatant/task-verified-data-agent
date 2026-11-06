@@ -1,6 +1,6 @@
 """A checkpointed LangGraph executor over the shared task-verification core.
 
-One graph owns one bounded repair loop. No DB-GPT loop is nested inside it.
+One graph owns one bounded repair loop; model adapters do not retry internally.
 Checkpoints contain JSON-compatible state, never clients, credentials or a live
 guard. The guard codec preserves witnesses but deliberately drops acceptance;
 publication always re-executes a candidate against the current bound source.

@@ -1,59 +1,54 @@
 # 源码阅读指南
 
-建议先读一次任务的编排入口，再按调用顺序进入具体阶段。命令行入口为 `python -m dataverify` 与 `tools/` 下的脚本。Python 模块的导入路径按下列子包划分。历史实验和冻结快照使用原版本的摘要。
+先读一次任务的编排入口，再沿调用进入核验与执行。当前 Agent 编排只使用 LangGraph；两种任务契约共用基础工具，但验收条件不同。
 
-## 一次 Agent 任务
+## 动态任务：从需求到执行证据
 
-从 [run_probe_native_case](../dataverify/integrations/probe_agent_bridge.py) 开始：输入验证 → 创建任务资源 → 原生 Agent 运行 → 资源清理 → 运行记录。
+从 [run_discovery](../dataverify/agent/discovery_graph.py) 开始：独立规划参考 → 生成 SQL → 执行检查 → 盲态核算 → 搜索分歧 → 归因 → 定向修改 → 最终重放。
 
-`_NativeSession` 表示一次任务拥有的客户端、资源和 Agent；`_NativeOutcome` 收集回复、事件与脱敏后的错误。它们将资源生命周期和最终记录分开，生成与重试仍由 DB-GPT 原生循环负责。
+`_DiscoveryNodes` 管理图节点、状态与请求上下文；[ReferenceAuditNodes](../dataverify/agent/discovery_audit.py) 负责独立核算、分歧归因及参考版本替换。生成、核验、核算使用不同客户端；核验的规划、归因、常规复核也重新构建上下文。
 
-## 候选如何验收
+[discovery_model.py](../dataverify/agent/discovery_model.py) 定义提示词与 JSON 动作协议；[discovery_runtime.py](../dataverify/verification/discovery_runtime.py) 校验任务、数据、计划并执行只读 SQL。模型提出的参考程序由 [reference_expression.py](../dataverify/verification/reference_expression.py) 解释，不调用 `eval` 或 `exec`。
 
-[ProbeGuard.execute](../dataverify/verification/probe_guard.py) 按顺序完成：确认任务未变 → 检查候选 → 记住反例 → 回归已有反例 → 选择反馈 → 保存审计。
+[reference_audit.py](../dataverify/verification/reference_audit.py) 组织三方执行结果、调用方确认样例与 Hypothesis 区分性数据搜索。执行分歧只说明程序不一致；修改授权还需需求依据，证据不足时澄清。完整过程与限制见 [动态核验指南](DISCOVERY.md)。
 
-每次候选更新先清除旧接受状态。`publish()` 只返回当前仍有效的核验结果。`_RegressionRun` 将回归判定和查询消耗放在一起，避免汇总时丢失预算信息。
+## 预设性质任务：生成与修复循环
 
-## LangGraph 如何编排与恢复
+从 [run_graph_case](../dataverify/agent/probe_langgraph.py) 开始：验证线程绑定 → 加载检查点 → 执行状态图 → 整理结果。`_GraphNodes` 组织节点和路由，活动客户端与数据通过运行依赖传入。
 
-从 [run_graph_case](../dataverify/agent/probe_langgraph.py) 开始：验证线程绑定 → 加载检查点 → 执行状态图 → 整理结果。`_GraphNodes` 把节点与路由放在一起，模型及数据作为运行依赖传入，避免把活动客户端放进检查点。
+`prepare_call` 保存调用意图，`generate` 生成一次候选，`verify` 委托 Guard，`feedback` 追加诊断，`publish` 重新核验后获取结果。这条路径不生成动态参考程序。
 
-`prepare_call` 保存调用意图，`generate` 只生成一次候选，`verify` 委托同一个 Guard，`feedback` 追加本轮诊断，`publish` 再次核验并获取结果。
+[ProbeGuard.execute](../dataverify/verification/probe_guard.py) 检查任务未变、核验候选、保存反例、回归旧反例、选择反馈并记录审计。每次候选更新先撤销旧接受状态；`publish()` 只返回当前有效结果。
 
-[graph_guard.py](../dataverify/agent/graph_guard.py) 校验并恢复反例与策略状态；接受状态不参与恢复。[graph_checkpoint.py](../dataverify/agent/graph_checkpoint.py) 管理本地写入锁和费用落盘；[graph_model.py](../dataverify/agent/graph_model.py) 只负责单次文本 JSON 调用，不包含另一个 Agent 循环。恢复测试关注请求重复、反例丢失、来源变化与旧结果泄漏，见 [LangGraph 指南](LANGGRAPH.md)。
+[probe_runtime.py](../dataverify/verification/probe_runtime.py) 的 `_analyse` 分为 SELECT 解析、关联检查、筛选检查和输出检查，再由 `_semantics` 对照已确认任务。语法能力与任务要求分别判断，区分“不支持”与“范围错误”。
 
-## SQL 如何检查
+## 反馈与恢复
 
-[probe_runtime.py](../dataverify/verification/probe_runtime.py) 的 `_analyse` 分为四个阶段：
+[feedback_strategy.py](../dataverify/agent/feedback_strategy.py) 维护当前任务的候选指纹和失败状态，选择完整或紧凑证据。指纹忽略格式与注释，保留字面量及多语句内容；没有反例时不生成伪证据。
 
-1. `_parse_select`：读取唯一 SELECT，限制语法范围。
-2. `_analyse_relations`：解析表别名，检查登记的父子表关联。
-3. `_analyse_where`：收集受支持的筛选条件。
-4. `_analyse_projection`：检查度量、输出列及分组键。
+[graph_guard.py](../dataverify/agent/graph_guard.py) 恢复反例与策略状态，不恢复接受状态；[graph_checkpoint.py](../dataverify/agent/graph_checkpoint.py) 管理本地写入锁和累计预算。任务、数据或版本变化时拒绝复用检查点；恢复后必须重新执行候选，未决调用不自动重发。
 
-随后 `_semantics` 对照调用方确认的任务条件，`execute_sql` 在隔离、只读的 SQLite 中执行。语法许可与业务任务要求分别检查，便于定位“当前不支持”和“答案范围错误”。
+[graph_model.py](../dataverify/agent/graph_model.py) 负责单次 JSON HTTP 调用，不包含另一套 Agent 循环。角色上下文、预算和检查点是不同边界，详见 [LangGraph 指南](LANGGRAPH.md)。
 
-## 反馈为何升级
+## 评测与预算
 
-[feedback_strategy.py](../dataverify/agent/feedback_strategy.py) 只维护当前任务的候选指纹和失败状态，输出证据格式与升级原因。SQL 验收、预算和发布由 Guard 继续负责。
+开发任务、参考答案和后置评分位于 `dataverify/evaluation/`。运行时模块不能导入评分答案。
 
-`candidate_fingerprint` 忽略格式与注释，同时保留字面量和多语句内容。`FeedbackStrategy.select` 处理观察结果，`metadata` 输出模型可见的策略说明。没有反例时不会生成伪证据。
+- [reference_audit_scoring.py](../dataverify/evaluation/reference_audit_scoring.py)：同时检查最终 SQL、当前参考和独立核算。
+- [probe_grading.py](../dataverify/evaluation/probe_grading.py)：预设性质路径的源数据与附加数据评分。
+- [probe_cost_budget.py](../dataverify/runtime/probe_cost_budget.py)：实际 HTTP 前预留额度，记录完整 usage。
+- [experiment_budget.py](../dataverify/runtime/experiment_budget.py) 与 [discovery_budget.py](../dataverify/runtime/discovery_budget.py)：累计账本及受限续账审查。
+- [reporting.py](../dataverify/runtime/reporting.py)：报告写入、稳定 JSON 摘要和用量汇总。
 
-## 评测和预算
-
-[feedback_experiment.py](../dataverify/evaluation/feedback_experiment.py) 负责配置、冻结计划、单项执行和报告检查点；[probe_live_benchmark.py](../dataverify/evaluation/probe_live_benchmark.py) 保留完整／紧凑反例的原有配对实验入口。小型运行上下文集中保存共享状态，单项成功、异常和中断共用报告落盘路径。
-
-[experiment_budget.py](../dataverify/runtime/experiment_budget.py) 单独处理账本恢复、截断审查与追加额度；[probe_cost_budget.py](../dataverify/runtime/probe_cost_budget.py) 负责每次实际请求前的费用预留及用量记账。外部依赖和模型调用由对应客户端管理。
-
-[reporting.py](../dataverify/runtime/reporting.py) 提供无模型依赖的报告写入、稳定 JSON 摘要及用量汇总。未知或不一致的 usage 会单独计数。
+公开的冻结历史实现保持原样，仅用于离线回放，不属于当前依赖。历史实验不得当作当前代码的验证结果。
 
 ## 工程方式的参考
 
-本项目参考以下官方源码的组织方式，按自身规模采用小函数、显式状态及独立生命周期，不复制上游业务实现：
+本项目参考官方源码的组织方式，采用短入口、显式状态及独立生命周期，不复制上游业务实现：
 
 - [pytest runner](https://github.com/pytest-dev/pytest/blob/main/src/_pytest/runner.py)：阶段编排与单项运行分开。
-- [Pydantic AI RunContext](https://github.com/pydantic/pydantic-ai/blob/main/pydantic_ai_slim/pydantic_ai/_run_context.py)：显式描述运行上下文。
-- [smolagents memory](https://github.com/huggingface/smolagents/blob/main/src/smolagents/memory.py)：区分状态记录与序列化边界。
-- [SQLGlot 配置](https://github.com/tobymao/sqlglot/blob/main/pyproject.toml)：将统一行宽与静态检查放在项目配置中。
+- [Pydantic AI RunContext](https://github.com/pydantic/pydantic-ai/blob/main/pydantic_ai_slim/pydantic_ai/_run_context.py)：显式运行上下文。
+- [smolagents memory](https://github.com/huggingface/smolagents/blob/main/src/smolagents/memory.py)：状态记录与序列化边界。
+- [SQLGlot 配置](https://github.com/tobymao/sqlglot/blob/main/pyproject.toml)：统一行宽与静态检查。
 
-修改前的检查步骤见 [贡献指南](CONTRIBUTING.md)，行为与评测边界见 [评测说明](EVALUATION.md)。
+开发约定见 [贡献指南](CONTRIBUTING.md)，实验范围见 [评测说明](EVALUATION.md)。

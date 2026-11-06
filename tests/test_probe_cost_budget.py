@@ -1,7 +1,6 @@
 """Budget/config checks only; fake credentials, no live endpoint calls."""
 
 import asyncio
-import importlib.util
 import json
 from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
@@ -9,12 +8,8 @@ from decimal import Decimal
 import httpx
 import pytest
 
-if importlib.util.find_spec("dbgpt") is None:
-    pytest.skip("Optional pinned DB-GPT runtime is not installed", allow_module_level=True)
-
-from dbgpt.core import ModelMessage, ModelRequest
-
-from dataverify.integrations.dbgpt_qwen import QwenClientError, QwenConfig, QwenLLMClient
+from dataverify.agent.graph_model import GraphModelError, QwenGraphModel
+from dataverify.integrations.qwen_config import QwenClientError, QwenConfig
 from dataverify.runtime.probe_cost_budget import MonetaryRequestBudget, validate_pricing
 
 SECRET = "sk-test-never-real-budget-credential"
@@ -257,7 +252,10 @@ def test_existing_http_client_reserves_before_post_and_records_usage():
                 200,
                 json={
                     "choices": [
-                        {"message": {"content": '{"sql":"SELECT 1"}'}, "finish_reason": "stop"}
+                        {
+                            "message": {"content": '{"sql":"SELECT 1","task_id":"budget-test"}'},
+                            "finish_reason": "stop",
+                        }
                     ],
                     "usage": usage(500, 20),
                 },
@@ -266,12 +264,11 @@ def test_existing_http_client_reserves_before_post_and_records_usage():
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
             config = QwenConfig(SECRET, BEIJING)
             validate_pricing(config)
-            client = QwenLLMClient(config, budget, http_client=http, max_tokens=900)
-            request = ModelRequest(
-                model=config.model, messages=[ModelMessage(role="human", content="Return SQL")]
-            )
-            output = await client.generate(request)
-            assert output.usage == usage(500, 20)
+            client = QwenGraphModel(config, budget, http_client=http, max_tokens=900)
+            messages = [{"role": "user", "content": "Return SQL"}]
+            output = await client.generate(messages)
+            assert output["sql"] == "SELECT 1"
+            assert client.usage == [usage(500, 20)]
             assert budget.snapshot()["complete_count"] == 1
             assert budget.snapshot()["estimated_reported_cny"] == 0.000454
             assert SECRET not in json.dumps(client.http_events)
@@ -291,12 +288,10 @@ def test_insufficient_money_causes_no_actual_post():
 
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
             config = QwenConfig(SECRET, BEIJING)
-            client = QwenLLMClient(config, budget, http_client=http, max_tokens=900)
-            request = ModelRequest(
-                model=config.model, messages=[ModelMessage(role="human", content="Return SQL")]
-            )
+            client = QwenGraphModel(config, budget, http_client=http, max_tokens=900)
+            messages = [{"role": "user", "content": "Return SQL"}]
             with pytest.raises(QwenClientError, match="MONEY_RESERVATION_LIMIT"):
-                await client.generate(request)
+                await client.generate(messages)
         assert not seen
         assert budget.snapshot()["http_attempts"] == 0
 
@@ -314,21 +309,23 @@ def test_missing_usage_blocks_the_next_real_http_attempt():
                 200,
                 json={
                     "choices": [
-                        {"message": {"content": '{"sql":"SELECT 1"}'}, "finish_reason": "stop"}
+                        {
+                            "message": {"content": '{"sql":"SELECT 1","task_id":"budget-test"}'},
+                            "finish_reason": "stop",
+                        }
                     ],
                 },
             )
 
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
             config = QwenConfig(SECRET, BEIJING)
-            client = QwenLLMClient(config, budget, http_client=http)
-            request = ModelRequest(
-                model=config.model, messages=[ModelMessage(role="human", content="Return SQL")]
-            )
-            await client.generate(request)
+            client = QwenGraphModel(config, budget, http_client=http)
+            messages = [{"role": "user", "content": "Return SQL"}]
+            with pytest.raises(GraphModelError, match="USAGE_UNAVAILABLE_OR_INCONSISTENT"):
+                await client.generate(messages)
             assert client.http_events[0]["usage_complete"] is False
             with pytest.raises(QwenClientError, match="STOPPED_USAGE_UNAVAILABLE"):
-                await client.generate(request)
+                await client.generate(messages)
         assert seen == [1]
         assert not budget.snapshot()["reported_cost_complete"]
 

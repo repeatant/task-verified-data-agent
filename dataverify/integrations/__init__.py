@@ -1,1 +1,1 @@
-"""Model providers and DB-GPT adapters."""
+"""Model providers and explicit Qwen configuration."""

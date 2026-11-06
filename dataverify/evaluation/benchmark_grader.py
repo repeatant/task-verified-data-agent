@@ -1,4 +1,4 @@
-"""Independent final-output grading for the disclosed DB-GPT development suite.
+"""Independent final-output grading for the frozen development tasks.
 
 No checker, executor, SQL execution, or model verdict is used. A small SQLGlot
 parser establishes column lineage; Python fixture records establish the exact

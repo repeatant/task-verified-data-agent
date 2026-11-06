@@ -1,8 +1,10 @@
-"""Score independently authored challenges against a frozen verifier.
+"""Score independently authored challenges against a frozen verifier offline.
 
 The initial score is recorded without adapting the verifier to challenge cases.
-Live mode can run only the author's four preselected natural-language tasks,
-under a continued budget. No gold SQL is required or sent to the model.
+This component check never calls a model or measures an agent repair loop.
+LangGraph model experiments use the separate graph and discovery evaluators.
+An evaluated challenge may fail without invalidating the run. Source changes
+or operational errors invalidate the run and produce a nonzero CLI exit code.
 """
 
 from __future__ import annotations
@@ -22,6 +24,16 @@ from typing import TYPE_CHECKING
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tools"))
+
+VERIFIER_SOURCES = (
+    "dataverify/verification/probe_runtime.py",
+    "dataverify/verification/probe_testing.py",
+    "dataverify/verification/probe_capabilities.py",
+    "dataverify/verification/probe_guard.py",
+    "dataverify/evaluation/probe_cases.py",
+    "dataverify/agent/feedback_strategy.py",
+    "tools/evaluate_independent_holdout.py",
+)
 
 if TYPE_CHECKING:
     from dataverify.verification.probe_runtime import ProbeData, ProbeTask
@@ -58,6 +70,35 @@ def write(path, value):
 
 def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def capture_current_verifier() -> dict:
+    """Freeze this run's component sources without rewriting historical evidence."""
+    return {
+        "created_at_utc": datetime.now(timezone.utc).isoformat(),
+        "scope": "Current component regression on disclosed cases; not a new holdout or agent benchmark.",
+        "files": {name: sha(ROOT / name) for name in VERIFIER_SOURCES},
+    }
+
+
+def verify_source_manifest(manifest: dict) -> dict[str, bool]:
+    """Validate paths and coverage before comparing source digests."""
+    files = manifest.get("files") if isinstance(manifest, dict) else None
+    if not isinstance(files, dict):
+        raise ValueError("Invalid verifier source manifest")
+    matches = {}
+    for name, expected in files.items():
+        if not isinstance(name, str) or not isinstance(expected, str):
+            raise ValueError("Invalid verifier source entry")
+        source = (ROOT / name).resolve()
+        if not source.is_relative_to(ROOT.resolve()) or not re.fullmatch(r"[a-f0-9]{64}", expected):
+            raise ValueError("Invalid verifier source path or digest")
+        if not source.is_file():
+            raise ValueError("Verifier manifest refers to unavailable source files")
+        matches[name] = sha(source) == expected
+    if not set(VERIFIER_SOURCES).issubset(files):
+        raise ValueError("Verifier manifest does not cover the current component sources")
+    return matches
 
 
 @dataclass(frozen=True)
@@ -172,27 +213,25 @@ def score(challenge, *, verifier: Verifier | None = None):
 async def evaluate(
     output: Path,
     dataset: Path,
-    verifier_manifest: Path,
+    verifier_manifest: Path | None = None,
     *,
-    live=False,
-    previous_workflow=None,
     regression_from: Path | None = None,
 ):
-    output, dataset, verifier_manifest = (
-        output.resolve(),
-        dataset.resolve(),
-        verifier_manifest.resolve(),
-    )
+    output, dataset = output.resolve(), dataset.resolve()
+    if verifier_manifest is not None:
+        verifier_manifest = verifier_manifest.resolve()
     readable_roots = ((ROOT / "reports").resolve(), (ROOT / "tests/fixtures").resolve())
+    inputs = (dataset, verifier_manifest) if verifier_manifest is not None else (dataset,)
     if not output.is_relative_to((ROOT / "reports").resolve()) or any(
-        not any(path.is_relative_to(base) for base in readable_roots)
-        for path in (dataset, verifier_manifest)
+        not any(path.is_relative_to(base) for base in readable_roots) for path in inputs
     ):
         raise ValueError(
             "Inputs must remain inside reports or tests/fixtures; output must remain inside reports"
         )
-    freeze = read(verifier_manifest)
-    unchanged = {name: sha(ROOT / name) == digest for name, digest in freeze["files"].items()}
+    freeze = (
+        read(verifier_manifest) if verifier_manifest is not None else capture_current_verifier()
+    )
+    unchanged = verify_source_manifest(freeze)
     if not all(unchanged.values()):
         raise ValueError("Frozen verifier changed before initial evaluation")
     author = read(dataset.parent / "author_manifest.json")
@@ -218,32 +257,12 @@ async def evaluate(
         if not any(regression_from.is_relative_to(base) for base in readable_roots):
             raise ValueError("Original evaluation must be inside reports or tests/fixtures")
         prior_manifest = read(regression_from / "evaluation_manifest.json")
-        if prior_manifest["challenge_sha256"] != dataset_hash or live:
-            raise ValueError(
-                "Regression must reuse the exact initial challenges; controlled live repairs use a separate run"
-            )
-    budget = None
-    config = None
-    if live:
-        if previous_workflow is None:
-            raise ValueError("Live validation must continue an existing budget")
-        from run_probe_workflow import restore_completed_budget
-
-        from dataverify.integrations.dbgpt_qwen import QwenConfig
-        from dataverify.runtime.probe_cost_budget import validate_pricing
-
-        previous_workflow = Path(previous_workflow).resolve()
-        if not previous_workflow.is_relative_to((ROOT / "reports").resolve()):
-            raise ValueError("Invalid budget continuation path")
-        previous = read(previous_workflow)
-        if previous.get("real_model_used") is not True:
-            raise ValueError("Previous budget is not a live ledger")
-        budget = restore_completed_budget(previous["budget"])
-        if budget.snapshot()["http_attempt_limit"] - budget.snapshot()["http_attempts"] < 8:
-            raise ValueError("Insufficient remaining allowance for four bounded tasks")
-        config = QwenConfig.from_local_environment()
-        validate_pricing(config)
+        if prior_manifest["challenge_sha256"] != dataset_hash:
+            raise ValueError("Regression must reuse the exact initial challenges")
     output.mkdir(parents=True, exist_ok=False)
+    if verifier_manifest is None:
+        verifier_manifest = output / "verifier_manifest.json"
+        write(verifier_manifest, freeze)
     evaluation_manifest = {
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "dataset": str(dataset.relative_to(ROOT)),
@@ -253,16 +272,16 @@ async def evaluate(
         "evaluator_sha256": sha(Path(__file__)),
         "author_manifest_sha256": sha(dataset.parent / "author_manifest.json"),
         "label_audit_sha256": sha(dataset.parent / "label_audit.json"),
-        "phase": "converted_regression" if regression_from else "initial_independent_challenge",
+        "phase": "converted_regression" if regression_from else "current_component_check",
         "scope": (
             "Post-fix regression on challenges already examined for fixes; NOT an untouched holdout score."
             if regression_from
-            else "Prospective independently authored query challenges on fixed schema, no tuning during initial evaluation; not cross-schema or production generalization."
+            else "Component check on disclosed independently authored query challenges; not a new holdout, agent benchmark or production generalization claim."
         ),
         "natural_probe_ids": document["natural_probe_ids"],
         "feedback_policy": "capability_v2",
-        "real_model_used": live,
-        "budget_start": budget.snapshot() if budget else None,
+        "real_model_used": False,
+        "budget_start": None,
         "verifier_unchanged_before": unchanged,
     }
     if regression_from:
@@ -270,13 +289,11 @@ async def evaluate(
     write(output / "evaluation_manifest.json", evaluation_manifest)
     workflow = {
         "status": "running",
-        "real_model_used": live,
-        "report_dirs": ["natural"] if live else [],
-        "budget": budget.snapshot() if budget else None,
+        "real_model_used": False,
+        "report_dirs": [],
+        "budget": None,
         "scope": evaluation_manifest["scope"],
     }
-    if live:
-        workflow["continued_from"] = str(previous_workflow.relative_to(ROOT))
     write(output / "workflow.json", workflow)
     try:
         rows = []
@@ -311,51 +328,18 @@ async def evaluate(
         write(output / "initial_component_results.json", {"summary": summary, "rows": rows})
         workflow["initial_summary"] = summary
         write(output / "workflow.json", workflow)
-        if live:
-            from dataverify.evaluation.probe_live_benchmark import run_probe_benchmark
-
-            by_id = {item.identifier: item for item in challenges}
-            cases = tuple(
-                verifier.cases.Case(
-                    name,
-                    by_id[name].task,
-                    by_id[name].data,
-                    by_id[name].sql,
-                    "EVALUATOR_REFERENCE_UNUSED",
-                    None,
-                    "Independent preregistered natural task",
-                )
-                for name in document["natural_probe_ids"]
-            )
-            natural = await run_probe_benchmark(
-                output / "natural",
-                live=True,
-                config=config,
-                evaluation_cases=cases,
-                natural_case_ids=document["natural_probe_ids"],
-                include_controlled=False,
-                seeds=(43,),
-                modes=("compact",),
-                budget=budget,
-                feedback_policy="capability_v2",
-            )
-            workflow.update(
-                natural_summary=natural["summary"],
-                audit_ledger_complete=natural["audit_ledger_complete"],
-            )
         workflow.update(
-            status="completed" if not live or natural["all_cells_completed"] else "incomplete",
-            verifier_unchanged_after={
-                name: sha(ROOT / name) == digest for name, digest in freeze["files"].items()
-            },
+            status="completed",
+            verifier_unchanged_after=verify_source_manifest(freeze),
         )
+        if not all(workflow["verifier_unchanged_after"].values()):
+            workflow.update(status="invalid", error_code="VERIFIER_SOURCE_CHANGED")
+        elif summary["operational_errors"]:
+            workflow.update(status="error", error_code="COMPONENT_OPERATIONAL_ERROR")
     except BaseException as exc:
-        if budget:
-            budget.stop("INDEPENDENT_EVALUATION_ERROR")
         workflow.update(status="error", error_type=type(exc).__name__)
         raise
     finally:
-        workflow["budget"] = budget.snapshot() if budget else None
         write(output / "workflow.json", workflow)
     return workflow
 
@@ -379,11 +363,7 @@ def main():
     parser.add_argument(
         "--verifier-manifest",
         type=Path,
-        default=(
-            public / "current_verifier_manifest.json"
-            if public.is_dir()
-            else ROOT / "reports/holdout_verifier_freeze_20261029/manifest.json"
-        ),
+        help="Optional current-source freeze. By default, capture this run's sources in the output directory; historical manifests are not rewritten.",
     )
     parser.add_argument(
         "--output",
@@ -392,8 +372,6 @@ def main():
         / "reports"
         / ("independent_eval_" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")),
     )
-    parser.add_argument("--live", action="store_true")
-    parser.add_argument("--previous-workflow", type=Path)
     parser.add_argument(
         "--regression-from",
         type=Path,
@@ -405,8 +383,6 @@ def main():
             args.output,
             args.dataset,
             args.verifier_manifest,
-            live=args.live,
-            previous_workflow=args.previous_workflow,
             regression_from=args.regression_from,
         )
     )

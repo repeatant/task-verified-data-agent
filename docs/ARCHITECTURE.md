@@ -1,29 +1,32 @@
 # 架构与执行契约
 
-## 一次任务如何执行
+## 两种任务契约，一个编排框架
 
-调用方先确认指标、时间、状态、输出形式和任务性质。执行器生成候选 SQL，核验组件返回结构化结果；失败反馈进入预算内修复，后续候选继续接受同一任务和已发现反例的检查。
+当前 Agent 编排只使用 LangGraph。动态参考核验和预设性质核验各自拥有状态图，不能将两者的语法能力、验收状态或实验成绩混为一谈。
+
+- **动态路径**：`run_discovery` 根据原始问题生成参考计算与测试，再独立生成 SQL。盲态核算检查参考自身；分歧通过执行证据归因，获准后修改 SQL 或替换参考，否则澄清。
+- **预设性质路径**：`run_graph_case` 接收调用方已确认的 `ProbeTask`，按 `prepare_call → generate → verify → feedback/publish` 运行，使用登记性质及原验收条件。
 
 ```mermaid
 flowchart LR
-    A[确认任务与 schema] --> B[生成候选 SQL]
-    B --> C[语法与任务检查]
-    C --> D[自动测试与反例缩减]
-    D --> E{源数据与回归检查}
-    E -->|通过| F[发布结果]
-    E -->|失败| G[结构化反馈]
-    G -->|预算内修复| B
-    G -->|预算耗尽| H[返回未完成]
+    T[原始需求与数据] --> P[独立规划参考]
+    P --> W[生成 SQL]
+    W --> E[执行 SQL 与参考]
+    E --> A[盲态独立核算与分歧搜索]
+    A --> D{依据与执行证据}
+    D -->|修改 SQL| W
+    D -->|替换参考并保留旧版| E
+    D -->|证据不足| C[澄清或未完成]
+    D -->|有界检查通过| R[最终重放并返回 reviewed]
 ```
 
-两条执行路径共用核验核心，分别拥有一个生成／修复循环：
+生成方不接收参考，独立核算不接收候选 SQL、参考或答案。规划、归因、常规复核分别组织上下文；归因按设计接收双方程序与执行差异。相同模型仍可能共同误解，程序一致不等于业务正确。
 
-- **LangGraph**：`prepare_call → generate → verify → feedback/publish`。SQLite 检查点保存消息、候选、反例和自适应反馈状态，模型由独立适配器调用。
-- **DB-GPT**：执行动作扩展自 `Action`，复用原生生成、记忆和重试循环，上游源码保持原样。
+两条路径均使用文本结构化 JSON，由本地代码分发动作；不是供应商原生 Function Calling。当前没有 DB-GPT 运行层，冻结旧源码仅用于历史离线回放。
 
-两条路径均使用文本 JSON Action；查询和最终结果由核验器持有。LangGraph 不包裹 DB-GPT 循环，当前实验也不主张换框架本身提高了修复率。
+动态 SQL 范围、参考解释器、确认样例和修改权限见 [动态核验指南](DISCOVERY.md)。下文“执行契约”专指预设性质路径。
 
-## LangGraph 状态与恢复
+## 预设性质路径的状态与恢复
 
 `GraphState` 只保存可序列化数据，模型客户端、凭据、锁和活动 Guard 均在状态之外。恢复先比对任务／数据摘要、执行选项及运行时代码与依赖版本；不一致时要求新建线程。
 
@@ -33,7 +36,7 @@ Guard 检查点保留实际反例及反馈升级进度，不恢复已接受结�
 
 本地文件锁串行化检查点与共享预算的写入。SQLite 方案面向本地演示和开发；运行命令、断点示例和边界见 [LangGraph 指南](LANGGRAPH.md)。
 
-## 核验组件
+## 预设性质核验组件
 
 - **任务和 AST 分析**：SQLGlot 解析候选，检查表、列、关联、聚合、筛选和输出形式。必要条件之外的额外范围限制同样需要检查。
 - **数据生成与性质测试**：为登记性质生成合法的源数据和跟随数据，例如添加范围外记录、合法退款或没有有效明细的订单，检查预期关系是否成立。
@@ -45,6 +48,8 @@ Guard 检查点保留实际反例及反馈升级进度，不恢复已接受结�
 任务性质是可验证的必要条件；测试通过仍不等于完整语义证明。当前实验中，动态测试提供了可重放诊断与反馈压缩证据，新增检错收益尚未得到证明。
 
 ## 执行契约
+
+以下为预设性质路径的契约；动态路径仍使用相同两张表，但允许更宽的表达形式，见 [动态范围](DISCOVERY.md#检查逻辑为什么不再写死)。
 
 当前数据为固定的 `orders`、`order_lines` 父子表，金额使用有界整数最小单位，退款可为负数。主键为正整数，明细外键有效；时间为无时区的 ISO 秒字符串。
 
@@ -62,22 +67,21 @@ LEFT JOIN 按驱动表、过滤位置和可选侧匹配关系核验。`line_id>0
 
 ## 代码导览
 
-- [probe_runtime.py](../dataverify/verification/probe_runtime.py)：任务与数据类型、AST检查、只读执行和范围约束。
-- [probe_testing.py](../dataverify/verification/probe_testing.py)：性质选择、合法数据生成、成对执行、反例缩减。
-- [probe_guard.py](../dataverify/verification/probe_guard.py)：任务保持、输出检查、旧反例回归和发布结果。
-- [probe_agent_bridge.py](../dataverify/integrations/probe_agent_bridge.py)：DB-GPT资源、Action、反馈及最终发布接口。
-- [probe_langgraph.py](../dataverify/agent/probe_langgraph.py)：LangGraph 节点、条件路由和恢复约束。
-- [graph_guard.py](../dataverify/agent/graph_guard.py)：反例与反馈状态的 JSON 编解码，不恢复接受状态。
-- [graph_model.py](../dataverify/agent/graph_model.py)：单次生成接口、离线脚本与千问 HTTP 适配。
-- [graph_checkpoint.py](../dataverify/agent/graph_checkpoint.py)：本地写入锁与持久费用账本。
-- [probe_live_benchmark.py](../dataverify/evaluation/probe_live_benchmark.py)：真实模型和脚本客户端对照、独立评分、调用审计。
-- [probe_cost_budget.py](../dataverify/runtime/probe_cost_budget.py)：调用前预留、usage和估算费用账本。
-- [feedback_experiment.py](../dataverify/evaluation/feedback_experiment.py)：信息开关消融、固定与自适应反馈对照、累计预算续接。
+- [discovery_graph.py](../dataverify/agent/discovery_graph.py)：动态状态图、上下文与最终重放。
+- [discovery_audit.py](../dataverify/agent/discovery_audit.py)：独立核算、归因和参考替换。
+- [reference_expression.py](../dataverify/verification/reference_expression.py)：受限参考计算解释器。
+- [reference_audit.py](../dataverify/verification/reference_audit.py)：三方执行、确认样例与区分数据搜索。
+- [probe_runtime.py](../dataverify/verification/probe_runtime.py)：预设任务、AST、只读执行和范围约束。
+- [probe_testing.py](../dataverify/verification/probe_testing.py)：登记性质的数据生成及反例缩减。
+- [probe_guard.py](../dataverify/verification/probe_guard.py)：任务保持、反例回归与发布。
+- [probe_langgraph.py](../dataverify/agent/probe_langgraph.py)：预设性质节点、条件路由和恢复。
+- [graph_model.py](../dataverify/agent/graph_model.py)：单次 JSON 生成、脚本及千问适配。
+- [graph_checkpoint.py](../dataverify/agent/graph_checkpoint.py)：本地锁与持久预算。
 
-评测目标、故障标签和参考 SQL 位于独立评测模块，运行时核验模块不导入这些目标。
+评测目标、故障标签和参考答案位于独立评测模块，运行时模块不导入评分答案。
 
 ## 依赖分工
 
-[DB-GPT](https://github.com/eosphoros-ai/DB-GPT) 提供原生 Agent 循环；[SQLGlot](https://github.com/tobymao/sqlglot) 提供 AST；[Hypothesis](https://github.com/HypothesisWorks/hypothesis) 提供生成与缩减工具。固定上游提交及关键源码摘要保存在 [版本记录](research/dbgpt_pin.json)。
+[LangGraph](https://github.com/langchain-ai/langgraph) 提供图编排和检查点；[SQLGlot](https://github.com/tobymao/sqlglot) 提供 AST；[Hypothesis](https://github.com/HypothesisWorks/hypothesis) 提供生成与缩减。SQL 执行使用 SQLite，参考计算使用项目内受限解释器。
 
-早期 `engine.py`／FastAPI 示例仍保留，使用旧任务模型；当前共享核验核心的 LangGraph 路径位于 `probe_langgraph.py`，两者不是同一个执行器。测试和安装入口见 [使用指南](USAGE.md)。
+早期 `engine.py`／FastAPI 示例仍保留旧任务模型，不是当前动态核验服务入口。历史实验与当前依赖分开，见 [评测说明](EVALUATION.md) 和 [第三方声明](THIRD_PARTY_NOTICES.md)。
