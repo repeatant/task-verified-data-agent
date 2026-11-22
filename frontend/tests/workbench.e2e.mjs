@@ -13,6 +13,10 @@ const counts = "统计所有已结算明细条数，相同金额的不同明细�
 const total = "统计所有已结算明细的净金额，退款按负值计入。";
 const ambiguous = "统计已结算的数量。";
 
+function taskDetail(page, id) {
+  return page.locator("article.result").filter({ has: page.getByText(id, { exact: true }) });
+}
+
 test("a visitor can inspect the public source and download checked full-dataset results", { timeout: 90_000 }, async t => {
   const browser = await chromium.launch(process.env.CHROME_EXECUTABLE
     ? { executablePath: process.env.CHROME_EXECUTABLE } : { channel: "chrome" });
@@ -50,7 +54,7 @@ test("a visitor can inspect the public source and download checked full-dataset 
   assert.equal(await page.getByRole("table", { name: "penguins 原始样本" }).count(), 0);
   await page.getByRole("link", { name: "2009 年有多少条企鹅观测" }).click();
   await page.waitForURL(/#\/replay\/penguins-2009$/);
-  const recorded = page.getByRole("article", { name: "任务详情" });
+  const recorded = taskDetail(page, "penguins-2009");
   await recorded.locator("td").first().waitFor();
   assert.equal(await recorded.locator("td").first().innerText(), "120");
   assert.ok(await recorded.getByText("原任务用量 · 5 次千问请求 · 14,105 tokens").isVisible());
@@ -73,8 +77,8 @@ test("workbench submits and inspects local SQL runs, resumes a clarified questio
     await page.waitForURL(/#\/run\//);
     return page.url();
   };
-  const expectResult = async value => {
-    const result = page.locator("article.result");
+  const expectResult = async (value, id = new URL(page.url()).hash.split("/").pop()) => {
+    const result = taskDetail(page, id);
     await result.locator("td").first().waitFor({timeout: 25_000});
     assert.equal(await result.locator(".status").innerText(), "有限核验通过");
     assert.equal(await result.locator("td").first().innerText(), String(value));
@@ -126,15 +130,14 @@ test("workbench submits and inspects local SQL runs, resumes a clarified questio
   await page.getByRole("link", {name:"查看补充口径后的任务"}).click();
   assert.equal(page.url(), childUrl);
 
-  await page.getByRole("navigation", {name:"历史回放"}).getByRole("link").first().click();
-  await page.waitForURL(/#\/replay\//);
-  await expectResult(6);
+  await page.getByRole("navigation", {name:"历史回放"}).getByRole("link", {name:"等额明细被重复去重"}).click();
+  await expectResult(6, "duplicate-amount");
   assert.ok(await page.getByText("已保存的历史回放", {exact: true}).isVisible());
   assert.ok(await page.getByText("历史模型记录 · 本次查看新增 0 次 API 请求", {exact: true}).isVisible());
   await page.getByText("初始分歧", {exact: true}).click();
   assert.match(await page.locator("details.evidence[open]").first().innerText(), /5.*5.*6/);
   await page.getByRole("navigation", {name:"历史回放"}).locator('a[href="#/replay/split-signoff"]').click();
-  await expectResult(669);
+  await expectResult(669, "split-signoff");
   const realCitations = page.getByRole("region", {name: "交付引用"});
   assert.match(await realCitations.locator("code").first().innerText(), /^replay_.*:data_/);
   assert.equal(await realCitations.locator("code").last().innerText(), "q0002");
