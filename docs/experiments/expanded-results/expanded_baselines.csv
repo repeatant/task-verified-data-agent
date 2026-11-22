@@ -1,0 +1,9 @@
+population,method,scheduled,correct_delivery,wrong_release,non_delivery,correct_delivery_ci95_low,correct_delivery_ci95_high
+public,direct,100,26,67,7,0.18,0.35
+public,self_repair,100,27,68,5,0.18,0.36
+public,two_way,100,5,12,83,0.01,0.1
+public,full,100,4,8,88,0.01,0.08
+controlled,direct,100,60,40,0,0.6,0.6
+controlled,self_repair,100,97,2,1,0.9390732265446224,1.0
+controlled,two_way,100,36,0,64,0.25555555555555554,0.45
+controlled,full,100,26,0,74,0.17891812865497075,0.3473684210526316

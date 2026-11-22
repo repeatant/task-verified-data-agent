@@ -2,7 +2,12 @@
 
 import pytest
 
-from dataverify.agent.discovery_model import plan_validation_feedback
+from dataverify.agent.discovery_model import (
+    AUDIT_PROMPT,
+    PLAN_PROMPT,
+    plan_prompt,
+    plan_validation_feedback,
+)
 from dataverify.evaluation.discovery_cases import get_discovery_cases
 from dataverify.verification.discovery_runtime import validate_plan
 from dataverify.verification.reference_expression import calculate, parse_expression
@@ -100,3 +105,19 @@ def test_runtime_calculation_error_does_not_receive_irrelevant_syntax_example():
         {"reference": "[[1 / 0]]"}, "REFERENCE_EVALUATION", get_discovery_cases()[0].task
     )
     assert "syntax_example" not in feedback
+
+
+def test_legacy_task_retains_plan_and_audit_prompt_contracts():
+    task = get_discovery_cases()[0].task
+    assert plan_prompt(task) == PLAN_PROMPT
+    assert plan_prompt(task, audit=True) == AUDIT_PROMPT
+
+
+@pytest.mark.parametrize("code", ["RESULT_SCALAR_REQUIRED", "RESULT_ROWS", "RESULT_COLUMNS"])
+def test_result_shape_feedback_does_not_supply_task_answers(code):
+    case = get_discovery_cases()[0]
+    feedback = plan_validation_feedback({"reference": "[[[1,2]]]"}, code, case.task)
+    assert "[[value] for value in values]" in feedback["instruction"]
+    assert feedback["output_contract"]["cell_types"] == ["int", "float", "str", "None"]
+    assert "expected" not in feedback and "reference" not in feedback
+    assert case.good_sql not in str(feedback)

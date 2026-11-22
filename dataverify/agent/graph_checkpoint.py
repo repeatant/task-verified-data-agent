@@ -15,6 +15,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Iterator
 
+from dataverify.runtime.atomic_files import replace_atomically
 from dataverify.runtime.experiment_budget import restore_budget
 from dataverify.runtime.probe_cost_budget import MonetaryRequestBudget
 
@@ -99,7 +100,7 @@ class JournaledBudget:
             json.dump(payload, handle, ensure_ascii=False, indent=2, allow_nan=False)
             handle.flush()
             os.fsync(handle.fileno())
-        partial.replace(self.path)
+        replace_atomically(partial, self.path)
         if os.name != "nt":
             # Windows does not expose a portable directory fsync through os.
             descriptor = os.open(self.path.parent, os.O_RDONLY)

@@ -14,16 +14,19 @@ from typing import Any
 from dataverify.runtime.reporting import digest_json
 from dataverify.verification.discovery_runtime import validate_plan
 from dataverify.verification.reference_audit import (
+    _validate_attribution,
     authorize_decision,
     find_distinguishing_fixture,
     inspect_dispute,
     merge_fixtures,
 )
 
+from .discovery_context import model_context
 from .discovery_model import (
     ATTRIBUTION_PROMPT,
-    AUDIT_PROMPT,
+    MODEL_DIRECTED_ATTRIBUTION_PROMPT,
     parse_review_action,
+    plan_prompt,
     plan_validation_feedback,
 )
 from .graph_model import GraphModelError
@@ -32,7 +35,9 @@ from .graph_model import GraphModelError
 def message(role: str, value: Any) -> dict:
     return {
         "role": role,
-        "content": value if isinstance(value, str) else json.dumps(value, ensure_ascii=False),
+        "content": value
+        if isinstance(value, str)
+        else json.dumps(model_context(value), ensure_ascii=False),
     }
 
 
@@ -65,10 +70,17 @@ class ReferenceAuditNodes:
         # Raw rows may be observed; neither program, result nor suggestive fixture
         # labels enter this context. Caller-confirmed expected values stay local.
         samples = [self.source.to_dict()] + [f["data"] for f in state["fixtures"][:2]]
-        return [
-            message("system", AUDIT_PROMPT),
-            message("user", {"task": self.task.public_input(), "data_samples": samples}),
-        ]
+        context = {"task": self.task.public_input(), "data_samples": samples}
+        prompt = plan_prompt(self.task, audit=True, blind=self.policy.blind_audit)
+        if not self.policy.blind_audit:
+            # Fixed information intervention: no writer rationale, history or
+            # evaluation labels. Keep the same model and output contract.
+            context.update(
+                candidate_sql=state["candidate"]["sql"],
+                reference_program=state["plan"]["reference"],
+                observations=state["observation"],
+            )
+        return [message("system", prompt), message("user", context)]
 
     async def audit(self, state):
         messages = state["audit_messages"] or self.blind_audit_messages(state)
@@ -103,8 +115,8 @@ class ReferenceAuditNodes:
                     state,
                     "audit",
                     plan_digest=digest_json(plan),
-                    candidate_visible=False,
-                    reference_visible=False,
+                    candidate_visible=not self.policy.blind_audit,
+                    reference_visible=not self.policy.blind_audit,
                 ),
             }
         except (ValueError, GraphModelError) as error:
@@ -137,12 +149,13 @@ class ReferenceAuditNodes:
             )
             challenged = state["challenged_pairs"]
             challenge = None
-            if challenge_key not in challenged:
+            if self.policy.challenge_search and challenge_key not in challenged:
                 challenge = find_distinguishing_fixture(
                     state["candidate"]["sql"],
                     state["plan"],
                     state["audit_plan"],
                     max_examples=self.max_challenge_examples,
+                    source=self.source,
                 )
                 if challenge is not None:
                     fixtures = merge_fixtures(fixtures, [challenge])
@@ -168,6 +181,7 @@ class ReferenceAuditNodes:
                     "assess_audit",
                     evidence=evidence,
                     generated_counterexample=challenge is not None,
+                    challenge_search_enabled=self.policy.challenge_search,
                 ),
             }
         except ValueError as error:
@@ -185,7 +199,10 @@ class ReferenceAuditNodes:
             "evidence": state["audit_evidence"],
             "previous_tool_error": state.get("tool_error"),
         }
-        messages = [message("system", ATTRIBUTION_PROMPT), message("user", context)]
+        prompt = ATTRIBUTION_PROMPT
+        if not self.policy.evidence_authorization:
+            prompt = MODEL_DIRECTED_ATTRIBUTION_PROMPT
+        messages = [message("system", prompt), message("user", context)]
         try:
             action = parse_review_action(await self.reviewer.generate(deepcopy(messages)))
             if action["action"] == "clarify":
@@ -196,7 +213,7 @@ class ReferenceAuditNodes:
                     "budget": budget_snapshot(self.reviewer),
                     "trace": self.event(state, "attribute", action=action),
                 }
-            decision = authorize_decision(action, self.task, state["audit_evidence"])
+            decision = self.authorize_action(action, state["audit_evidence"])
             attribution = {
                 **decision,
                 "action": action,
@@ -248,10 +265,27 @@ class ReferenceAuditNodes:
         )
         if digest_json(evidence) != attribution.get("evidence_digest"):
             raise ValueError("ATTRIBUTION_EVIDENCE_CHANGED")
-        decision = authorize_decision(attribution["action"], self.task, evidence)
+        decision = self.authorize_action(attribution["action"], evidence)
         if decision["target"] != target:
             raise ValueError("ATTRIBUTION_NOT_SUPPORTED")
         return decision
+
+    def authorize_action(self, action, evidence):
+        """Ablate edit authorization alone; retain provenance and action validity."""
+        if self.policy.evidence_authorization:
+            return authorize_decision(action, self.task, evidence)
+        _validate_attribution(action, self.task)
+        if evidence["task_digest"] != digest_json(self.task.public_input()):
+            raise ValueError("ATTRIBUTION_TASK_MISMATCH")
+        check_ids = {item["check_id"] for item in evidence["checks"]}
+        if not set(action["checks"]).issubset(check_ids):
+            raise ValueError("ATTRIBUTION_UNKNOWN_CHECK")
+        return {
+            "target": action["target"],
+            "reason": action["reason"],
+            "checks": list(action["checks"]),
+            "evidence_level": "experimental_model_directed_not_authorized_by_agreement",
+        }
 
     def replace_reference(self, state):
         try:

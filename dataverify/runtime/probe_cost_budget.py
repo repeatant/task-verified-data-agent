@@ -76,6 +76,10 @@ class MonetaryRequestBudget(RequestBudget):
     options through the inherited reserve(prompt_chars) interface.
     """
 
+    # Campaign subclasses may supply a separately authorized ceiling. Existing
+    # runs retain their original CNY 5 / 900-token validation contract.
+    _allowance_ceiling = _AUTHORIZED_MAX_CNY
+    _output_ceiling = 900
     limit: int = 80
     max_input_chars: int = 1_000_000
     max_reported_tokens: int = 250_000
@@ -101,12 +105,15 @@ class MonetaryRequestBudget(RequestBudget):
             money = Decimal(str(self.money_limit_cny))
         except InvalidOperation:
             raise ValueError("money_limit_cny must be a finite positive amount") from None
-        if not money.is_finite() or not Decimal(0) < money <= _AUTHORIZED_MAX_CNY:
+        if not money.is_finite() or not Decimal(0) < money <= self._allowance_ceiling:
             raise ValueError("Money allowance must be positive and at most CNY 5")
         nano = money * _NANO_PER_CNY
         if nano != nano.to_integral_value() or nano < 1:
             raise ValueError("Money allowance requires integer nanoyuan precision")
-        if type(self.max_output_tokens) is not int or not 1 <= self.max_output_tokens <= 900:
+        if (
+            type(self.max_output_tokens) is not int
+            or not 1 <= self.max_output_tokens <= self._output_ceiling
+        ):
             raise ValueError("max_output_tokens must be between 1 and 900")
         self._money_limit_nano = int(nano)
         self._output_cap = self.max_output_tokens

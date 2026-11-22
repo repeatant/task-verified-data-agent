@@ -1,0 +1,5351 @@
+{
+  "format": "dataverify-frozen-evidence-v1",
+  "scope": "4 public development intents; 16 controlled cases + 4 natural runs; one trial each",
+  "date": "2026-11-07",
+  "limitations": [
+    "Four public development intents, not an unseen benchmark or production traffic",
+    "Controlled fault injections and natural generation are scored separately",
+    "31 datasets per trajectory do not create 31 independent tasks",
+    "Execution gates are not a no-auditor Agent ablation",
+    "All roles share one model; contexts are separate, errors are not statistically independent",
+    "One trial per case; failures retained without whole-task reruns"
+  ],
+  "manifest_digest": "d7ea32002b0c52af7e15a75291498e30084a8e306579b7b2de0b087b90a58e50",
+  "base_git_commit": "3cebe678cbe96196850f0c6a2b96766ef43d8d75",
+  "files": {
+    "dataverify/__init__.py": "af36c57d938b17ac15992dc8af7dd01ca666eea98fdfa4e4bb8cbdf4512a54dc",
+    "dataverify/__main__.py": "94dfaec984aee50e2c9e23530e75601f2c77adceedbd255b684a4ee133948c0e",
+    "dataverify/agent/__init__.py": "59fd9312e99be24d1ff2825f16e3568ebd4130120a496eb7e6d9c0840c53348c",
+    "dataverify/agent/discovery_audit.py": "f527c7896f63aa05bc7eec9783a453938faf25387a8b041e9eba4251d482bad0",
+    "dataverify/agent/discovery_graph.py": "9c1cacd1db90c3268fa0f0e1800699cb59d43990377004d70a9f81082de535da",
+    "dataverify/agent/discovery_model.py": "68e1a20b5879d79a77ff87a4ff17259fbf49eaba9c823e06a0bdcaf1b42afa03",
+    "dataverify/agent/engine.py": "1ad9201cbe0debebe70ac4fe1b39133f2cecb704ff8e9a62a9264def72e94df2",
+    "dataverify/agent/feedback_strategy.py": "61f6ad880a199fc143a4bedd9a2c1cc23c3ad9aae5b7f014d38d973406c9d17a",
+    "dataverify/agent/graph_checkpoint.py": "8b3fdc576d6e895852de0223cd9f4d04a934fbbf817d47bd9da52de6c1841695",
+    "dataverify/agent/graph_guard.py": "8cef1b8956d510f74ff62537d0248b5254e0b381c38624517a28d07e3a7dc6d3",
+    "dataverify/agent/graph_model.py": "63263d71335142990d752c885bc798fd1eb233e534c088857f903be7b1b718c9",
+    "dataverify/agent/probe_langgraph.py": "d11285e5f7afb35cd3d8306dc6b7a0e196c78497c60a240dd311721792091c50",
+    "dataverify/api.py": "a28cb3c7301dd978a5948ca09febbae02097029e13c749067f38e118eeec834e",
+    "dataverify/evaluation/__init__.py": "a21b0d88d4b44475c2e6b0af5f4dfd090ea838332fc4028ea2cdedf67b035c46",
+    "dataverify/evaluation/benchmark_grader.py": "15e7d4a7521f229420b9e890651aab1e6d4835ba286be83e9df01e62f59a8635",
+    "dataverify/evaluation/benchmark_tasks.py": "e7409eaf0e6d5d60a7eeab671ef6e5599e40027c34e4db1f76c8051319387d3c",
+    "dataverify/evaluation/capability_cases.py": "7e16acef20ff89eb8c547c0f26574e062e507f89aaea86a480a568a1b15b8250",
+    "dataverify/evaluation/discovery_cases.py": "29bf144e7246889000118269118036e9e83f3bd1e5ed95878c580a75ebf6f9bb",
+    "dataverify/evaluation/discovery_roles.py": "59ff9988ef5e521f384b133ae0039067bfe69abd3bb46b3cdd4c95309e9eae53",
+    "dataverify/evaluation/evaluation.py": "dceca460f1aa82ad28cd4c2c129ecdf37a72c0289afa596ff816a6275a2fb720",
+    "dataverify/evaluation/frozen_cases.py": "9155b5093dc83777c8763327defb18eeabc77d438bf3c7d205613708e20b1174",
+    "dataverify/evaluation/frozen_experiment.py": "df3f1e855b7599b760d21489ae004dc22f283b48ed4a90cd954e5d2959f7cf1a",
+    "dataverify/evaluation/probe_cases.py": "8ffbb21b34176ec82141a47bf607695b0de2d0dcd73b12f7229a229b371f3b80",
+    "dataverify/evaluation/probe_grading.py": "e46c7bfb30fb9b611a7fd1c67b83f1184e6fe11c82fc15978de2310e4638fc50",
+    "dataverify/evaluation/reference_audit_cases.py": "44c7db19e17a5311bef85959d602cec15fea5130372a2d0935b91e1f37d5c3a8",
+    "dataverify/evaluation/reference_audit_scoring.py": "edf6169e5ba044a0af07f9b863312c17a9d4e5de8cb4d6762755556b5aaf0b6a",
+    "dataverify/integrations/__init__.py": "121c93305b4e525e919747c8619c4df68af4213bdb7aefba9e61b88493e3457c",
+    "dataverify/integrations/providers.py": "b624a8eaada6e7de943a29f38774ce8db10239cfb52f526838764bbe0a477ac4",
+    "dataverify/integrations/qwen_config.py": "ad49919c923c1448890ff9f02ada4597fd86377a19046efa6cc6a5601976c93a",
+    "dataverify/runtime/__init__.py": "e2d131460eb8f2b8b442f8d33222f27509fb4d9c72a1f31edeb46844049b0ad2",
+    "dataverify/runtime/discovery_budget.py": "54a9fa029b544cb1fe8e574a2022d006de2f1d731bebaadc8e1acb5189d76e05",
+    "dataverify/runtime/experiment_budget.py": "63fd35b7aab4a2f3029686ff03675729373125b9554459b04ce772f9648b18bd",
+    "dataverify/runtime/probe_cost_budget.py": "504d99e9da8cf8ef9a59a4db8f39e633359677d6863a6dbfc414ad0d314f1868",
+    "dataverify/runtime/reporting.py": "8a26c1a5bc7cd8cfd922cfc22172fa705654979eaa729d8b54db3ef6ebdff886",
+    "dataverify/verification/__init__.py": "0f2742b6f45642aaf9712582fa1a6fc5d98a62727470b7c5f13f7a0dd5e3d3c5",
+    "dataverify/verification/checker.py": "bd7355aff3bea380f6755f9ec97841bd04794036701f795ef76ceec5433f15c5",
+    "dataverify/verification/contracts.py": "339e977e118fee94fb4033754425b4d2c9a2e1e511114a9000fa177558f5ea20",
+    "dataverify/verification/database.py": "1fa3145387cc63ba9f7a056ea06b4e6ab10b3dc2f3d4024d7b24021648e70b36",
+    "dataverify/verification/discovery_runtime.py": "f446bbaa3af1f3c8aa09bf8363422a549dc4dda770dba37618079ddfeb557b31",
+    "dataverify/verification/guarded_task.py": "d37cafd5a6f046558461745cf576b9c04a2c94dd5dd200fa2bbd7a2f639b55c4",
+    "dataverify/verification/probe_capabilities.py": "3b22236e6977802cabe6af298617db2122e0c3c5d6aaa112e42740316b758c4e",
+    "dataverify/verification/probe_guard.py": "f2f8c70278ecb98ed42b0a04c93468f0101def305bd113d210555ed75d2a90cb",
+    "dataverify/verification/probe_runtime.py": "103faba2de918e8ee48559a1043df9ca519cfdaaea79531c55af38f03b0058ed",
+    "dataverify/verification/probe_testing.py": "c387edbfdc79a3bf7678e5eb72f6a2ffbcd5b33ee9b93f3918d6abe5af01ff99",
+    "dataverify/verification/reference_audit.py": "6bd242419270d31b20aba7c7994fb3664eef7a111970c8a04065f12772c4d831",
+    "dataverify/verification/reference_expression.py": "78b135bdc975ac9e9c926fa7eb2b99bea0c87cad88c22d743342a97ccbeb6a0e",
+    "docs/experiments/V1_FROZEN_PROTOCOL.md": "97675deb20cc50c9fb0f6e6b94b2cf3847951af8bf1b77a61aa8fc1e40397150",
+    "requirements/core.lock.txt": "bc31711098ec6b188e46a2a9942fd00cd17ef3214593872c7d60c13c13232d1b",
+    "requirements/core.txt": "97053c54ccb3a3b2c1a67488d281f0bfaabf1f0daae705a20a51852d671cbf99",
+    "requirements/dev.txt": "4b34219fd1f999c1cf58a415d0f89fbb713e8678359d53dfe76ef3ab82727bde",
+    "requirements/probes.txt": "561bef16c2a8343cc8697f19f2e57df22c64888bed023732358649391ac8e50f",
+    "tools/evaluate_frozen.py": "17c14ecddfe3097866918ec831384a2d0cb95525c5abbbe309c22b35ca36e742"
+  },
+  "model": "qwen3.8-flash",
+  "environment": {
+    "python": "3.12.14",
+    "platform": "Windows",
+    "dependencies": {
+      "langgraph": "1.2.16",
+      "hypothesis": "6.170.13",
+      "sqlglot": "30.24.0",
+      "httpx": "0.28.1"
+    }
+  },
+  "parameters": {
+    "temperature": 0,
+    "max_output_tokens": 900,
+    "max_attempts": 3,
+    "max_reviews": 3,
+    "max_reference_revisions": 1,
+    "max_challenge_examples": 40
+  },
+  "planned": 20,
+  "attempted": 20,
+  "complete": true,
+  "groups": {
+    "sql_wrong": {
+      "planned": 4,
+      "attempted": 4,
+      "correct_delivery": 4,
+      "joint_validated_delivery": 4,
+      "wrong_release": 0,
+      "correct_sql_damaged": 0,
+      "not_reviewed": 0
+    },
+    "reference_wrong": {
+      "planned": 4,
+      "attempted": 4,
+      "correct_delivery": 4,
+      "joint_validated_delivery": 4,
+      "wrong_release": 0,
+      "correct_sql_damaged": 0,
+      "not_reviewed": 0
+    },
+    "correlated_wrong": {
+      "planned": 4,
+      "attempted": 4,
+      "correct_delivery": 0,
+      "joint_validated_delivery": 0,
+      "wrong_release": 0,
+      "correct_sql_damaged": 0,
+      "not_reviewed": 4
+    },
+    "correct": {
+      "planned": 4,
+      "attempted": 4,
+      "correct_delivery": 3,
+      "joint_validated_delivery": 3,
+      "wrong_release": 0,
+      "correct_sql_damaged": 0,
+      "not_reviewed": 1
+    },
+    "natural": {
+      "planned": 4,
+      "attempted": 4,
+      "correct_delivery": 3,
+      "joint_validated_delivery": 2,
+      "wrong_release": 0,
+      "correct_sql_damaged": 0,
+      "not_reviewed": 1
+    }
+  },
+  "usage": {
+    "prompt_tokens_known": 117632,
+    "completion_tokens_known": 25450,
+    "total_tokens_known": 143082,
+    "event_count": 78,
+    "unknown_usage_events": 0,
+    "usage_complete": true
+  },
+  "distinct_intents": 4,
+  "independent_trials_per_case": 1,
+  "rows": [
+    {
+      "case_id": "order_average__correct",
+      "family": "order_average",
+      "condition": "correct",
+      "status": "reviewed",
+      "runner_error": null,
+      "elapsed_seconds": 21.448,
+      "score": {
+        "case_id": "order_average__correct",
+        "family": "order_average",
+        "condition": "correct",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "reviewed",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "source_rows_match": true,
+        "correct_delivery": true,
+        "joint_validated_delivery": true,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 1,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1108,
+            "completion_tokens": 607,
+            "total_tokens": 1715
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "auditor",
+          "attempt": 2,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1841,
+            "completion_tokens": 484,
+            "total_tokens": 2325
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 3,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1445,
+            "completion_tokens": 309,
+            "total_tokens": 1754
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 4,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1812,
+            "completion_tokens": 85,
+            "total_tokens": 1897
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 6206,
+        "completion_tokens_known": 1485,
+        "total_tokens_known": 7691,
+        "event_count": 4,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": true,
+        "initial_sql_correct": true,
+        "initial_score": {
+          "case_id": "order_average__correct",
+          "family": "order_average",
+          "condition": "correct",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "source_rows_match": true,
+          "correct_delivery": true,
+          "joint_validated_delivery": true,
+          "wrong_release": false,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": false,
+        "single_reference_wrong_release": false
+      },
+      "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and September 2026 timestamps, groups by order_id to sum amounts, calculates the average of these sums, and returns 0 if no orders match. All provided fixtures (including edge cases like negative amounts, mixed statuses, and boundary times) yield matching results between the candidate execution and independent verification.",
+      "programs": {
+        "candidate": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)",
+        "published_sql": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)",
+        "published_rows": [
+          [
+            60.0
+          ]
+        ],
+        "reference": "[[sum(r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')/len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) if len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) else 0]]",
+        "audit": "start = '2026-09-01T00:00:00'\nend = '2026-10-01T00:00:00'\nvalid_lines = [r for r in tables['order_lines'] if r['status'] == 'settled' and start <= r['settled_at'] < end]\norder_ids = set([r['order_id'] for r in valid_lines])\nsums = {oid: sum([r['amount'] for r in valid_lines if r['order_id'] == oid]) for oid in order_ids}\ncount = len(sums)\ntotal_sum = sum([sums[oid] for oid in sums])\navg = (total_sum / count) if count > 0 else 0\n[[avg]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "invalid_audit",
+          "error": "REFERENCE_CALL_NOT_ALLOWED"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "web_scope__correlated_wrong",
+      "family": "web_scope",
+      "condition": "correlated_wrong",
+      "status": "needs_clarification",
+      "runner_error": null,
+      "elapsed_seconds": 10.755,
+      "score": {
+        "case_id": "web_scope__correlated_wrong",
+        "family": "web_scope",
+        "condition": "correlated_wrong",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "needs_clarification",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 8,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "time_and_status_boundaries",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "seeded_00",
+            "seeded_02",
+            "seeded_03",
+            "seeded_05",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_10",
+            "seeded_11",
+            "seeded_13",
+            "seeded_14",
+            "seeded_15",
+            "seeded_17",
+            "seeded_18",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22",
+            "seeded_23"
+          ],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 8,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "time_and_status_boundaries",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "seeded_00",
+            "seeded_02",
+            "seeded_03",
+            "seeded_05",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_10",
+            "seeded_11",
+            "seeded_13",
+            "seeded_14",
+            "seeded_15",
+            "seeded_17",
+            "seeded_18",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22",
+            "seeded_23"
+          ],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 8,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "time_and_status_boundaries",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "seeded_00",
+            "seeded_02",
+            "seeded_03",
+            "seeded_05",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_10",
+            "seeded_11",
+            "seeded_13",
+            "seeded_14",
+            "seeded_15",
+            "seeded_17",
+            "seeded_18",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22",
+            "seeded_23"
+          ],
+          "error_datasets": []
+        },
+        "source_rows_match": false,
+        "correct_delivery": false,
+        "joint_validated_delivery": false,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 5,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1069,
+            "completion_tokens": 516,
+            "total_tokens": 1585
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 6,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1962,
+            "completion_tokens": 168,
+            "total_tokens": 2130
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 3031,
+        "completion_tokens_known": 684,
+        "total_tokens_known": 3715,
+        "event_count": 2,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": true,
+        "initial_sql_correct": false,
+        "initial_score": {
+          "case_id": "web_scope__correlated_wrong",
+          "family": "web_scope",
+          "condition": "correlated_wrong",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 8,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 8,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 8,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 8,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "source_rows_match": false,
+          "correct_delivery": false,
+          "joint_validated_delivery": false,
+          "wrong_release": true,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": true,
+        "single_reference_wrong_release": true
+      },
+      "reason": "ATTRIBUTION_CITES_NO_RELEVANT_DISAGREEMENT",
+      "programs": {
+        "candidate": "SELECT COALESCE(SUM(amount),0) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_sql": "SELECT COALESCE(SUM(amount),0) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_rows": null,
+        "reference": "[[sum([r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00'])]]",
+        "audit": "web_order_ids = set([r['order_id'] for r in tables['orders'] if r['channel'] == 'web'])\nvalid_lines = [r['amount'] for r in tables['order_lines'] if r['status'] == 'settled' and r['order_id'] in web_order_ids and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\ntotal_amount = sum(valid_lines)\n[[total_amount]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": true
+        },
+        {
+          "node": "attribute"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "web_scope__correct",
+      "family": "web_scope",
+      "condition": "correct",
+      "status": "reviewed",
+      "runner_error": null,
+      "elapsed_seconds": 18.446,
+      "score": {
+        "case_id": "web_scope__correct",
+        "family": "web_scope",
+        "condition": "correct",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "reviewed",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "source_rows_match": true,
+        "correct_delivery": true,
+        "joint_validated_delivery": true,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 7,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1069,
+            "completion_tokens": 594,
+            "total_tokens": 1663
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 8,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1421,
+            "completion_tokens": 245,
+            "total_tokens": 1666
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 9,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1772,
+            "completion_tokens": 123,
+            "total_tokens": 1895
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 4262,
+        "completion_tokens_known": 962,
+        "total_tokens_known": 5224,
+        "event_count": 3,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": true,
+        "initial_sql_correct": true,
+        "initial_score": {
+          "case_id": "web_scope__correct",
+          "family": "web_scope",
+          "condition": "correct",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "source_rows_match": true,
+          "correct_delivery": true,
+          "joint_validated_delivery": true,
+          "wrong_release": false,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": false,
+        "single_reference_wrong_release": false
+      },
+      "reason": "The candidate SQL correctly implements the requirements: filters for 'settled' status, channel 'web', and settled_at within [2026-09-01T00:00:00, 2026-10-01T00:00:00). It sums line amounts and returns 0 if no rows match (via COALESCE). All provided fixtures, including boundary cases and null channels, yield expected results. No ambiguous interpretations or missing constraints were identified.",
+      "programs": {
+        "candidate": "SELECT COALESCE(SUM(amount),0) FROM order_lines JOIN orders ON orders.order_id=order_lines.order_id WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' AND channel='web'",
+        "published_sql": "SELECT COALESCE(SUM(amount),0) FROM order_lines JOIN orders ON orders.order_id=order_lines.order_id WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' AND channel='web'",
+        "published_rows": [
+          [
+            80
+          ]
+        ],
+        "reference": "[[sum(r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00' and r['order_id'] in [o['order_id'] for o in tables['orders'] if o['channel']=='web'])]]",
+        "audit": "web_order_ids = set([o['order_id'] for o in tables['orders'] if o['channel'] == 'web'])\nvalid_lines = [l for l in tables['order_lines'] if l['status'] == 'settled' and l['order_id'] in web_order_ids and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']\ntotal_amount = sum([l['amount'] for l in valid_lines])\n[[total_amount]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "distinct_orders__correct",
+      "family": "distinct_orders",
+      "condition": "correct",
+      "status": "reviewed",
+      "runner_error": null,
+      "elapsed_seconds": 14.544,
+      "score": {
+        "case_id": "distinct_orders__correct",
+        "family": "distinct_orders",
+        "condition": "correct",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "reviewed",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "source_rows_match": true,
+        "correct_delivery": true,
+        "joint_validated_delivery": true,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 10,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1132,
+            "completion_tokens": 554,
+            "total_tokens": 1686
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 11,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1522,
+            "completion_tokens": 297,
+            "total_tokens": 1819
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 12,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1923,
+            "completion_tokens": 90,
+            "total_tokens": 2013
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 4577,
+        "completion_tokens_known": 941,
+        "total_tokens_known": 5518,
+        "event_count": 3,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": true,
+        "initial_sql_correct": true,
+        "initial_score": {
+          "case_id": "distinct_orders__correct",
+          "family": "distinct_orders",
+          "condition": "correct",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "source_rows_match": true,
+          "correct_delivery": true,
+          "joint_validated_delivery": true,
+          "wrong_release": false,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": false,
+        "single_reference_wrong_release": false
+      },
+      "reason": "The candidate SQL correctly implements the requirement: it filters for 'settled' status and the date range [2026-09-01, 2026-10-01), then counts distinct order IDs. All provided fixtures (including boundary cases and mixed statuses) match the expected results derived from the original question's definitions.",
+      "programs": {
+        "candidate": "SELECT COUNT(DISTINCT order_id) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_sql": "SELECT COUNT(DISTINCT order_id) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_rows": [
+          [
+            3
+          ]
+        ],
+        "reference": "[[len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00'))]]",
+        "audit": "qualified_lines = [l for l in tables['order_lines'] if l['status'] == 'settled' and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']\nunique_order_ids = set(l['order_id'] for l in qualified_lines)\ncount = len(unique_order_ids)\n[[count]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "web_scope__reference_wrong",
+      "family": "web_scope",
+      "condition": "reference_wrong",
+      "status": "reviewed",
+      "runner_error": null,
+      "elapsed_seconds": 14.234,
+      "score": {
+        "case_id": "web_scope__reference_wrong",
+        "family": "web_scope",
+        "condition": "reference_wrong",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "reviewed",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "source_rows_match": true,
+        "correct_delivery": true,
+        "joint_validated_delivery": true,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 1,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 13,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1069,
+            "completion_tokens": 591,
+            "total_tokens": 1660
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 14,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2040,
+            "completion_tokens": 209,
+            "total_tokens": 2249
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 15,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1528,
+            "completion_tokens": 13,
+            "total_tokens": 1541
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 4637,
+        "completion_tokens_known": 813,
+        "total_tokens_known": 5450,
+        "event_count": 3,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": false,
+        "initial_sql_correct": true,
+        "initial_score": {
+          "case_id": "web_scope__reference_wrong",
+          "family": "web_scope",
+          "condition": "reference_wrong",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 8,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 8,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "source_rows_match": true,
+          "correct_delivery": true,
+          "joint_validated_delivery": false,
+          "wrong_release": false,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": false,
+        "single_reference_wrong_release": false
+      },
+      "reason": "Checked scope and remaining limitations",
+      "programs": {
+        "candidate": "SELECT COALESCE(SUM(amount),0) FROM order_lines JOIN orders ON orders.order_id=order_lines.order_id WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' AND channel='web'",
+        "published_sql": "SELECT COALESCE(SUM(amount),0) FROM order_lines JOIN orders ON orders.order_id=order_lines.order_id WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' AND channel='web'",
+        "published_rows": [
+          [
+            80
+          ]
+        ],
+        "reference": "web_order_ids = set([o['order_id'] for o in tables['orders'] if o['channel'] == 'web'])\nvalid_lines = [l for l in tables['order_lines'] if l['status'] == 'settled' and l['order_id'] in web_order_ids and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']\ntotal_amount = sum([l['amount'] for l in valid_lines])\n[[total_amount]]",
+        "audit": "web_order_ids = set([o['order_id'] for o in tables['orders'] if o['channel'] == 'web'])\nvalid_lines = [l for l in tables['order_lines'] if l['status'] == 'settled' and l['order_id'] in web_order_ids and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']\ntotal_amount = sum([l['amount'] for l in valid_lines])\n[[total_amount]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": true
+        },
+        {
+          "node": "attribute"
+        },
+        {
+          "node": "replace_reference"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "money_units__reference_wrong",
+      "family": "money_units",
+      "condition": "reference_wrong",
+      "status": "reviewed",
+      "runner_error": null,
+      "elapsed_seconds": 21.64,
+      "score": {
+        "case_id": "money_units__reference_wrong",
+        "family": "money_units",
+        "condition": "reference_wrong",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "reviewed",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "source_rows_match": true,
+        "correct_delivery": true,
+        "joint_validated_delivery": true,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 1,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 16,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1027,
+            "completion_tokens": 484,
+            "total_tokens": 1511
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "auditor",
+          "attempt": 17,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1568,
+            "completion_tokens": 423,
+            "total_tokens": 1991
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 18,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1966,
+            "completion_tokens": 177,
+            "total_tokens": 2143
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 19,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1480,
+            "completion_tokens": 110,
+            "total_tokens": 1590
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 6041,
+        "completion_tokens_known": 1194,
+        "total_tokens_known": 7235,
+        "event_count": 4,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": false,
+        "initial_sql_correct": true,
+        "initial_score": {
+          "case_id": "money_units__reference_wrong",
+          "family": "money_units",
+          "condition": "reference_wrong",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 5,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "noninteger_average_and_units",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_16",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 5,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "noninteger_average_and_units",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_16",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "source_rows_match": true,
+          "correct_delivery": true,
+          "joint_validated_delivery": false,
+          "wrong_release": false,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": false,
+        "single_reference_wrong_release": false
+      },
+      "reason": "The candidate SQL correctly implements the requirement: it filters for 'settled' status and timestamps within [2026-09-01, 2026-10-01), sums the amounts (in cents), divides by 100.0 to convert to yuan, and uses COALESCE to return 0 if no rows match. The logic aligns with the schema and constraints provided. All test fixtures passed.",
+      "programs": {
+        "candidate": "SELECT COALESCE(SUM(amount),0)/100.0 FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_sql": "SELECT COALESCE(SUM(amount),0)/100.0 FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_rows": [
+          [
+            2.15
+          ]
+        ],
+        "reference": "settled_lines = [r for r in tables['order_lines'] if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\nnet_amount_cents = sum([r['amount'] for r in settled_lines])\nnet_amount_yuan = net_amount_cents / 100\n[[net_amount_yuan]]",
+        "audit": "settled_lines = [r for r in tables['order_lines'] if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\nnet_amount_cents = sum([r['amount'] for r in settled_lines])\nnet_amount_yuan = net_amount_cents / 100\n[[net_amount_yuan]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "invalid_audit",
+          "error": "BASIS_NOT_IN_SOURCE"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": true
+        },
+        {
+          "node": "attribute"
+        },
+        {
+          "node": "replace_reference"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "order_average__sql_wrong",
+      "family": "order_average",
+      "condition": "sql_wrong",
+      "status": "reviewed",
+      "runner_error": null,
+      "elapsed_seconds": 26.013,
+      "score": {
+        "case_id": "order_average__sql_wrong",
+        "family": "order_average",
+        "condition": "sql_wrong",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "reviewed",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 13,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "seeded_00",
+            "seeded_01",
+            "seeded_02",
+            "seeded_03",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_11",
+            "seeded_13",
+            "seeded_15",
+            "seeded_17",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22"
+          ],
+          "error_datasets": []
+        },
+        "source_rows_match": true,
+        "correct_delivery": true,
+        "joint_validated_delivery": true,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": true,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 20,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1108,
+            "completion_tokens": 575,
+            "total_tokens": 1683
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "auditor",
+          "attempt": 21,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1912,
+            "completion_tokens": 555,
+            "total_tokens": 2467
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 22,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2321,
+            "completion_tokens": 190,
+            "total_tokens": 2511
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "writer",
+          "attempt": 23,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2630,
+            "completion_tokens": 185,
+            "total_tokens": 2815
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 24,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1689,
+            "completion_tokens": 86,
+            "total_tokens": 1775
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 9660,
+        "completion_tokens_known": 1591,
+        "total_tokens_known": 11251,
+        "event_count": 5,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": false,
+        "initial_sql_correct": false,
+        "initial_score": {
+          "case_id": "order_average__sql_wrong",
+          "family": "order_average",
+          "condition": "sql_wrong",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "source_rows_match": false,
+          "correct_delivery": false,
+          "joint_validated_delivery": false,
+          "wrong_release": true,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": true,
+        "single_reference_wrong_release": false
+      },
+      "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and September 2026 timestamps, groups by order_id to sum line amounts, calculates the average of these sums, and returns 0 if no orders match. All provided fixtures (including edge cases like negative amounts, mixed statuses, and boundary times) yield results consistent with manual verification against the original question.",
+      "programs": {
+        "candidate": "SELECT COALESCE(AVG(order_sum), 0) FROM (SELECT SUM(amount) AS order_sum FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00' GROUP BY order_id)",
+        "published_sql": "SELECT COALESCE(AVG(order_sum), 0) FROM (SELECT SUM(amount) AS order_sum FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00' GROUP BY order_id)",
+        "published_rows": [
+          [
+            60.0
+          ]
+        ],
+        "reference": "[[sum(r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')/len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) if len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')) else 0]]",
+        "audit": "lines = tables['order_lines']\nvalid_lines = [r for r in lines if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\norder_ids = set(r['order_id'] for r in valid_lines)\nsums = {oid: sum(r['amount'] for r in valid_lines if r['order_id'] == oid) for oid in order_ids}\ncount = len(sums)\ntotal_sum = sum([sums[oid] for oid in sums])\navg = (total_sum / count) if count > 0 else 0\n[[avg]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "invalid_audit",
+          "error": "REFERENCE_CALL_NOT_ALLOWED"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": true
+        },
+        {
+          "node": "attribute"
+        },
+        {
+          "node": "repair_feedback"
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "money_units__natural",
+      "family": "money_units",
+      "condition": "natural",
+      "status": "inconclusive",
+      "runner_error": null,
+      "elapsed_seconds": 28.389,
+      "score": {
+        "case_id": "money_units__natural",
+        "family": "money_units",
+        "condition": "natural",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "inconclusive",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": null,
+        "source_rows_match": false,
+        "correct_delivery": false,
+        "joint_validated_delivery": false,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "reviewer",
+          "attempt": 25,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 764,
+            "completion_tokens": 519,
+            "total_tokens": 1283
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 26,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1291,
+            "completion_tokens": 409,
+            "total_tokens": 1700
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "writer",
+          "attempt": 27,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 259,
+            "completion_tokens": 98,
+            "total_tokens": 357
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "auditor",
+          "attempt": 28,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1174,
+            "completion_tokens": 530,
+            "total_tokens": 1704
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 29,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1520,
+            "completion_tokens": 240,
+            "total_tokens": 1760
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 30,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1852,
+            "completion_tokens": 240,
+            "total_tokens": 2092
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 31,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1852,
+            "completion_tokens": 240,
+            "total_tokens": 2092
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 8712,
+        "completion_tokens_known": 2276,
+        "total_tokens_known": 10988,
+        "event_count": 7,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {},
+      "reason": "REVIEW_BUDGET_EXHAUSTED",
+      "programs": {
+        "candidate": "SELECT COALESCE(SUM(amount) / 100.0, 0) FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00'",
+        "published_sql": "SELECT COALESCE(SUM(amount) / 100.0, 0) FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00'",
+        "published_rows": null,
+        "reference": "lines = tables['order_lines']\nvalid_lines = [r for r in lines if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\ntotal_cents = sum([r['amount'] for r in valid_lines])\nyuan_value = total_cents / 100\n[[yuan_value]]",
+        "audit": "settled_lines = [r for r in tables['order_lines'] if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\ntotal_cents = sum(r['amount'] for r in settled_lines)\nnet_yuan = total_cents / 100\n[[net_yuan]]"
+      },
+      "trace": [
+        {
+          "node": "invalid_plan",
+          "error": "BASIS_NOT_IN_SOURCE"
+        },
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "invalid_review_action",
+          "error": "settled_at must use canonical timezone-free ISO seconds"
+        },
+        {
+          "node": "invalid_review_action",
+          "error": "settled_at must use canonical timezone-free ISO seconds"
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "distinct_orders__sql_wrong",
+      "family": "distinct_orders",
+      "condition": "sql_wrong",
+      "status": "reviewed",
+      "runner_error": null,
+      "elapsed_seconds": 23.39,
+      "score": {
+        "case_id": "distinct_orders__sql_wrong",
+        "family": "distinct_orders",
+        "condition": "sql_wrong",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "reviewed",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 13,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "seeded_00",
+            "seeded_01",
+            "seeded_02",
+            "seeded_03",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_11",
+            "seeded_13",
+            "seeded_15",
+            "seeded_17",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22"
+          ],
+          "error_datasets": []
+        },
+        "source_rows_match": true,
+        "correct_delivery": true,
+        "joint_validated_delivery": true,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": true,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 32,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1132,
+            "completion_tokens": 553,
+            "total_tokens": 1685
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "auditor",
+          "attempt": 33,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1919,
+            "completion_tokens": 466,
+            "total_tokens": 2385
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 34,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2075,
+            "completion_tokens": 294,
+            "total_tokens": 2369
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "writer",
+          "attempt": 35,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2653,
+            "completion_tokens": 143,
+            "total_tokens": 2796
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 36,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1667,
+            "completion_tokens": 107,
+            "total_tokens": 1774
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 9446,
+        "completion_tokens_known": 1563,
+        "total_tokens_known": 11009,
+        "event_count": 5,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": false,
+        "initial_sql_correct": false,
+        "initial_score": {
+          "case_id": "distinct_orders__sql_wrong",
+          "family": "distinct_orders",
+          "condition": "sql_wrong",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "source_rows_match": false,
+          "correct_delivery": false,
+          "joint_validated_delivery": false,
+          "wrong_release": true,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": true,
+        "single_reference_wrong_release": false
+      },
+      "reason": "The candidate SQL correctly implements the requirement: count distinct order_ids from order_lines where status is 'settled' and settled_at is within [2026-09-01T00:00:00, 2026-10-01T00:00:00). The logic handles boundary conditions (inclusive start, exclusive end) and deduplication via COUNT(DISTINCT). All provided fixtures match the expected results.",
+      "programs": {
+        "candidate": "SELECT COUNT(DISTINCT order_id) FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00'",
+        "published_sql": "SELECT COUNT(DISTINCT order_id) FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00'",
+        "published_rows": [
+          [
+            3
+          ]
+        ],
+        "reference": "[[len(set(r['order_id'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00'))]]",
+        "audit": "lines = tables['order_lines']\nqualified_order_ids = set([line['order_id'] for line in lines if line['status'] == 'settled' and '2026-09-01T00:00:00' <= line['settled_at'] < '2026-10-01T00:00:00'])\ncount = len(qualified_order_ids)\n[[count]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "invalid_audit",
+          "error": "REFERENCE_ONLY_LOCAL_ASSIGNMENTS_ALLOWED"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": true
+        },
+        {
+          "node": "attribute"
+        },
+        {
+          "node": "repair_feedback"
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "order_average__natural",
+      "family": "order_average",
+      "condition": "natural",
+      "status": "reviewed",
+      "runner_error": null,
+      "elapsed_seconds": 33.797,
+      "score": {
+        "case_id": "order_average__natural",
+        "family": "order_average",
+        "condition": "natural",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "reviewed",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 26,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "noninteger_average_and_units",
+            "seeded_00",
+            "seeded_10",
+            "seeded_13",
+            "seeded_15"
+          ],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": null,
+        "source_rows_match": true,
+        "correct_delivery": true,
+        "joint_validated_delivery": false,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "reviewer",
+          "attempt": 37,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 762,
+            "completion_tokens": 572,
+            "total_tokens": 1334
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 38,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1561,
+            "completion_tokens": 476,
+            "total_tokens": 2037
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "writer",
+          "attempt": 39,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 257,
+            "completion_tokens": 111,
+            "total_tokens": 368
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "auditor",
+          "attempt": 40,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1269,
+            "completion_tokens": 635,
+            "total_tokens": 1904
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 41,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1646,
+            "completion_tokens": 266,
+            "total_tokens": 1912
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 42,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1942,
+            "completion_tokens": 99,
+            "total_tokens": 2041
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 7437,
+        "completion_tokens_known": 2159,
+        "total_tokens_known": 9596,
+        "event_count": 6,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {},
+      "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and date range [2026-09-01, 2026-10-01), groups by order_id to sum amounts, and calculates the average of these sums. It handles empty results via COALESCE(..., 0). All provided fixtures (including boundary cases and mixed statuses) match the expected outputs derived from independent logic.",
+      "programs": {
+        "candidate": "SELECT COALESCE(AVG(sub.total_amount), 0) FROM (SELECT order_id, SUM(amount) AS total_amount FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00' GROUP BY order_id) sub",
+        "published_sql": "SELECT COALESCE(AVG(sub.total_amount), 0) FROM (SELECT order_id, SUM(amount) AS total_amount FROM order_lines WHERE status = 'settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00' GROUP BY order_id) sub",
+        "published_rows": [
+          [
+            60.0
+          ]
+        ],
+        "reference": "lines = tables['order_lines']\nvalid_lines = [r for r in lines if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\norder_ids = sorted(set([r['order_id'] for r in valid_lines]))\nsums = [sum([r['amount'] for r in valid_lines if r['order_id'] == oid]) for oid in order_ids]\navg = round_half_up(sum(sums) / len(sums), 2) if len(sums) > 0 else 0\n[[avg]]",
+        "audit": "lines = tables['order_lines']\nvalid_lines = [l for l in lines if l['status'] == 'settled' and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']\norder_ids = sorted(set([l['order_id'] for l in valid_lines]))\nsums = [sum([l['amount'] for l in valid_lines if l['order_id'] == oid]) for oid in order_ids]\navg_val = sum(sums) / len(sums) if sums else 0\n[[avg_val]]"
+      },
+      "trace": [
+        {
+          "node": "invalid_plan",
+          "error": "REFERENCE_ONLY_LOCAL_ASSIGNMENTS_ALLOWED"
+        },
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "web_scope__natural",
+      "family": "web_scope",
+      "condition": "natural",
+      "status": "reviewed",
+      "runner_error": null,
+      "elapsed_seconds": 22.567,
+      "score": {
+        "case_id": "web_scope__natural",
+        "family": "web_scope",
+        "condition": "natural",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "reviewed",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": null,
+        "source_rows_match": true,
+        "correct_delivery": true,
+        "joint_validated_delivery": true,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "reviewer",
+          "attempt": 43,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 759,
+            "completion_tokens": 504,
+            "total_tokens": 1263
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "writer",
+          "attempt": 44,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 254,
+            "completion_tokens": 129,
+            "total_tokens": 383
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "auditor",
+          "attempt": 45,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1232,
+            "completion_tokens": 618,
+            "total_tokens": 1850
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 46,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1595,
+            "completion_tokens": 446,
+            "total_tokens": 2041
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 47,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2198,
+            "completion_tokens": 126,
+            "total_tokens": 2324
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 6038,
+        "completion_tokens_known": 1823,
+        "total_tokens_known": 7861,
+        "event_count": 5,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {},
+      "reason": "The candidate SQL correctly implements the requirements: filters for channel='web', status='settled', and settled_at in [2026-09-01T00:00:00, 2026-10-01T00:00:00). It sums line amounts and returns 0 if no rows match (via COALESCE). All provided fixtures and the bound source test cases yield matching results. The logic handles null channels by excluding them (as 'web' is required) and respects the boundary conditions.",
+      "programs": {
+        "candidate": "SELECT COALESCE(SUM(T2.amount), 0) FROM orders AS T1 INNER JOIN order_lines AS T2 ON T1.order_id = T2.order_id WHERE T1.channel = 'web' AND T2.status = 'settled' AND T2.settled_at >= '2026-09-01T00:00:00' AND T2.settled_at < '2026-10-01T00:00:00'",
+        "published_sql": "SELECT COALESCE(SUM(T2.amount), 0) FROM orders AS T1 INNER JOIN order_lines AS T2 ON T1.order_id = T2.order_id WHERE T1.channel = 'web' AND T2.status = 'settled' AND T2.settled_at >= '2026-09-01T00:00:00' AND T2.settled_at < '2026-10-01T00:00:00'",
+        "published_rows": [
+          [
+            80
+          ]
+        ],
+        "reference": "web_order_ids = set([o['order_id'] for o in tables['orders'] if o['channel'] == 'web'])\nvalid_lines = [l for l in tables['order_lines'] if l['status'] == 'settled' and l['order_id'] in web_order_ids and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']\ntotal_amount = sum([l['amount'] for l in valid_lines])\n[[total_amount]]",
+        "audit": "web_order_ids = set([o['order_id'] for o in tables['orders'] if o['channel'] == 'web'])\nqualified_lines = [l['amount'] for l in tables['order_lines'] if l['status'] == 'settled' and l['order_id'] in web_order_ids and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']\ntotal_amount = sum(qualified_lines)\n[[total_amount]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "order_average__correlated_wrong",
+      "family": "order_average",
+      "condition": "correlated_wrong",
+      "status": "needs_clarification",
+      "runner_error": null,
+      "elapsed_seconds": 11.783,
+      "score": {
+        "case_id": "order_average__correlated_wrong",
+        "family": "order_average",
+        "condition": "correlated_wrong",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "needs_clarification",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 13,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "seeded_00",
+            "seeded_01",
+            "seeded_02",
+            "seeded_03",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_11",
+            "seeded_13",
+            "seeded_15",
+            "seeded_17",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22"
+          ],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 13,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "seeded_00",
+            "seeded_01",
+            "seeded_02",
+            "seeded_03",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_11",
+            "seeded_13",
+            "seeded_15",
+            "seeded_17",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22"
+          ],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 13,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "seeded_00",
+            "seeded_01",
+            "seeded_02",
+            "seeded_03",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_11",
+            "seeded_13",
+            "seeded_15",
+            "seeded_17",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22"
+          ],
+          "error_datasets": []
+        },
+        "source_rows_match": false,
+        "correct_delivery": false,
+        "joint_validated_delivery": false,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 48,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1108,
+            "completion_tokens": 574,
+            "total_tokens": 1682
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 49,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2127,
+            "completion_tokens": 255,
+            "total_tokens": 2382
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 3235,
+        "completion_tokens_known": 829,
+        "total_tokens_known": 4064,
+        "event_count": 2,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": true,
+        "initial_sql_correct": false,
+        "initial_score": {
+          "case_id": "order_average__correlated_wrong",
+          "family": "order_average",
+          "condition": "correlated_wrong",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "source_rows_match": false,
+          "correct_delivery": false,
+          "joint_validated_delivery": false,
+          "wrong_release": true,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": true,
+        "single_reference_wrong_release": true
+      },
+      "reason": "ATTRIBUTION_CITES_NO_RELEVANT_DISAGREEMENT",
+      "programs": {
+        "candidate": "SELECT COALESCE(AVG(amount),0) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_sql": "SELECT COALESCE(AVG(amount),0) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_rows": null,
+        "reference": "values=[r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00']\n[[sum(values)/len(values) if values else 0]]",
+        "audit": "lines = tables['order_lines']\nvalid_lines = [r for r in lines if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\norder_ids = sorted(set([r['order_id'] for r in valid_lines]))\nsums = [sum([r['amount'] for r in valid_lines if r['order_id'] == oid]) for oid in order_ids]\ncount = len(sums)\navg = sum(sums) / count if count > 0 else 0\n[[avg]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": true
+        },
+        {
+          "node": "attribute"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "money_units__correlated_wrong",
+      "family": "money_units",
+      "condition": "correlated_wrong",
+      "status": "needs_clarification",
+      "runner_error": null,
+      "elapsed_seconds": 14.664,
+      "score": {
+        "case_id": "money_units__correlated_wrong",
+        "family": "money_units",
+        "condition": "correlated_wrong",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "needs_clarification",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 5,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "time_and_status_boundaries",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "noninteger_average_and_units",
+            "seeded_00",
+            "seeded_01",
+            "seeded_02",
+            "seeded_03",
+            "seeded_05",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_10",
+            "seeded_11",
+            "seeded_13",
+            "seeded_14",
+            "seeded_15",
+            "seeded_16",
+            "seeded_17",
+            "seeded_18",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22",
+            "seeded_23"
+          ],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 5,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "time_and_status_boundaries",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "noninteger_average_and_units",
+            "seeded_00",
+            "seeded_01",
+            "seeded_02",
+            "seeded_03",
+            "seeded_05",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_10",
+            "seeded_11",
+            "seeded_13",
+            "seeded_14",
+            "seeded_15",
+            "seeded_16",
+            "seeded_17",
+            "seeded_18",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22",
+            "seeded_23"
+          ],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 5,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "time_and_status_boundaries",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "noninteger_average_and_units",
+            "seeded_00",
+            "seeded_01",
+            "seeded_02",
+            "seeded_03",
+            "seeded_05",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_10",
+            "seeded_11",
+            "seeded_13",
+            "seeded_14",
+            "seeded_15",
+            "seeded_16",
+            "seeded_17",
+            "seeded_18",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22",
+            "seeded_23"
+          ],
+          "error_datasets": []
+        },
+        "source_rows_match": false,
+        "correct_delivery": false,
+        "joint_validated_delivery": false,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 50,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1027,
+            "completion_tokens": 525,
+            "total_tokens": 1552
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 51,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1900,
+            "completion_tokens": 288,
+            "total_tokens": 2188
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 2927,
+        "completion_tokens_known": 813,
+        "total_tokens_known": 3740,
+        "event_count": 2,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": true,
+        "initial_sql_correct": false,
+        "initial_score": {
+          "case_id": "money_units__correlated_wrong",
+          "family": "money_units",
+          "condition": "correlated_wrong",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 5,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "noninteger_average_and_units",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_16",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 5,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "noninteger_average_and_units",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_16",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 5,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "noninteger_average_and_units",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_16",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 5,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "noninteger_average_and_units",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_16",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "source_rows_match": false,
+          "correct_delivery": false,
+          "joint_validated_delivery": false,
+          "wrong_release": true,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": true,
+        "single_reference_wrong_release": true
+      },
+      "reason": "ATTRIBUTION_CITES_NO_RELEVANT_DISAGREEMENT",
+      "programs": {
+        "candidate": "SELECT COALESCE(SUM(amount),0) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_sql": "SELECT COALESCE(SUM(amount),0) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_rows": null,
+        "reference": "[[sum([r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00'])]]",
+        "audit": "lines = tables['order_lines']\nvalid_lines = [r for r in lines if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\ntotal_cents = sum(r['amount'] for r in valid_lines)\nyuan_value = total_cents / 100\n[[yuan_value]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": true
+        },
+        {
+          "node": "attribute"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "distinct_orders__reference_wrong",
+      "family": "distinct_orders",
+      "condition": "reference_wrong",
+      "status": "reviewed",
+      "runner_error": null,
+      "elapsed_seconds": 14.894,
+      "score": {
+        "case_id": "distinct_orders__reference_wrong",
+        "family": "distinct_orders",
+        "condition": "reference_wrong",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "reviewed",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "source_rows_match": true,
+        "correct_delivery": true,
+        "joint_validated_delivery": true,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 1,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 52,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1132,
+            "completion_tokens": 603,
+            "total_tokens": 1735
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 53,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2116,
+            "completion_tokens": 223,
+            "total_tokens": 2339
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 54,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1695,
+            "completion_tokens": 126,
+            "total_tokens": 1821
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 4943,
+        "completion_tokens_known": 952,
+        "total_tokens_known": 5895,
+        "event_count": 3,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": false,
+        "initial_sql_correct": true,
+        "initial_score": {
+          "case_id": "distinct_orders__reference_wrong",
+          "family": "distinct_orders",
+          "condition": "reference_wrong",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "source_rows_match": true,
+          "correct_delivery": true,
+          "joint_validated_delivery": false,
+          "wrong_release": false,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": false,
+        "single_reference_wrong_release": false
+      },
+      "reason": "The candidate SQL correctly implements the requirement: it counts distinct order IDs from order_lines where status is 'settled' and settled_at falls within [2026-09-01T00:00:00, 2026-10-01T00:00:00). The logic handles negative amounts (by not filtering on amount), multiple lines per order (via DISTINCT), and boundary conditions (inclusive start, exclusive end) as specified. All provided fixtures match the expected results.",
+      "programs": {
+        "candidate": "SELECT COUNT(DISTINCT order_id) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_sql": "SELECT COUNT(DISTINCT order_id) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_rows": [
+          [
+            3
+          ]
+        ],
+        "reference": "start = '2026-09-01T00:00:00'\nend = '2026-10-01T00:00:00'\nqualified_lines = [r for r in tables['order_lines'] if r['status'] == 'settled' and start <= r['settled_at'] < end]\nqualified_order_ids = set(r['order_id'] for r in qualified_lines)\ncount = len(qualified_order_ids)\n[[count]]",
+        "audit": "start = '2026-09-01T00:00:00'\nend = '2026-10-01T00:00:00'\nqualified_lines = [r for r in tables['order_lines'] if r['status'] == 'settled' and start <= r['settled_at'] < end]\nqualified_order_ids = set(r['order_id'] for r in qualified_lines)\ncount = len(qualified_order_ids)\n[[count]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": true
+        },
+        {
+          "node": "attribute"
+        },
+        {
+          "node": "replace_reference"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "distinct_orders__correlated_wrong",
+      "family": "distinct_orders",
+      "condition": "correlated_wrong",
+      "status": "needs_clarification",
+      "runner_error": null,
+      "elapsed_seconds": 14.094,
+      "score": {
+        "case_id": "distinct_orders__correlated_wrong",
+        "family": "distinct_orders",
+        "condition": "correlated_wrong",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "needs_clarification",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 13,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "seeded_00",
+            "seeded_01",
+            "seeded_02",
+            "seeded_03",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_11",
+            "seeded_13",
+            "seeded_15",
+            "seeded_17",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22"
+          ],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 13,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "seeded_00",
+            "seeded_01",
+            "seeded_02",
+            "seeded_03",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_11",
+            "seeded_13",
+            "seeded_15",
+            "seeded_17",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22"
+          ],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 13,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "seeded_00",
+            "seeded_01",
+            "seeded_02",
+            "seeded_03",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_11",
+            "seeded_13",
+            "seeded_15",
+            "seeded_17",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22"
+          ],
+          "error_datasets": []
+        },
+        "source_rows_match": false,
+        "correct_delivery": false,
+        "joint_validated_delivery": false,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 55,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1132,
+            "completion_tokens": 672,
+            "total_tokens": 1804
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 56,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2053,
+            "completion_tokens": 217,
+            "total_tokens": 2270
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 3185,
+        "completion_tokens_known": 889,
+        "total_tokens_known": 4074,
+        "event_count": 2,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": true,
+        "initial_sql_correct": false,
+        "initial_score": {
+          "case_id": "distinct_orders__correlated_wrong",
+          "family": "distinct_orders",
+          "condition": "correlated_wrong",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "source_rows_match": false,
+          "correct_delivery": false,
+          "joint_validated_delivery": false,
+          "wrong_release": true,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": true,
+        "single_reference_wrong_release": true
+      },
+      "reason": "ATTRIBUTION_CITES_NO_RELEVANT_DISAGREEMENT",
+      "programs": {
+        "candidate": "SELECT COUNT(*) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_sql": "SELECT COUNT(*) FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_rows": null,
+        "reference": "[[len([r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00'])]]",
+        "audit": "qualified_lines = [r for r in tables['order_lines'] if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\nunique_order_ids = set(r['order_id'] for r in qualified_lines)\ncount = len(unique_order_ids)\n[[count]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": true
+        },
+        {
+          "node": "attribute"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "web_scope__sql_wrong",
+      "family": "web_scope",
+      "condition": "sql_wrong",
+      "status": "reviewed",
+      "runner_error": null,
+      "elapsed_seconds": 18.478,
+      "score": {
+        "case_id": "web_scope__sql_wrong",
+        "family": "web_scope",
+        "condition": "sql_wrong",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "reviewed",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 8,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "time_and_status_boundaries",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "seeded_00",
+            "seeded_02",
+            "seeded_03",
+            "seeded_05",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_10",
+            "seeded_11",
+            "seeded_13",
+            "seeded_14",
+            "seeded_15",
+            "seeded_17",
+            "seeded_18",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22",
+            "seeded_23"
+          ],
+          "error_datasets": []
+        },
+        "source_rows_match": true,
+        "correct_delivery": true,
+        "joint_validated_delivery": true,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": true,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 57,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1069,
+            "completion_tokens": 486,
+            "total_tokens": 1555
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 58,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2057,
+            "completion_tokens": 238,
+            "total_tokens": 2295
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "writer",
+          "attempt": 59,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2451,
+            "completion_tokens": 218,
+            "total_tokens": 2669
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 60,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1565,
+            "completion_tokens": 87,
+            "total_tokens": 1652
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 7142,
+        "completion_tokens_known": 1029,
+        "total_tokens_known": 8171,
+        "event_count": 4,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": false,
+        "initial_sql_correct": false,
+        "initial_score": {
+          "case_id": "web_scope__sql_wrong",
+          "family": "web_scope",
+          "condition": "sql_wrong",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 8,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 8,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "source_rows_match": false,
+          "correct_delivery": false,
+          "joint_validated_delivery": false,
+          "wrong_release": true,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": true,
+        "single_reference_wrong_release": false
+      },
+      "reason": "The candidate SQL correctly implements the requirements: filters for 'settled' status, joins with orders to filter by channel='web', and applies the correct date range (inclusive start, exclusive end) on settled_at. It uses COALESCE to return 0 when no rows match. All provided fixtures and the bound source data yield results consistent with manual calculation based on the original question's definitions.",
+      "programs": {
+        "candidate": "SELECT COALESCE(SUM(T1.amount), 0) FROM order_lines AS T1 JOIN orders AS T2 ON T1.order_id = T2.order_id WHERE T1.status = 'settled' AND T1.settled_at >= '2026-09-01T00:00:00' AND T1.settled_at < '2026-10-01T00:00:00' AND T2.channel = 'web'",
+        "published_sql": "SELECT COALESCE(SUM(T1.amount), 0) FROM order_lines AS T1 JOIN orders AS T2 ON T1.order_id = T2.order_id WHERE T1.status = 'settled' AND T1.settled_at >= '2026-09-01T00:00:00' AND T1.settled_at < '2026-10-01T00:00:00' AND T2.channel = 'web'",
+        "published_rows": [
+          [
+            80
+          ]
+        ],
+        "reference": "[[sum(r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00' and r['order_id'] in [o['order_id'] for o in tables['orders'] if o['channel']=='web'])]]",
+        "audit": "web_order_ids = set([o['order_id'] for o in tables['orders'] if o['channel'] == 'web'])\nqualified_lines = [l for l in tables['order_lines'] if l['status'] == 'settled' and l['order_id'] in web_order_ids and l['settled_at'] >= '2026-09-01T00:00:00' and l['settled_at'] < '2026-10-01T00:00:00']\ntotal_amount = sum([l['amount'] for l in qualified_lines])\n[[total_amount]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": true
+        },
+        {
+          "node": "attribute"
+        },
+        {
+          "node": "repair_feedback"
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "order_average__reference_wrong",
+      "family": "order_average",
+      "condition": "reference_wrong",
+      "status": "reviewed",
+      "runner_error": null,
+      "elapsed_seconds": 19.589,
+      "score": {
+        "case_id": "order_average__reference_wrong",
+        "family": "order_average",
+        "condition": "reference_wrong",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "reviewed",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "source_rows_match": true,
+        "correct_delivery": true,
+        "joint_validated_delivery": true,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 1,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 61,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1108,
+            "completion_tokens": 581,
+            "total_tokens": 1689
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "auditor",
+          "attempt": 62,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1917,
+            "completion_tokens": 496,
+            "total_tokens": 2413
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 63,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2158,
+            "completion_tokens": 186,
+            "total_tokens": 2344
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 64,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1606,
+            "completion_tokens": 90,
+            "total_tokens": 1696
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 6789,
+        "completion_tokens_known": 1353,
+        "total_tokens_known": 8142,
+        "event_count": 4,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": false,
+        "initial_sql_correct": true,
+        "initial_score": {
+          "case_id": "order_average__reference_wrong",
+          "family": "order_average",
+          "condition": "reference_wrong",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 13,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_11",
+              "seeded_13",
+              "seeded_15",
+              "seeded_17",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22"
+            ],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "source_rows_match": true,
+          "correct_delivery": true,
+          "joint_validated_delivery": false,
+          "wrong_release": false,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": false,
+        "single_reference_wrong_release": false
+      },
+      "reason": "The candidate SQL correctly implements the requirement: filters for 'settled' status and September 2026 timestamps, groups by order_id to sum amounts, calculates the average of these sums, and returns 0 if no orders match. All provided fixtures (including edge cases like negative amounts, mixed statuses, and boundary dates) produce results consistent with the independent audit logic.",
+      "programs": {
+        "candidate": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)",
+        "published_sql": "SELECT COALESCE(AVG(net),0) FROM (SELECT SUM(amount) AS net FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00' GROUP BY order_id)",
+        "published_rows": [
+          [
+            60.0
+          ]
+        ],
+        "reference": "lines = tables['order_lines']\nvalid_lines = [r for r in lines if r['status'] == 'settled' and r['settled_at'] >= '2026-09-01T00:00:00' and r['settled_at'] < '2026-10-01T00:00:00']\norder_ids = set([r['order_id'] for r in valid_lines])\nsums_dict = {oid: sum([r['amount'] for r in valid_lines if r['order_id'] == oid]) for oid in order_ids}\ntotal_sum = sum(sums_dict[key] for key in sums_dict)\ncount_orders = len(order_ids)\navg_amount = total_sum / count_orders if count_orders > 0 else 0\n[[avg_amount]]",
+        "audit": "lines = tables['order_lines']\nvalid_lines = [r for r in lines if r['status'] == 'settled' and r['settled_at'] >= '2026-09-01T00:00:00' and r['settled_at'] < '2026-10-01T00:00:00']\norder_ids = set([r['order_id'] for r in valid_lines])\nsums_dict = {oid: sum([r['amount'] for r in valid_lines if r['order_id'] == oid]) for oid in order_ids}\ntotal_sum = sum(sums_dict[key] for key in sums_dict)\ncount_orders = len(order_ids)\navg_amount = total_sum / count_orders if count_orders > 0 else 0\n[[avg_amount]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "invalid_audit",
+          "error": "REFERENCE_ONLY_LOCAL_ASSIGNMENTS_ALLOWED"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": true
+        },
+        {
+          "node": "attribute"
+        },
+        {
+          "node": "replace_reference"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "money_units__correct",
+      "family": "money_units",
+      "condition": "correct",
+      "status": "inconclusive",
+      "runner_error": null,
+      "elapsed_seconds": 20.619,
+      "score": {
+        "case_id": "money_units__correct",
+        "family": "money_units",
+        "condition": "correct",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "inconclusive",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "source_rows_match": false,
+        "correct_delivery": false,
+        "joint_validated_delivery": false,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": true
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 65,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1027,
+            "completion_tokens": 440,
+            "total_tokens": 1467
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "auditor",
+          "attempt": 66,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1565,
+            "completion_tokens": 420,
+            "total_tokens": 1985
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 67,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1362,
+            "completion_tokens": 204,
+            "total_tokens": 1566
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 68,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1563,
+            "completion_tokens": 138,
+            "total_tokens": 1701
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 69,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1761,
+            "completion_tokens": 150,
+            "total_tokens": 1911
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 7278,
+        "completion_tokens_known": 1352,
+        "total_tokens_known": 8630,
+        "event_count": 5,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": true,
+        "initial_sql_correct": true,
+        "initial_score": {
+          "case_id": "money_units__correct",
+          "family": "money_units",
+          "condition": "correct",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "source_rows_match": true,
+          "correct_delivery": true,
+          "joint_validated_delivery": true,
+          "wrong_release": false,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": false,
+        "single_reference_wrong_release": false
+      },
+      "reason": "REVIEW_BUDGET_EXHAUSTED",
+      "programs": {
+        "candidate": "SELECT COALESCE(SUM(amount),0)/100.0 FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_sql": "SELECT COALESCE(SUM(amount),0)/100.0 FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_rows": null,
+        "reference": "[[sum(r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')/100]]",
+        "audit": "settled_lines = [r for r in tables['order_lines'] if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\nnet_cents = sum([r['amount'] for r in settled_lines])\nnet_yuan = net_cents / 100\n[[net_yuan]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "invalid_audit",
+          "error": "BASIS_NOT_IN_SOURCE"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "invalid_review_action",
+          "error": "order_lines.amount must be a bounded integer amount"
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "money_units__sql_wrong",
+      "family": "money_units",
+      "condition": "sql_wrong",
+      "status": "reviewed",
+      "runner_error": null,
+      "elapsed_seconds": 15.893,
+      "score": {
+        "case_id": "money_units__sql_wrong",
+        "family": "money_units",
+        "condition": "sql_wrong",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "reviewed",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": {
+          "passed": 5,
+          "total": 31,
+          "passes_all": false,
+          "failed_datasets": [
+            "source",
+            "time_and_status_boundaries",
+            "refunds_and_zero_net_order",
+            "join_and_grain",
+            "noninteger_average_and_units",
+            "seeded_00",
+            "seeded_01",
+            "seeded_02",
+            "seeded_03",
+            "seeded_05",
+            "seeded_06",
+            "seeded_08",
+            "seeded_09",
+            "seeded_10",
+            "seeded_11",
+            "seeded_13",
+            "seeded_14",
+            "seeded_15",
+            "seeded_16",
+            "seeded_17",
+            "seeded_18",
+            "seeded_19",
+            "seeded_20",
+            "seeded_21",
+            "seeded_22",
+            "seeded_23"
+          ],
+          "error_datasets": []
+        },
+        "source_rows_match": true,
+        "correct_delivery": true,
+        "joint_validated_delivery": true,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": true,
+      "http_events": [
+        {
+          "role": "auditor",
+          "attempt": 70,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1027,
+            "completion_tokens": 579,
+            "total_tokens": 1606
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 71,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1964,
+            "completion_tokens": 226,
+            "total_tokens": 2190
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "writer",
+          "attempt": 72,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 2402,
+            "completion_tokens": 90,
+            "total_tokens": 2492
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 73,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1492,
+            "completion_tokens": 94,
+            "total_tokens": 1586
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 6885,
+        "completion_tokens_known": 989,
+        "total_tokens_known": 7874,
+        "event_count": 4,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {
+        "sql_executable_accept": true,
+        "single_reference_accept": false,
+        "initial_sql_correct": false,
+        "initial_score": {
+          "case_id": "money_units__sql_wrong",
+          "family": "money_units",
+          "condition": "sql_wrong",
+          "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+          "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+          "run_status": "reviewed",
+          "scoring_seed": 20261107,
+          "scoring_dataset_count": 31,
+          "candidate_origin": "publication",
+          "candidate": {
+            "passed": 5,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "noninteger_average_and_units",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_16",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "reference": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "audit": {
+            "passed": 31,
+            "total": 31,
+            "passes_all": true,
+            "failed_datasets": [],
+            "error_datasets": []
+          },
+          "initial_candidate": {
+            "passed": 5,
+            "total": 31,
+            "passes_all": false,
+            "failed_datasets": [
+              "source",
+              "time_and_status_boundaries",
+              "refunds_and_zero_net_order",
+              "join_and_grain",
+              "noninteger_average_and_units",
+              "seeded_00",
+              "seeded_01",
+              "seeded_02",
+              "seeded_03",
+              "seeded_05",
+              "seeded_06",
+              "seeded_08",
+              "seeded_09",
+              "seeded_10",
+              "seeded_11",
+              "seeded_13",
+              "seeded_14",
+              "seeded_15",
+              "seeded_16",
+              "seeded_17",
+              "seeded_18",
+              "seeded_19",
+              "seeded_20",
+              "seeded_21",
+              "seeded_22",
+              "seeded_23"
+            ],
+            "error_datasets": []
+          },
+          "source_rows_match": false,
+          "correct_delivery": false,
+          "joint_validated_delivery": false,
+          "wrong_release": true,
+          "correct_sql_damaged": false,
+          "initial_correct_sql_not_delivered": false
+        },
+        "sql_executable_wrong_release": true,
+        "single_reference_wrong_release": false
+      },
+      "reason": "The candidate SQL correctly implements the requirement: it filters for 'settled' status and the specific date range (inclusive start, exclusive end), sums the amounts in minor units, divides by 100.0 to convert to major units (yuan), and uses COALESCE to return 0 if no rows match. The logic aligns with the schema and definitions provided.",
+      "programs": {
+        "candidate": "SELECT COALESCE(SUM(amount),0)/100.0 FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_sql": "SELECT COALESCE(SUM(amount),0)/100.0 FROM order_lines WHERE status='settled' AND settled_at>='2026-09-01T00:00:00' AND settled_at<'2026-10-01T00:00:00'",
+        "published_rows": [
+          [
+            2.15
+          ]
+        ],
+        "reference": "[[sum(r['amount'] for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00'<=r['settled_at']<'2026-10-01T00:00:00')/100]]",
+        "audit": "settled_lines = [r for r in tables['order_lines'] if r['status'] == 'settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\nnet_amount_cents = sum(r['amount'] for r in settled_lines)\nnet_amount_yuan = net_amount_cents / 100\n[[net_amount_yuan]]"
+      },
+      "trace": [
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": true
+        },
+        {
+          "node": "attribute"
+        },
+        {
+          "node": "repair_feedback"
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    },
+    {
+      "case_id": "distinct_orders__natural",
+      "family": "distinct_orders",
+      "condition": "natural",
+      "status": "reviewed",
+      "runner_error": null,
+      "elapsed_seconds": 24.929,
+      "score": {
+        "case_id": "distinct_orders__natural",
+        "family": "distinct_orders",
+        "condition": "natural",
+        "scope": "Four disclosed development tasks; seeded scoring coverage is not independent task count.",
+        "oracle": "Hand-written arithmetic over parsed dates and per-order totals; scoring only.",
+        "run_status": "reviewed",
+        "scoring_seed": 20261107,
+        "scoring_dataset_count": 31,
+        "candidate_origin": "publication",
+        "candidate": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "reference": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "audit": {
+          "passed": 31,
+          "total": 31,
+          "passes_all": true,
+          "failed_datasets": [],
+          "error_datasets": []
+        },
+        "initial_candidate": null,
+        "source_rows_match": true,
+        "correct_delivery": true,
+        "joint_validated_delivery": true,
+        "wrong_release": false,
+        "correct_sql_damaged": false,
+        "initial_correct_sql_not_delivered": false
+      },
+      "reference_revisions": 0,
+      "sql_text_changed": false,
+      "http_events": [
+        {
+          "role": "reviewer",
+          "attempt": 74,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 753,
+            "completion_tokens": 498,
+            "total_tokens": 1251
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 75,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1487,
+            "completion_tokens": 530,
+            "total_tokens": 2017
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "writer",
+          "attempt": 76,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 248,
+            "completion_tokens": 97,
+            "total_tokens": 345
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "auditor",
+          "attempt": 77,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1316,
+            "completion_tokens": 615,
+            "total_tokens": 1931
+          },
+          "usage_complete": true,
+          "http_status": 200
+        },
+        {
+          "role": "reviewer",
+          "attempt": 78,
+          "model": "qwen3.8-flash",
+          "status": "completed",
+          "usage": {
+            "prompt_tokens": 1397,
+            "completion_tokens": 13,
+            "total_tokens": 1410
+          },
+          "usage_complete": true,
+          "http_status": 200
+        }
+      ],
+      "usage": {
+        "prompt_tokens_known": 5201,
+        "completion_tokens_known": 1753,
+        "total_tokens_known": 6954,
+        "event_count": 5,
+        "unknown_usage_events": 0,
+        "usage_complete": true
+      },
+      "baseline": {},
+      "reason": "Checked scope and remaining limitations",
+      "programs": {
+        "candidate": "SELECT COUNT(DISTINCT ol.order_id) FROM order_lines AS ol WHERE ol.status = 'settled' AND ol.settled_at >= '2026-09-01T00:00:00' AND ol.settled_at < '2026-10-01T00:00:00'",
+        "published_sql": "SELECT COUNT(DISTINCT ol.order_id) FROM order_lines AS ol WHERE ol.status = 'settled' AND ol.settled_at >= '2026-09-01T00:00:00' AND ol.settled_at < '2026-10-01T00:00:00'",
+        "published_rows": [
+          [
+            3
+          ]
+        ],
+        "reference": "lines = tables['order_lines']\nvalid_order_ids = [l['order_id'] for l in lines if l['status'] == 'settled' and '2026-09-01T00:00:00' <= l['settled_at'] < '2026-10-01T00:00:00']\ndistinct_count = len(set(valid_order_ids))\n[[distinct_count]]",
+        "audit": "start_ts = \"2026-09-01T00:00:00\"\nend_ts = \"2026-10-01T00:00:00\"\nqualified_lines = [r for r in tables['order_lines'] if r['status'] == 'settled' and start_ts <= r['settled_at'] < end_ts]\nqualified_order_ids = set(r['order_id'] for r in qualified_lines)\nresult_count = len(qualified_order_ids)\n[[result_count]]"
+      },
+      "trace": [
+        {
+          "node": "invalid_plan",
+          "error": "REFERENCE_ONLY_LOCAL_ASSIGNMENTS_ALLOWED"
+        },
+        {
+          "node": "plan",
+          "candidate_visible": false
+        },
+        {
+          "node": "generate"
+        },
+        {
+          "node": "execute"
+        },
+        {
+          "node": "audit",
+          "candidate_visible": false,
+          "reference_visible": false
+        },
+        {
+          "node": "assess_audit",
+          "generated_counterexample": false
+        },
+        {
+          "node": "review"
+        },
+        {
+          "node": "finalize"
+        }
+      ]
+    }
+  ],
+  "incremental_cost": {
+    "estimated_cny": 0.1628206,
+    "reserved_cny": 1.4157704,
+    "pricing": {
+      "model": "qwen3.8-flash",
+      "region": "cn-beijing",
+      "currency": "CNY",
+      "input_cny_per_million_tokens": 0.8,
+      "output_cny_per_million_tokens": 2.7,
+      "price_source": "https://help.aliyun.com/zh/model-studio/qwen3-8-flash",
+      "price_checked_date": "2026-10-29",
+      "discounts_and_free_quota_included": false
+    },
+    "is_cloud_bill": false
+  },
+  "verification": {
+    "scoring_replayed": true,
+    "baseline_replayed": true,
+    "source_hashes_match": true,
+    "all_http_usage_reconciled": true
+  }
+}

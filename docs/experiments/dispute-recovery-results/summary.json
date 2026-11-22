@@ -1,0 +1,371 @@
+{
+  "updated_at": "2026-11-09",
+  "live_experiment_date": "2026-11-07",
+  "offline_replay_date": "2026-11-09",
+  "scope": {
+    "controlled_trajectories": 6,
+    "distinct_seen_requirements": 5,
+    "grading_inputs_per_program": 25,
+    "visible_source_grading_inputs": 1,
+    "hidden_grading_inputs": 24
+  },
+  "live": {
+    "protocol_digest": "8f5294fc0df6bb2b7fc2067350a673e62f9018c87012c327898f52566e45eff9",
+    "methods": {
+      "self_review": {
+        "trajectories": 6,
+        "distinct_requirements": 5,
+        "final_sql_correct": {
+          "numerator": 6,
+          "denominator": 6
+        },
+        "repaired_initial_error": {
+          "numerator": 3,
+          "denominator": 3
+        },
+        "correct_sql_damaged": {
+          "numerator": 0,
+          "denominator": 3
+        },
+        "correct_task_rejected": {
+          "numerator": 0,
+          "denominator": 3
+        },
+        "correct_delivery": {
+          "numerator": 6,
+          "denominator": 6
+        },
+        "wrong_release": {
+          "numerator": 0,
+          "denominator": 6
+        },
+        "all_final_programs_correct": {
+          "numerator": 0,
+          "denominator": 0
+        },
+        "joint_correct_delivery": {
+          "numerator": 0,
+          "denominator": 0
+        },
+        "usage": {
+          "prompt_tokens_known": 10281,
+          "completion_tokens_known": 561,
+          "total_tokens_known": 10842,
+          "event_count": 6,
+          "unknown_usage_events": 0,
+          "usage_complete": true
+        },
+        "roles": {
+          "candidate": {
+            "final_correct": {
+              "numerator": 6,
+              "denominator": 6
+            },
+            "repaired": {
+              "numerator": 3,
+              "denominator": 3
+            },
+            "damaged": {
+              "numerator": 0,
+              "denominator": 3
+            }
+          },
+          "reference": {
+            "final_correct": {
+              "numerator": 0,
+              "denominator": 0
+            },
+            "repaired": {
+              "numerator": 0,
+              "denominator": 0
+            },
+            "damaged": {
+              "numerator": 0,
+              "denominator": 0
+            }
+          },
+          "auditor": {
+            "final_correct": {
+              "numerator": 0,
+              "denominator": 0
+            },
+            "repaired": {
+              "numerator": 0,
+              "denominator": 0
+            },
+            "damaged": {
+              "numerator": 0,
+              "denominator": 0
+            }
+          }
+        }
+      },
+      "legacy_full": {
+        "trajectories": 6,
+        "distinct_requirements": 5,
+        "final_sql_correct": {
+          "numerator": 4,
+          "denominator": 6
+        },
+        "repaired_initial_error": {
+          "numerator": 1,
+          "denominator": 3
+        },
+        "correct_sql_damaged": {
+          "numerator": 0,
+          "denominator": 3
+        },
+        "correct_task_rejected": {
+          "numerator": 1,
+          "denominator": 3
+        },
+        "correct_delivery": {
+          "numerator": 3,
+          "denominator": 6
+        },
+        "wrong_release": {
+          "numerator": 0,
+          "denominator": 6
+        },
+        "all_final_programs_correct": {
+          "numerator": 3,
+          "denominator": 6
+        },
+        "joint_correct_delivery": {
+          "numerator": 3,
+          "denominator": 6
+        },
+        "usage": {
+          "prompt_tokens_known": 28778,
+          "completion_tokens_known": 3430,
+          "total_tokens_known": 32208,
+          "event_count": 15,
+          "unknown_usage_events": 0,
+          "usage_complete": true
+        },
+        "roles": {
+          "candidate": {
+            "final_correct": {
+              "numerator": 4,
+              "denominator": 6
+            },
+            "repaired": {
+              "numerator": 1,
+              "denominator": 3
+            },
+            "damaged": {
+              "numerator": 0,
+              "denominator": 3
+            }
+          },
+          "reference": {
+            "final_correct": {
+              "numerator": 4,
+              "denominator": 6
+            },
+            "repaired": {
+              "numerator": 1,
+              "denominator": 3
+            },
+            "damaged": {
+              "numerator": 0,
+              "denominator": 3
+            }
+          },
+          "auditor": {
+            "final_correct": {
+              "numerator": 4,
+              "denominator": 6
+            },
+            "repaired": {
+              "numerator": 0,
+              "denominator": 2
+            },
+            "damaged": {
+              "numerator": 0,
+              "denominator": 4
+            }
+          }
+        }
+      },
+      "dispute_resolver": {
+        "trajectories": 6,
+        "distinct_requirements": 5,
+        "final_sql_correct": {
+          "numerator": 6,
+          "denominator": 6
+        },
+        "repaired_initial_error": {
+          "numerator": 3,
+          "denominator": 3
+        },
+        "correct_sql_damaged": {
+          "numerator": 0,
+          "denominator": 3
+        },
+        "correct_task_rejected": {
+          "numerator": 1,
+          "denominator": 3
+        },
+        "correct_delivery": {
+          "numerator": 4,
+          "denominator": 6
+        },
+        "wrong_release": {
+          "numerator": 0,
+          "denominator": 6
+        },
+        "all_final_programs_correct": {
+          "numerator": 5,
+          "denominator": 6
+        },
+        "joint_correct_delivery": {
+          "numerator": 4,
+          "denominator": 6
+        },
+        "usage": {
+          "prompt_tokens_known": 36836,
+          "completion_tokens_known": 4136,
+          "total_tokens_known": 40972,
+          "event_count": 17,
+          "unknown_usage_events": 0,
+          "usage_complete": true
+        },
+        "roles": {
+          "candidate": {
+            "final_correct": {
+              "numerator": 6,
+              "denominator": 6
+            },
+            "repaired": {
+              "numerator": 3,
+              "denominator": 3
+            },
+            "damaged": {
+              "numerator": 0,
+              "denominator": 3
+            }
+          },
+          "reference": {
+            "final_correct": {
+              "numerator": 6,
+              "denominator": 6
+            },
+            "repaired": {
+              "numerator": 3,
+              "denominator": 3
+            },
+            "damaged": {
+              "numerator": 0,
+              "denominator": 3
+            }
+          },
+          "auditor": {
+            "final_correct": {
+              "numerator": 5,
+              "denominator": 6
+            },
+            "repaired": {
+              "numerator": 1,
+              "denominator": 2
+            },
+            "damaged": {
+              "numerator": 0,
+              "denominator": 4
+            }
+          }
+        }
+      }
+    },
+    "usage": {
+      "prompt_tokens_known": 75895,
+      "completion_tokens_known": 8127,
+      "total_tokens_known": 84022,
+      "event_count": 38,
+      "unknown_usage_events": 0,
+      "usage_complete": true
+    },
+    "independent_audit": {
+      "passed": true,
+      "cells": 18,
+      "issues": []
+    },
+    "estimated_incremental_cost_cny": 0.0826589,
+    "billing_note": "Estimate under frozen token prices; not cloud invoice reconciliation."
+  },
+  "offline_replay": {
+    "kind": "offline_counterfactual_not_new_live_experiment",
+    "controlled_trajectories": 6,
+    "distinct_requirements": 5,
+    "new_api_calls": 0,
+    "new_tokens": 0,
+    "new_budget_reservation_cny": 0,
+    "live_model_successes_credited": 0,
+    "original_model_responses_available": 17,
+    "saved_responses_consumed_offline": 15,
+    "original_and_counterfactual_counts": {
+      "final_sql_correct": {
+        "original": 6,
+        "counterfactual": 6
+      },
+      "correct_delivery": {
+        "original": 4,
+        "counterfactual": 5
+      },
+      "wrong_release": {
+        "original": 0,
+        "counterfactual": 0
+      },
+      "correct_task_rejected": {
+        "original": 1,
+        "counterfactual": 0
+      },
+      "joint_correct_delivery": {
+        "original": 4,
+        "counterfactual": 5
+      },
+      "wrong_reference_released": {
+        "original": 0,
+        "counterfactual": 0
+      },
+      "wrong_auditor_released": {
+        "original": 0,
+        "counterfactual": 0
+      }
+    },
+    "programs_changed_from_saved_final": {
+      "candidate": 0,
+      "reference": 0,
+      "auditor": 0
+    },
+    "queries_reexecuted_and_matched": 1
+  },
+  "original_directory_integrity": {
+    "files_checked": 36,
+    "changed": 0
+  },
+  "engineering_validation": {
+    "pytest": {
+      "tests": 1813,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    },
+    "ruff": "passed",
+    "note": "Offline tests are not model-evaluation samples."
+  },
+  "limitations": [
+    "Six fault trajectories on five distinct previously seen requirements; no unseen-task or unseen-fault claim.",
+    "The diverse visible fixture is author-supplied experiment support, not automatically discovered evidence.",
+    "Candidate-only one-call self-review is a whole-method comparator, not a perfectly isolated role ablation.",
+    "Matched legacy_full receives the same three initial programs and visible fixtures, sharing a four-request cap across its three roles. Its existing generated challenges remain part of that older method.",
+    "Finite fixture correctness does not prove arbitrary-input correctness.",
+    "The shared-error negative control may expose an unresolved common-mode failure; no hidden gold gate repairs it.",
+    "The all_wrong control starts with three faulty programs but permits only two revisions. Failure to repair all three is structurally constrained and must not be interpreted as pure model-reasoning failure.",
+    "A host-policy counterfactual reuses past responses, including responses conditioned on old prompts and feedback.",
+    "Earlier termination may leave saved responses unused. This is not measured token/cost savings from a new real-model run.",
+    "An increase in deliverable outcomes cannot be claimed as a new autonomous-model success rate.",
+    "The original frozen experiment and its paid-call accounting remain unchanged.",
+    "The repaired host interface has not been rerun with a live model. Simple self-review remains stronger on these small development cases."
+  ]
+}

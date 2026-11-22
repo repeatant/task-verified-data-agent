@@ -1,0 +1,76 @@
+{
+  "id": "penguins-2009",
+  "status": "reviewed",
+  "mode": "replay",
+  "source_id": "palmer-penguins",
+  "question": "统计 2009 年采集的观测记录总数，包含测量值缺失的观测，返回一行一个整数。",
+  "provenance": {
+    "provider": "Qwen",
+    "run_id": "5b96f0844ea14f55806b05201cc9d046",
+    "created_at": "2026-11-22T00:08:19.459Z",
+    "source_version": "386f978d6f5757d65b2c7a45e1f9887d298813ce14adb0fabe76cab77ad991af",
+    "csv_sha256": "f204db2c753b0937caac3cb35258562c14f073e4bbc76be24b4c51ce22767a93",
+    "record_sha256": "df8117b64e056e52557bd114a01acf05d92de1d31ae8b07ddf5506515fa3bd17"
+  },
+  "result": {
+    "sql": "SELECT COUNT(*) FROM penguins WHERE year = 2009",
+    "columns": [
+      "COUNT(*)"
+    ],
+    "rows": [
+      [
+        120
+      ]
+    ],
+    "evidence": [
+      {
+        "stage": "discovery",
+        "title": "生成候选 SQL",
+        "detail": "第 1 版",
+        "sql": "SELECT COUNT(*) FROM penguins WHERE year = 2009"
+      },
+      {
+        "stage": "discovery",
+        "title": "三份程序在同一组输入上执行",
+        "detail": "有限样本上一致",
+        "checks": 1,
+        "all_executed": true
+      },
+      {
+        "stage": "discovery",
+        "title": "三份程序在同一组输入上执行",
+        "detail": "有限样本上一致",
+        "checks": 2,
+        "all_executed": true
+      },
+      {
+        "stage": "publication",
+        "title": "在完整登记数据库上复算",
+        "detail": "两份参考程序与 SQL 在 344 条源记录上的结果一致。",
+        "scope": "original_database"
+      },
+      {
+        "stage": "publication",
+        "title": "从绑定数据库读取最终结果",
+        "detail": "返回 1 行",
+        "id": "publication",
+        "scope": "original_database",
+        "sql": "SELECT COUNT(*) FROM penguins WHERE year = 2009",
+        "rows": [
+          [
+            120
+          ]
+        ]
+      }
+    ],
+    "revisions": [],
+    "finish_citations": null,
+    "scope": "保留样本用于有限核验。交付前须在完整登记库上执行 SQL 并与两份参考程序复核。",
+    "summary": "有限核验通过，已执行最终查询。",
+    "usage": {
+      "requests": 5,
+      "total_tokens": 14105,
+      "complete": true
+    }
+  }
+}

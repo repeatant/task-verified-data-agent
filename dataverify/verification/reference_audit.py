@@ -28,6 +28,7 @@ from .discovery_runtime import (
 )
 from .probe_runtime import ProbeData
 from .reference_expression import calculate, parse_expression
+from .relational_data import RelationalData
 
 _ROLES = ("candidate", "reference", "independent")
 _MAX_FIXTURES = 12
@@ -35,6 +36,13 @@ _MAX_FIXTURES = 12
 
 def _canonical(data: ProbeData) -> dict:
     """Row order is outside the current task contract; primary keys are unique."""
+    if isinstance(data, RelationalData):
+        value = data.to_dict()
+        value["tables"] = {
+            table: sorted(rows, key=lambda row: json.dumps(row, ensure_ascii=False))
+            for table, rows in value["tables"].items()
+        }
+        return value
     return ProbeData(tuple(sorted(data.orders)), tuple(sorted(data.lines))).to_dict()
 
 
@@ -178,7 +186,7 @@ def inspect_dispute(
         )
     checks = []
     for item in datasets.values():
-        data = ProbeData(item["data"]["orders"], item["data"]["lines"])
+        data = fixture_data(item["data"])
         checks.append(
             {
                 **item,
@@ -313,7 +321,12 @@ def _search_literals(sql: str, references: tuple[str, str]) -> tuple[list[str], 
 
 
 def find_distinguishing_fixture(
-    sql: str, ref1: str | dict, ref2: str | dict, max_examples: int = 40
+    sql: str,
+    ref1: str | dict,
+    ref2: str | dict,
+    max_examples: int = 40,
+    *,
+    source=None,
 ) -> dict | None:
     """Search legal data on which the three programs differ; shrink if possible.
 
@@ -328,6 +341,10 @@ def find_distinguishing_fixture(
     if type(max_examples) is not int or not 1 <= max_examples <= 200:
         raise ValueError("AUDIT_SEARCH_EXAMPLE_LIMIT")
     refs = tuple(ref["reference"] if isinstance(ref, dict) else ref for ref in (ref1, ref2))
+    if isinstance(source, RelationalData):
+        from .relational_search import find_relational_fixture
+
+        return find_relational_fixture(sql, refs, source, max_examples=max_examples)
     dates, channels = _search_literals(sql, refs)
 
     @st.composite
@@ -386,3 +403,12 @@ def find_distinguishing_fixture(
     if witness is None:
         return None
     return {"name": "searched_disagreement", "data": witness.to_dict()}
+
+
+def find_pairwise_fixture(sql, plan, max_examples=40, *, source=None):
+    """Search candidate/reference disagreement; not an independent third vote.
+
+    The old bounded generator's equality predicate is reused with the same
+    reference on both sides. No extra model or evidence role is introduced.
+    """
+    return find_distinguishing_fixture(sql, plan, plan, max_examples, source=source)

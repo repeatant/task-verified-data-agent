@@ -1,0 +1,75 @@
+{
+  "id": "duplicate-amount",
+  "status": "reviewed",
+  "mode": "replay",
+  "source_id": "historical-duplicate-fixture",
+  "question": "Count settled line records in the specified interval. Separate records with the same amount are counted separately.",
+  "provenance": {
+    "case": "dispute-04",
+    "method": "dispute_resolver",
+    "model": "qwen3.8-flash",
+    "raw_sha256": "30261f2ec03a7bee468e7d617ffbe8725ef9af235b5bfd3aa82c9948e7c1d9a0",
+    "protocol_sha256": "8f5294fc0df6bb2b7fc2067350a673e62f9018c87012c327898f52566e45eff9",
+    "original_definitions": "Interval is [2026-09-01T00:00:00, 2026-10-01T00:00:00). Amounts are integer minor units. Orders have unique positive keys and line foreign keys are valid. Use line amounts, not orders.total. Outputs are unordered; zero is the empty-sum convention."
+  },
+  "result": {
+    "sql": "SELECT COUNT(*) FROM order_lines WHERE status='settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00'",
+    "columns": [
+      "COUNT(*)"
+    ],
+    "rows": [
+      [
+        6
+      ]
+    ],
+    "scope": "2026-11-07 真实模型实验的固定合成诊断样本",
+    "summary": "需求要求逐条计数。去除候选 SQL 和参考计算中的金额去重后，在该样本上得到 6 条。此处展示历史记录。",
+    "evidence": [
+      {
+        "title": "初始分歧",
+        "scope": "历史实验的合成诊断样本",
+        "detail": "候选 SQL 返回 5，参考计算返回 5，独立核算返回 6。",
+        "id": "replay_0001_fdbe7ae3d3b2:data_fc884ead2bb72931"
+      },
+      {
+        "title": "读取实际行数",
+        "scope": "历史实验的合成诊断样本",
+        "detail": "只读查询返回 6 行符合条件的记录。需求明确要求同额的不同记录分别计数。",
+        "sql": "SELECT COUNT(*) FROM order_lines WHERE status='settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00'",
+        "id": "q0001"
+      },
+      {
+        "title": "修改候选 SQL 后",
+        "scope": "历史实验的合成诊断样本",
+        "detail": "候选 SQL 返回 6，参考计算返回 5，独立核算返回 6。",
+        "id": "replay_0002_7e3ff3cce691:data_fc884ead2bb72931"
+      },
+      {
+        "title": "修改参考计算后",
+        "scope": "历史实验的合成诊断样本",
+        "detail": "候选 SQL 返回 6，参考计算返回 6，独立核算返回 6。",
+        "id": "replay_0003_abc97dd2c4c7:data_fc884ead2bb72931"
+      }
+    ],
+    "revisions": [
+      {
+        "target": "candidate",
+        "before": "SELECT COUNT(DISTINCT amount) FROM order_lines WHERE status='settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00'",
+        "after": "SELECT COUNT(*) FROM order_lines WHERE status='settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00'",
+        "reason": "The task explicitly states 'Separate records with the same amount are counted separately', which implies counting all matching rows, not distinct amounts. The current candidate uses COUNT(DISTINCT amount), which incorrectly collapses duplicate amounts (e.g., two lines with amount 70 count as 1). Query q0001 confirms that COUNT(*) yields 6 for the fixture where duplicates exist, aligning with the auditor's logic and the task definition.",
+        "evidence_ids": [
+          "q0001"
+        ]
+      },
+      {
+        "target": "reference",
+        "before": "rows=[r for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\n[[len(set([r['amount'] for r in rows]))]]",
+        "after": "rows=[r for r in tables['order_lines'] if r['status']=='settled' and '2026-09-01T00:00:00' <= r['settled_at'] < '2026-10-01T00:00:00']\n[[len(rows)]]",
+        "reason": "The task explicitly states 'Separate records with the same amount are counted separately.' The current reference program uses `len(set([r['amount'] for r in rows]))`, which counts distinct amounts, collapsing duplicate records. This contradicts the requirement and causes a mismatch on fixtures with duplicate amounts (e.g., replay_0002_7e3ff3cce691:data_fc884ead2bb72931 where candidate/auditor return 6 but reference returns 5). The corrected program counts all matching rows.",
+        "evidence_ids": [
+          "replay_0002_7e3ff3cce691:data_fc884ead2bb72931"
+        ]
+      }
+    ]
+  }
+}

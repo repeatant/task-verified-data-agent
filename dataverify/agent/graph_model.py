@@ -18,6 +18,9 @@ from typing import Any, Protocol
 import httpx
 
 from dataverify.integrations.qwen_config import QwenClientError, QwenConfig
+from dataverify.runtime.reporting import digest_json
+
+from .structured_schemas import writer_schema
 
 GraphMessages = list[dict[str, str]]
 GraphAction = dict[str, str]
@@ -152,13 +155,32 @@ class QwenGraphModel:
         http_client: httpx.AsyncClient | None = None,
         max_tokens: int = 900,
         timeout_seconds: float = 40,
+        structured_output: bool = False,
     ):
         # Revalidate even when a caller passes a structural settings object.
         self.config = QwenConfig(config.api_key, config.base_url, config.model)
+        if type(structured_output) is not bool:
+            raise ValueError("structured_output must be a boolean")
+        self.structured_output = structured_output
+        self._response_format = {"type": "json_object"}
+        if structured_output:
+            self.client_kind = self.client_kind + "_json_schema_v1"
+            self._response_format = {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": self.schema_name,
+                    "strict": True,
+                    "schema": self.response_schema(),
+                },
+            }
         self.model_name = self.config.model
         if self.config.api_key in self.config.model or self.config.api_key in self.config.base_url:
             raise GraphModelError("GRAPH_CREDENTIAL_IN_SETTINGS")
-        if type(max_tokens) is not int or not 1 <= max_tokens <= 900:
+        output_cap = budget.snapshot().get("max_output_tokens", 900)
+        supported_cap = min(output_cap, 4096) if type(output_cap) is int else 900
+        if type(max_tokens) is int and type(output_cap) is int and max_tokens > output_cap:
+            raise ValueError("max_tokens cannot exceed the budget output reservation")
+        if type(max_tokens) is not int or not 1 <= max_tokens <= supported_cap:
             raise ValueError("max_tokens must be in 1..900")
         if type(timeout_seconds) not in (int, float) or not 0 < timeout_seconds <= 60:
             raise ValueError("timeout_seconds must be in 0..60")
@@ -175,22 +197,45 @@ class QwenGraphModel:
         self.usage: list[dict[str, Any]] = []
 
     async def generate(self, messages: GraphMessages) -> GraphAction:
+        return await self._generate_action(messages, self._response_format, self.parse_action)
+
+    async def _generate_action(self, messages, response_format, parse_action) -> GraphAction:
+        """Bind the transport schema, metering and parser to this request."""
         checked = _validated_messages(messages)
         if any(self.config.api_key in item["content"] for item in checked):
             raise GraphModelError("GRAPH_CREDENTIAL_IN_MESSAGES")
         self.requests.append(checked)
+        # The schema is part of the provider's input, not free protocol metadata.
+        # Count the complete response_format envelope deterministically; legacy
+        # json_object accounting remains byte-for-byte compatible.
+        schema_chars = (
+            len(json.dumps(response_format, ensure_ascii=False, separators=(",", ":")))
+            if self.structured_output
+            else 0
+        )
+        message_chars = sum(len(item["content"]) for item in checked)
+        if message_chars + schema_chars > 40_000:
+            raise GraphModelError("GRAPH_SINGLE_REQUEST_INPUT_TOO_LARGE")
         try:
-            attempt = self.budget.reserve(sum(len(item["content"]) for item in checked))
+            attempt = self.budget.reserve(message_chars + schema_chars)
         except QwenClientError as error:
             safe_code = str(error)
             if self.config.api_key in safe_code:
                 safe_code = "GRAPH_BUDGET_RESERVATION_REJECTED"
             raise GraphModelError(safe_code) from None
         event = self._new_event(attempt)
+        if self.structured_output:
+            event.update(
+                response_format="json_schema",
+                schema_chars=schema_chars,
+                schema_digest=digest_json(response_format["json_schema"]["schema"]),
+                message_chars=message_chars,
+                reserved_input_chars=message_chars + schema_chars,
+            )
         self.http_events.append(event)
-        text = await self._post_action(checked, event)
+        text = await self._post_action(checked, event, response_format)
         try:
-            return self.parse_action(text)
+            return parse_action(text)
         except GraphModelError as error:
             # The HTTP response and accounting succeeded. This is a candidate
             # formatting failure, so another budgeted graph turn may repair it.
@@ -200,6 +245,11 @@ class QwenGraphModel:
     def parse_action(self, text: str) -> GraphAction:
         """Role-specific adapters can reuse transport and accounting unchanged."""
         return parse_graph_action(text)
+
+    schema_name = "dataverify_writer_v1"
+
+    def response_schema(self) -> dict:
+        return writer_schema()
 
     def _new_event(self, attempt: int) -> dict[str, Any]:
         return {
@@ -214,7 +264,7 @@ class QwenGraphModel:
             "usage_complete": False,
         }
 
-    async def _post_action(self, messages: GraphMessages, event: dict[str, Any]) -> str:
+    async def _post_action(self, messages, event, response_format) -> str:
         payload = {
             "model": self.config.model,
             "messages": messages,
@@ -223,7 +273,7 @@ class QwenGraphModel:
             "max_tokens": self.max_tokens,
             "enable_thinking": False,
             "preserve_thinking": False,
-            "response_format": {"type": "json_object"},
+            "response_format": deepcopy(response_format),
         }
         started = time.perf_counter()
         try:
@@ -332,6 +382,8 @@ class InjectedFirstGraphModel:
         self, delegate: QwenGraphModel, candidate: GraphAction, *, already_injected: bool = False
     ):
         self.delegate = delegate
+        if getattr(delegate, "structured_output", False):
+            self.client_kind = self.client_kind + "_json_schema_v1"
         self._candidate = parse_graph_action(candidate)
         self._injected = already_injected
         self.requests: list[GraphMessages] = []

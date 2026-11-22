@@ -15,6 +15,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
+from dataverify import __version__
 from dataverify.agent.engine import AgentRunner
 from dataverify.verification.database import seed_demo_database
 
@@ -66,7 +67,7 @@ def create_app(
 
     application = FastAPI(
         title="数据分析执行核验与反馈修正",
-        version="0.1.0",
+        version=__version__,
         description=(
             "本地最小框架。默认使用离线脚本化规划器验证工具执行、核验及反馈修正，"
             "不代表已经完成真实大模型能力评测。"

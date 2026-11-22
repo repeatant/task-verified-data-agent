@@ -12,6 +12,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from .atomic_files import replace_atomically
+
 
 def write_json(path: Path, document: Any) -> None:
     """Replace a report atomically after serializing one complete document."""
@@ -20,7 +22,7 @@ def write_json(path: Path, document: Any) -> None:
         json.dumps(document, ensure_ascii=False, indent=2, allow_nan=False),
         encoding="utf-8",
     )
-    partial.replace(path)
+    replace_atomically(partial, path)
 
 
 def digest_json(value: Any) -> str:

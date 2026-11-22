@@ -84,4 +84,4 @@ LEFT JOIN 按驱动表、过滤位置和可选侧匹配关系核验。`line_id>0
 
 [LangGraph](https://github.com/langchain-ai/langgraph) 提供图编排和检查点；[SQLGlot](https://github.com/tobymao/sqlglot) 提供 AST；[Hypothesis](https://github.com/HypothesisWorks/hypothesis) 提供生成与缩减。SQL 执行使用 SQLite，参考计算使用项目内受限解释器。
 
-早期 `engine.py`／FastAPI 示例仍保留旧任务模型，不是当前动态核验服务入口。历史实验与当前依赖分开，见 [评测说明](EVALUATION.md) 和 [第三方声明](THIRD_PARTY_NOTICES.md)。
+当前浏览器和 CLI 共用 [工作台 API](WORKBENCH.md)。服务端调用动态核验图，并在可调查的分歧出现时调用分歧处理图。早期 `engine.py`／FastAPI 示例保留旧任务模型。历史实验与当前依赖见 [评测说明](EVALUATION.md) 和 [第三方声明](THIRD_PARTY_NOTICES.md)。

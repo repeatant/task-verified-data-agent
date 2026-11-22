@@ -38,6 +38,7 @@ _RUNTIME_FILES = (
     "agent/graph_checkpoint.py",
     "agent/graph_guard.py",
     "agent/graph_model.py",
+    "agent/structured_schemas.py",
     "verification/probe_guard.py",
     "verification/probe_runtime.py",
     "verification/probe_testing.py",
@@ -47,6 +48,7 @@ _RUNTIME_FILES = (
     "runtime/probe_cost_budget.py",
     "runtime/experiment_budget.py",
     "runtime/reporting.py",
+    "runtime/atomic_files.py",
 )
 
 

@@ -38,6 +38,44 @@ def _round_half_up(value: int | float, digits: int = 0) -> float:
     return float(result)
 
 
+def _conversion_scalar(value: Any) -> Any:
+    """Permit small explicit scalar conversions, not arbitrary Python protocols."""
+    if type(value) not in (int, float, str):
+        raise ExpressionError("REFERENCE_CONVERSION_SCALAR")
+    if isinstance(value, str):
+        if len(value) > 100:
+            raise ExpressionError("REFERENCE_CONVERSION_STRING_LIMIT")
+    elif abs(value) > 10**15 or not math.isfinite(value):
+        raise ExpressionError("REFERENCE_NUMERIC_LIMIT")
+    return value
+
+
+def _bounded_int(value: Any) -> int:
+    result = int(_conversion_scalar(value))
+    if abs(result) > 10**15:
+        raise ExpressionError("REFERENCE_NUMERIC_LIMIT")
+    return result
+
+
+def _bounded_float(value: Any) -> float:
+    result = float(_conversion_scalar(value))
+    if not math.isfinite(result) or abs(result) > 10**15:
+        raise ExpressionError("REFERENCE_NUMERIC_LIMIT")
+    return result
+
+
+def _bounded_str(value: Any) -> str:
+    return str(_conversion_scalar(value))
+
+
+def _bounded_list(value: Any) -> list:
+    if type(value) not in (list, tuple, set, dict, str):
+        raise ExpressionError("REFERENCE_CONVERSION_CONTAINER")
+    if len(value) > 1000:
+        raise ExpressionError("REFERENCE_COLLECTION_LIMIT")
+    return list(value)
+
+
 _BINARY = {
     ast.Add: operator.add,
     ast.Sub: operator.sub,
@@ -71,6 +109,10 @@ _FUNCTIONS = {
     "round_half_up": _round_half_up,
     "all": all,
     "any": any,
+    "int": _bounded_int,
+    "float": _bounded_float,
+    "str": _bounded_str,
+    "list": _bounded_list,
 }
 _NODES = (
     ast.Module,
@@ -86,6 +128,7 @@ _NODES = (
     ast.Set,
     ast.Dict,
     ast.Subscript,
+    ast.Slice,
     ast.BinOp,
     ast.UnaryOp,
     ast.USub,
@@ -157,7 +200,7 @@ class _Interpreter:
 
     def bounded(self, value: Any) -> Any:
         if type(value) in (int, float):
-            if not math.isfinite(value) or abs(value) > 10**15:
+            if abs(value) > 10**15 or not math.isfinite(value):
                 raise ExpressionError("REFERENCE_NUMERIC_LIMIT")
         elif isinstance(value, (str, list, tuple, set, dict)) and len(value) > 1000:
             raise ExpressionError("REFERENCE_COLLECTION_LIMIT")
@@ -187,7 +230,27 @@ class _Interpreter:
                 for k, v in zip(node.keys, node.values)
             }
         if isinstance(node, ast.Subscript):
-            value, key = self.evaluate(node.value, scope), self.evaluate(node.slice, scope)
+            value = self.evaluate(node.value, scope)
+            if isinstance(node.slice, ast.Slice):
+                if type(value) not in (list, tuple, str):
+                    raise ExpressionError("REFERENCE_SLICE_CONTAINER")
+                bounds = [
+                    self.evaluate(bound, scope) if bound is not None else None
+                    for bound in (node.slice.lower, node.slice.upper, node.slice.step)
+                ]
+                if any(bound is not None and type(bound) is not int for bound in bounds):
+                    raise ExpressionError("REFERENCE_SLICE_INDEX")
+                if bounds[2] == 0:
+                    raise ExpressionError("REFERENCE_SLICE_STEP")
+                # Compute length before allocating a copy; slices may not
+                # bypass the collection limit or operation budget.
+                key = slice(*bounds)
+                length = len(range(*key.indices(len(value))))
+                if length > 1000:
+                    raise ExpressionError("REFERENCE_COLLECTION_LIMIT")
+                self.charge(length)
+                return self.bounded(value[key])
+            key = self.evaluate(node.slice, scope)
             if type(value) not in (dict, list, tuple, str):
                 raise ExpressionError("REFERENCE_SUBSCRIPT")
             return value[key]
@@ -224,7 +287,7 @@ class _Interpreter:
             return self.evaluate(branch, scope)
         if isinstance(node, ast.Call):
             args = [self.evaluate(item, scope) for item in node.args]
-            self.charge(sum(len(a) for a in args if isinstance(a, (list, dict, set, str))))
+            self.charge(sum(len(a) for a in args if isinstance(a, (list, tuple, dict, set, str))))
             return self.bounded(_FUNCTIONS[node.func.id](*args))
         if isinstance(node, (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)):
             result = {} if isinstance(node, ast.DictComp) else []

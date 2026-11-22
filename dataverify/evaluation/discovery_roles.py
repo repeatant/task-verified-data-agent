@@ -20,6 +20,8 @@ class InjectedFirstReviewModel:
 
     def __init__(self, delegate: QwenReviewModel, plan: dict, *, already_injected: bool = False):
         self.delegate = delegate
+        if getattr(delegate, "structured_output", False):
+            self.client_kind = self.client_kind + "_json_schema_v1"
         self._plan = parse_review_action(plan)
         if self._plan["action"] != "plan":
             raise ValueError("INJECTED_REFERENCE_MUST_BE_PLAN")

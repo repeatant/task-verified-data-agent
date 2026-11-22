@@ -8,6 +8,16 @@ from typing import Any
 import httpx
 import pytest
 
+from dataverify.agent.dispute_model import (
+    DISPUTE_PROMPT,
+    FINAL_DECISION_PROMPT,
+    SPLIT_DISPUTE_PROMPT,
+    SPLIT_FINAL_PROMPT,
+    QwenDisputeModel,
+    parse_dispute_action,
+    parse_final_decision,
+)
+from dataverify.agent.dispute_no_query import QueryDisabledDisputeModel
 from dataverify.agent.graph_model import (
     GraphModelError,
     InjectedFirstGraphModel,
@@ -74,12 +84,127 @@ def response_body(text=None, *, finish_reason="stop", usage="default"):
     return result
 
 
+@pytest.mark.parametrize("adapter", [QwenDisputeModel, QueryDisabledDisputeModel])
+@pytest.mark.parametrize("structured", [False, True])
+def test_final_dispute_turn_binds_schema_meter_and_parser_to_the_current_request(
+    adapter, structured
+):
+    payloads = []
+    messages = [
+        {"role": "system", "content": FINAL_DECISION_PROMPT},
+        {
+            "role": "user",
+            "content": json.dumps(
+                {"remaining": {"tools_enabled": False}, "query_observations": []}
+            ),
+        },
+    ]
+    final = {"action": "abstain", "reason": "Insufficient evidence."}
+    normal = {"action": "clarify", "reason": "Which date?"}
+
+    def handler(request):
+        payloads.append(json.loads(request.content))
+        return httpx.Response(
+            200, json=response_body(json.dumps(final if len(payloads) == 1 else normal))
+        )
+
+    async def scenario():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
+            model = adapter(config(), FakeBudget(), http_client=http, structured_output=structured)
+            assert await model.generate(messages) == final
+            # One instance can serve terminal and ordinary calls without leaking a schema.
+            later = [{"role": "system", "content": DISPUTE_PROMPT}, messages[1]]
+            assert await model.generate(later) == normal
+            assert len(model.http_events) == 2
+            if structured:
+                wire = payloads[0]["response_format"]
+                schema_size = len(json.dumps(wire, ensure_ascii=False, separators=(",", ":")))
+                assert model.http_events[0]["schema_chars"] == schema_size
+                variants = wire["json_schema"]["schema"]["anyOf"]
+                assert {v["properties"]["action"]["enum"][0] for v in variants} == {
+                    "finish",
+                    "clarify",
+                    "abstain",
+                }
+                ordinary = payloads[1]["response_format"]["json_schema"]["schema"]["anyOf"]
+                assert all(v["properties"]["action"]["enum"] != ["abstain"] for v in ordinary)
+            else:
+                assert all(p["response_format"] == {"type": "json_object"} for p in payloads)
+
+    asyncio.run(scenario())
+
+
 def test_action_returns_own_normalized_values():
     raw = dict(ACTION)
     result = parse_graph_action(raw)
     assert result == {**ACTION, "thought": ""}
     result["sql"] = "changed"
     assert raw == ACTION
+
+
+@pytest.mark.parametrize("adapter", [QwenDisputeModel, QueryDisabledDisputeModel])
+@pytest.mark.parametrize("strict", [False, True])
+@pytest.mark.parametrize("prompt", [SPLIT_DISPUTE_PROMPT, SPLIT_FINAL_PROMPT])
+def test_split_finish_fields_follow_real_client_mode(adapter, strict, prompt):
+    decision = {
+        "action": "finish",
+        "reason": "Finite agreement.",
+        "signoff_ids": ["r1"],
+        "supporting_ids": [],
+    }
+    payloads = []
+
+    def handler(request):
+        payloads.append(json.loads(request.content))
+        return httpx.Response(200, json=response_body(json.dumps(decision)))
+
+    async def scenario():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as transport:
+            client = adapter(
+                config(), FakeBudget(), http_client=transport, structured_output=strict
+            )
+            context = {"remaining": {"tools_enabled": False}, "query_observations": []}
+            messages = [
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": json.dumps(context)},
+            ]
+            assert await client.generate(messages) == decision
+            sent = payloads[0]
+            assert '"signoff_ids"' in sent["messages"][0]["content"]
+            if strict:
+                variants = sent["response_format"]["json_schema"]["schema"]["anyOf"]
+                by_name = {v["properties"]["action"]["enum"][0]: v for v in variants}
+                finish = by_name["finish"]
+                assert set(finish["properties"]) == set(finish["required"]) == set(decision)
+                assert finish["additionalProperties"] is False
+                if adapter is QueryDisabledDisputeModel:
+                    assert "query" not in by_name
+                assert ("abstain" in by_name) == (prompt == SPLIT_FINAL_PROMPT)
+            else:
+                assert sent["response_format"] == {"type": "json_object"}
+            assert len(client.http_events) == 1
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize(
+    "reply",
+    [
+        '{"action":"abstain","reason":"Duplicate.","reason":"Different."}',
+        {"action": "abstain", "reason": "  "},
+        {"action": "abstain", "reason": "x", "sql": "SELECT 1"},
+        {"action": "finish", "reason": "No citation.", "evidence_ids": []},
+        {"action": "clarify", "reason": "x", "sql": "SELECT 1"},
+    ],
+)
+def test_invalid_final_decisions_fail_closed(reply):
+    with pytest.raises(GraphModelError, match="DISPUTE_INVALID_FINAL_DECISION"):
+        parse_final_decision(reply)
+
+
+def test_abstain_requires_final_turn_policy():
+    with pytest.raises(GraphModelError, match="DISPUTE_INVALID_ACTION"):
+        parse_dispute_action({"action": "abstain", "reason": "Insufficient execution evidence."})
 
 
 @pytest.mark.parametrize(

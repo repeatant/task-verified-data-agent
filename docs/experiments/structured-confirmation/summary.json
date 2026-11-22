@@ -1,0 +1,940 @@
+{
+  "format": "dataverify-structured-confirmation-public-v1",
+  "status": "complete_independently_audited",
+  "date": "2026-11-07",
+  "protocol_digest": "7b017d7e68d129396a200b726541a8cb3fe07c9b7f672045f85ff9a876942efa",
+  "source_report_sha256": "17be97611d141eb73f94cc40dfdbee141ef7fdd4f5fe16312e427345637e145f",
+  "independent_audit_sha256": "6d7e59aa8840dac0096cdad8f066141396c22026b8cf54e9baf5b979b4ba4b34",
+  "final_budget_audit_sha256": "544693dccdc2e077cffed0df5ba0de22061559e6adac09444a38f6c1df0ac7b7",
+  "manifest_digest": "e29b1228259eaf3a64ad7c644bb7b3b598284311cd4a5133bb4f8adf752e2bb2",
+  "tasks": 40,
+  "cells": 80,
+  "databases": [
+    "california_schools",
+    "card_games",
+    "codebase_community",
+    "toxicology"
+  ],
+  "outcomes": [
+    {
+      "method": "json_object",
+      "tasks": 40,
+      "correct_delivery": 1,
+      "wrong_release": 0,
+      "non_delivery": 39,
+      "initial_reference_accepted": 28,
+      "reference_validation_failures": 62,
+      "reference_plus_verification_median_seconds": 20.619999999999997,
+      "reference_plus_verification_p95_seconds": 45.90079999999999
+    },
+    {
+      "method": "strict_schema",
+      "tasks": 40,
+      "correct_delivery": 0,
+      "wrong_release": 2,
+      "non_delivery": 38,
+      "initial_reference_accepted": 28,
+      "reference_validation_failures": 65,
+      "reference_plus_verification_median_seconds": 22.965,
+      "reference_plus_verification_p95_seconds": 43.875149999999984
+    }
+  ],
+  "analysis": {
+    "seed": 20261107,
+    "bootstrap_repetitions": 2000,
+    "reference_method": "json_object",
+    "populations": {
+      "public": {
+        "methods": {
+          "json_object": {
+            "trajectories": 40,
+            "clusters": 40,
+            "metrics": {
+              "correct_delivery": {
+                "numerator": 1,
+                "denominator": 40,
+                "rate": 0.025,
+                "cluster_bootstrap_ci95": [
+                  0.0,
+                  0.075
+                ],
+                "bootstrap_valid_replicates": 2000
+              },
+              "wrong_release": {
+                "numerator": 0,
+                "denominator": 40,
+                "rate": 0.0,
+                "cluster_bootstrap_ci95": [
+                  0.0,
+                  0.0
+                ],
+                "bootstrap_valid_replicates": 2000
+              },
+              "correct_sql_damaged": {
+                "numerator": 0,
+                "denominator": 11,
+                "rate": 0.0,
+                "cluster_bootstrap_ci95": [
+                  0.0,
+                  0.0
+                ],
+                "bootstrap_valid_replicates": 2000
+              },
+              "correct_task_rejected": {
+                "numerator": 10,
+                "denominator": 11,
+                "rate": 0.9090909090909091,
+                "cluster_bootstrap_ci95": [
+                  0.7,
+                  1.0
+                ],
+                "bootstrap_valid_replicates": 2000
+              },
+              "joint_correct_delivery": {
+                "numerator": 0,
+                "denominator": 0,
+                "rate": null,
+                "cluster_bootstrap_ci95": null,
+                "bootstrap_valid_replicates": 0
+              }
+            },
+            "reference_plus_verification_seconds": 930.955,
+            "timing_scope": "Reference generation plus verification; shared initial SQL generation excluded.",
+            "reference_plus_verification_usage": {
+              "prompt_tokens_known": 752125,
+              "completion_tokens_known": 60425,
+              "total_tokens_known": 812550,
+              "event_count": 167,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "cold_start_effective_usage": {
+              "prompt_tokens_known": 828960,
+              "completion_tokens_known": 64135,
+              "total_tokens_known": 893095,
+              "event_count": 207,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "cold_start_cost_note": "Initial generations counted once per applicable method: virtual uncached comparison, not actual total billing."
+          },
+          "strict_schema": {
+            "trajectories": 40,
+            "clusters": 40,
+            "metrics": {
+              "correct_delivery": {
+                "numerator": 0,
+                "denominator": 40,
+                "rate": 0.0,
+                "cluster_bootstrap_ci95": [
+                  0.0,
+                  0.0
+                ],
+                "bootstrap_valid_replicates": 2000
+              },
+              "wrong_release": {
+                "numerator": 2,
+                "denominator": 40,
+                "rate": 0.05,
+                "cluster_bootstrap_ci95": [
+                  0.0,
+                  0.125
+                ],
+                "bootstrap_valid_replicates": 2000
+              },
+              "correct_sql_damaged": {
+                "numerator": 0,
+                "denominator": 11,
+                "rate": 0.0,
+                "cluster_bootstrap_ci95": [
+                  0.0,
+                  0.0
+                ],
+                "bootstrap_valid_replicates": 2000
+              },
+              "correct_task_rejected": {
+                "numerator": 11,
+                "denominator": 11,
+                "rate": 1.0,
+                "cluster_bootstrap_ci95": [
+                  1.0,
+                  1.0
+                ],
+                "bootstrap_valid_replicates": 2000
+              },
+              "joint_correct_delivery": {
+                "numerator": 0,
+                "denominator": 0,
+                "rate": null,
+                "cluster_bootstrap_ci95": null,
+                "bootstrap_valid_replicates": 0
+              }
+            },
+            "reference_plus_verification_seconds": 997.413,
+            "timing_scope": "Reference generation plus verification; shared initial SQL generation excluded.",
+            "reference_plus_verification_usage": {
+              "prompt_tokens_known": 831335,
+              "completion_tokens_known": 64269,
+              "total_tokens_known": 895604,
+              "event_count": 178,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "cold_start_effective_usage": {
+              "prompt_tokens_known": 908170,
+              "completion_tokens_known": 67979,
+              "total_tokens_known": 976149,
+              "event_count": 218,
+              "unknown_usage_events": 0,
+              "usage_complete": true
+            },
+            "cold_start_cost_note": "Initial generations counted once per applicable method: virtual uncached comparison, not actual total billing."
+          }
+        },
+        "strata": {
+          "california_schools": {
+            "json_object": {
+              "trajectories": 18,
+              "clusters": 18,
+              "metrics": {
+                "correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 18,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "wrong_release": {
+                  "numerator": 0,
+                  "denominator": 18,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_sql_damaged": {
+                  "numerator": 0,
+                  "denominator": 4,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_task_rejected": {
+                  "numerator": 4,
+                  "denominator": 4,
+                  "rate": 1.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "joint_correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                }
+              },
+              "reference_plus_verification_seconds": 395.832,
+              "timing_scope": "Reference generation plus verification; shared initial SQL generation excluded.",
+              "reference_plus_verification_usage": {
+                "prompt_tokens_known": 254423,
+                "completion_tokens_known": 26199,
+                "total_tokens_known": 280622,
+                "event_count": 64,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_effective_usage": {
+                "prompt_tokens_known": 289306,
+                "completion_tokens_known": 28340,
+                "total_tokens_known": 317646,
+                "event_count": 82,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_cost_note": "Initial generations counted once per applicable method: virtual uncached comparison, not actual total billing."
+            },
+            "strict_schema": {
+              "trajectories": 18,
+              "clusters": 18,
+              "metrics": {
+                "correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 18,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "wrong_release": {
+                  "numerator": 1,
+                  "denominator": 18,
+                  "rate": 0.05555555555555555,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_sql_damaged": {
+                  "numerator": 0,
+                  "denominator": 4,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_task_rejected": {
+                  "numerator": 4,
+                  "denominator": 4,
+                  "rate": 1.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "joint_correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                }
+              },
+              "reference_plus_verification_seconds": 397.717,
+              "timing_scope": "Reference generation plus verification; shared initial SQL generation excluded.",
+              "reference_plus_verification_usage": {
+                "prompt_tokens_known": 259839,
+                "completion_tokens_known": 26371,
+                "total_tokens_known": 286210,
+                "event_count": 65,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_effective_usage": {
+                "prompt_tokens_known": 294722,
+                "completion_tokens_known": 28512,
+                "total_tokens_known": 323234,
+                "event_count": 83,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_cost_note": "Initial generations counted once per applicable method: virtual uncached comparison, not actual total billing."
+            }
+          },
+          "card_games": {
+            "json_object": {
+              "trajectories": 18,
+              "clusters": 18,
+              "metrics": {
+                "correct_delivery": {
+                  "numerator": 1,
+                  "denominator": 18,
+                  "rate": 0.05555555555555555,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "wrong_release": {
+                  "numerator": 0,
+                  "denominator": 18,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_sql_damaged": {
+                  "numerator": 0,
+                  "denominator": 6,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_task_rejected": {
+                  "numerator": 5,
+                  "denominator": 6,
+                  "rate": 0.8333333333333334,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "joint_correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                }
+              },
+              "reference_plus_verification_seconds": 417.022,
+              "timing_scope": "Reference generation plus verification; shared initial SQL generation excluded.",
+              "reference_plus_verification_usage": {
+                "prompt_tokens_known": 430854,
+                "completion_tokens_known": 27055,
+                "total_tokens_known": 457909,
+                "event_count": 81,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_effective_usage": {
+                "prompt_tokens_known": 467351,
+                "completion_tokens_known": 28339,
+                "total_tokens_known": 495690,
+                "event_count": 99,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_cost_note": "Initial generations counted once per applicable method: virtual uncached comparison, not actual total billing."
+            },
+            "strict_schema": {
+              "trajectories": 18,
+              "clusters": 18,
+              "metrics": {
+                "correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 18,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "wrong_release": {
+                  "numerator": 1,
+                  "denominator": 18,
+                  "rate": 0.05555555555555555,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_sql_damaged": {
+                  "numerator": 0,
+                  "denominator": 6,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_task_rejected": {
+                  "numerator": 6,
+                  "denominator": 6,
+                  "rate": 1.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "joint_correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                }
+              },
+              "reference_plus_verification_seconds": 462.584,
+              "timing_scope": "Reference generation plus verification; shared initial SQL generation excluded.",
+              "reference_plus_verification_usage": {
+                "prompt_tokens_known": 505167,
+                "completion_tokens_known": 29546,
+                "total_tokens_known": 534713,
+                "event_count": 92,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_effective_usage": {
+                "prompt_tokens_known": 541664,
+                "completion_tokens_known": 30830,
+                "total_tokens_known": 572494,
+                "event_count": 110,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_cost_note": "Initial generations counted once per applicable method: virtual uncached comparison, not actual total billing."
+            }
+          },
+          "codebase_community": {
+            "json_object": {
+              "trajectories": 2,
+              "clusters": 2,
+              "metrics": {
+                "correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 2,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "wrong_release": {
+                  "numerator": 0,
+                  "denominator": 2,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_sql_damaged": {
+                  "numerator": 0,
+                  "denominator": 1,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_task_rejected": {
+                  "numerator": 1,
+                  "denominator": 1,
+                  "rate": 1.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "joint_correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                }
+              },
+              "reference_plus_verification_seconds": 42.494,
+              "timing_scope": "Reference generation plus verification; shared initial SQL generation excluded.",
+              "reference_plus_verification_usage": {
+                "prompt_tokens_known": 38188,
+                "completion_tokens_known": 2503,
+                "total_tokens_known": 40691,
+                "event_count": 9,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_effective_usage": {
+                "prompt_tokens_known": 41975,
+                "completion_tokens_known": 2617,
+                "total_tokens_known": 44592,
+                "event_count": 11,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_cost_note": "Initial generations counted once per applicable method: virtual uncached comparison, not actual total billing."
+            },
+            "strict_schema": {
+              "trajectories": 2,
+              "clusters": 2,
+              "metrics": {
+                "correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 2,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "wrong_release": {
+                  "numerator": 0,
+                  "denominator": 2,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_sql_damaged": {
+                  "numerator": 0,
+                  "denominator": 1,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_task_rejected": {
+                  "numerator": 1,
+                  "denominator": 1,
+                  "rate": 1.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "joint_correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                }
+              },
+              "reference_plus_verification_seconds": 58.668000000000006,
+              "timing_scope": "Reference generation plus verification; shared initial SQL generation excluded.",
+              "reference_plus_verification_usage": {
+                "prompt_tokens_known": 40054,
+                "completion_tokens_known": 3418,
+                "total_tokens_known": 43472,
+                "event_count": 9,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_effective_usage": {
+                "prompt_tokens_known": 43841,
+                "completion_tokens_known": 3532,
+                "total_tokens_known": 47373,
+                "event_count": 11,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_cost_note": "Initial generations counted once per applicable method: virtual uncached comparison, not actual total billing."
+            }
+          },
+          "toxicology": {
+            "json_object": {
+              "trajectories": 2,
+              "clusters": 2,
+              "metrics": {
+                "correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 2,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "wrong_release": {
+                  "numerator": 0,
+                  "denominator": 2,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_sql_damaged": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_task_rejected": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "joint_correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                }
+              },
+              "reference_plus_verification_seconds": 75.607,
+              "timing_scope": "Reference generation plus verification; shared initial SQL generation excluded.",
+              "reference_plus_verification_usage": {
+                "prompt_tokens_known": 28660,
+                "completion_tokens_known": 4668,
+                "total_tokens_known": 33328,
+                "event_count": 13,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_effective_usage": {
+                "prompt_tokens_known": 30328,
+                "completion_tokens_known": 4839,
+                "total_tokens_known": 35167,
+                "event_count": 15,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_cost_note": "Initial generations counted once per applicable method: virtual uncached comparison, not actual total billing."
+            },
+            "strict_schema": {
+              "trajectories": 2,
+              "clusters": 2,
+              "metrics": {
+                "correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 2,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "wrong_release": {
+                  "numerator": 0,
+                  "denominator": 2,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_sql_damaged": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_task_rejected": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "joint_correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                }
+              },
+              "reference_plus_verification_seconds": 78.444,
+              "timing_scope": "Reference generation plus verification; shared initial SQL generation excluded.",
+              "reference_plus_verification_usage": {
+                "prompt_tokens_known": 26275,
+                "completion_tokens_known": 4934,
+                "total_tokens_known": 31209,
+                "event_count": 12,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_effective_usage": {
+                "prompt_tokens_known": 27943,
+                "completion_tokens_known": 5105,
+                "total_tokens_known": 33048,
+                "event_count": 14,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_cost_note": "Initial generations counted once per applicable method: virtual uncached comparison, not actual total billing."
+            }
+          }
+        },
+        "paired": {
+          "strict_schema": {
+            "paired_tasks": 40,
+            "clusters": 40,
+            "reference_only_tasks": 0,
+            "method_only_tasks": 0,
+            "metrics": {
+              "correct_delivery": {
+                "reference_minus_method": 0.025,
+                "reference": {
+                  "numerator": 1,
+                  "denominator": 40,
+                  "rate": 0.025
+                },
+                "method": {
+                  "numerator": 0,
+                  "denominator": 40,
+                  "rate": 0.0
+                },
+                "cluster_bootstrap_ci95": [
+                  0.0,
+                  0.075
+                ],
+                "bootstrap_valid_replicates": 2000
+              },
+              "wrong_release": {
+                "reference_minus_method": -0.05,
+                "reference": {
+                  "numerator": 0,
+                  "denominator": 40,
+                  "rate": 0.0
+                },
+                "method": {
+                  "numerator": 2,
+                  "denominator": 40,
+                  "rate": 0.05
+                },
+                "cluster_bootstrap_ci95": [
+                  -0.125,
+                  0.0
+                ],
+                "bootstrap_valid_replicates": 2000
+              },
+              "correct_sql_damaged": {
+                "reference_minus_method": 0.0,
+                "reference": {
+                  "numerator": 0,
+                  "denominator": 11,
+                  "rate": 0.0
+                },
+                "method": {
+                  "numerator": 0,
+                  "denominator": 11,
+                  "rate": 0.0
+                },
+                "cluster_bootstrap_ci95": [
+                  0.0,
+                  0.0
+                ],
+                "bootstrap_valid_replicates": 2000
+              },
+              "correct_task_rejected": {
+                "reference_minus_method": -0.09090909090909094,
+                "reference": {
+                  "numerator": 10,
+                  "denominator": 11,
+                  "rate": 0.9090909090909091
+                },
+                "method": {
+                  "numerator": 11,
+                  "denominator": 11,
+                  "rate": 1.0
+                },
+                "cluster_bootstrap_ci95": [
+                  -0.30000000000000004,
+                  0.0
+                ],
+                "bootstrap_valid_replicates": 2000
+              },
+              "joint_correct_delivery": {
+                "reference_minus_method": null,
+                "reference": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null
+                },
+                "method": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null
+                },
+                "cluster_bootstrap_ci95": null,
+                "bootstrap_valid_replicates": 0
+              }
+            }
+          }
+        },
+        "conditions": {
+          "natural": {
+            "json_object": {
+              "trajectories": 40,
+              "clusters": 40,
+              "metrics": {
+                "correct_delivery": {
+                  "numerator": 1,
+                  "denominator": 40,
+                  "rate": 0.025,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "wrong_release": {
+                  "numerator": 0,
+                  "denominator": 40,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_sql_damaged": {
+                  "numerator": 0,
+                  "denominator": 11,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_task_rejected": {
+                  "numerator": 10,
+                  "denominator": 11,
+                  "rate": 0.9090909090909091,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "joint_correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                }
+              },
+              "reference_plus_verification_seconds": 930.955,
+              "timing_scope": "Reference generation plus verification; shared initial SQL generation excluded.",
+              "reference_plus_verification_usage": {
+                "prompt_tokens_known": 752125,
+                "completion_tokens_known": 60425,
+                "total_tokens_known": 812550,
+                "event_count": 167,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_effective_usage": {
+                "prompt_tokens_known": 828960,
+                "completion_tokens_known": 64135,
+                "total_tokens_known": 893095,
+                "event_count": 207,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_cost_note": "Initial generations counted once per applicable method: virtual uncached comparison, not actual total billing."
+            },
+            "strict_schema": {
+              "trajectories": 40,
+              "clusters": 40,
+              "metrics": {
+                "correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 40,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "wrong_release": {
+                  "numerator": 2,
+                  "denominator": 40,
+                  "rate": 0.05,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_sql_damaged": {
+                  "numerator": 0,
+                  "denominator": 11,
+                  "rate": 0.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "correct_task_rejected": {
+                  "numerator": 11,
+                  "denominator": 11,
+                  "rate": 1.0,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                },
+                "joint_correct_delivery": {
+                  "numerator": 0,
+                  "denominator": 0,
+                  "rate": null,
+                  "cluster_bootstrap_ci95": null,
+                  "bootstrap_valid_replicates": 0
+                }
+              },
+              "reference_plus_verification_seconds": 997.413,
+              "timing_scope": "Reference generation plus verification; shared initial SQL generation excluded.",
+              "reference_plus_verification_usage": {
+                "prompt_tokens_known": 831335,
+                "completion_tokens_known": 64269,
+                "total_tokens_known": 895604,
+                "event_count": 178,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_effective_usage": {
+                "prompt_tokens_known": 908170,
+                "completion_tokens_known": 67979,
+                "total_tokens_known": 976149,
+                "event_count": 218,
+                "unknown_usage_events": 0,
+                "usage_complete": true
+              },
+              "cold_start_cost_note": "Initial generations counted once per applicable method: virtual uncached comparison, not actual total billing."
+            }
+          }
+        }
+      }
+    },
+    "actual_logged_usage": {
+      "available": true,
+      "scope": "Observed row and supplied initial-cache events, deduplicated; durable ledgers remain authoritative.",
+      "prompt_tokens_known": 1660343,
+      "completion_tokens_known": 128416,
+      "total_tokens_known": 1788759,
+      "event_count": 386,
+      "unknown_usage_events": 0,
+      "usage_complete": true
+    }
+  },
+  "reference_acceptance_note": "Acceptance includes local DSL/fixture validity; it is not a pure JSON compliance rate or a correctness measure.",
+  "timing_scope": "Reference generation plus subsequent verification; shared SQL generation excluded.",
+  "final_campaign_cost": {
+    "accounting_scope": "Exactly the historical 5+3 ledgers plus four latest 28-CNY full-history lanes. No retired 13-CNY lane or older continuation snapshot is added again.",
+    "cumulative_allowance_cny": 120,
+    "conservative_reserved_cny": 108.950656,
+    "known_usage_estimated_cny": 9.5379711,
+    "unknown_attempts": 8,
+    "unknown_reserved_upper_cny": 0.2328576,
+    "known_estimate_plus_unknown_reserve_cny": 9.7708287,
+    "reported_total_tokens": 9595750,
+    "all_http_attempts": 3241,
+    "confirmation_unique_events_matched_to_ledgers": 386,
+    "limitation": "List-price usage estimate plus full retained unknown-request reservations, not a verified provider bill. Unknown usage is not zero, and reserved totals are not actual cost."
+  },
+  "interpretation": [
+    "No evidence from this comparison supports enabling strict schema by default.",
+    "Same new questions in four existing schemas; not an unseen-database evaluation.",
+    "Shared SQL, independently generated references per mode; all other prompts and full-policy limits held fixed.",
+    "Paired analysis reports json_object minus strict_schema, not the reverse.",
+    "Zero-event empirical bootstrap intervals do not establish zero population risk."
+  ]
+}

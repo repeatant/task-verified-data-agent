@@ -1,0 +1,98 @@
+{
+  "id": "split-signoff",
+  "status": "reviewed",
+  "mode": "replay",
+  "source_id": "synthetic-september-settlement",
+  "question": "统计九月已结算明细的收入，排除待处理和已取消的明细。",
+  "provenance": {
+    "case": "dispute-03",
+    "model": "qwen3.8-flash",
+    "record_sha256": {
+      "old": "f69ca61ac8177fecc8a0025826d18b1f5bef9aeae03d8b441c9ebf82991febde",
+      "split": "9ab3ee5b7f4ba725c193e35f82d11d7d6c8adb354691fd92352f9d738df8ef7d"
+    },
+    "protocol_sha256": "a4aec2738361eee626809ca4a4ed04034afe707218a852ed5cd4c5167f4047a3",
+    "question": "Return revenue of settled lines only in the specified interval. Pending and cancelled lines contribute nothing."
+  },
+  "result": {
+    "sql": "SELECT COALESCE(SUM(amount),0) FROM order_lines WHERE status='settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00'",
+    "columns": [
+      "COALESCE(SUM(amount),0)"
+    ],
+    "rows": [
+      [
+        669
+      ]
+    ],
+    "finish_citations": {
+      "signoff_ids": [
+        "replay_0002_533b9ae72907:data_7765c6110064fe4d"
+      ],
+      "supporting_ids": [
+        "q0002"
+      ]
+    },
+    "summary": "两次真实千问调用拿到相同的候选 SQL、核算程序和执行证据。旧协议因混合引用而拒绝交付；分栏后，相同 SQL 在完整合成库上执行并交付。",
+    "scope": "2026-11-21 冻结实验。预览用来比较三份程序，完整合成库用来交付，二者数据量不同。",
+    "evidence": [
+      {
+        "title": "旧协议如何拒绝",
+        "detail": "最终引用 replay_0002_533b9ae72907:data_7765c6110064fe4d、q0002。其中调查查询不能签核，整项交付被拒绝。",
+        "scope": "DISPUTE_FINISH_REQUIRES_CURRENT_REPLAY_OR_CHECK"
+      },
+      {
+        "title": "三份程序在预览上核验",
+        "detail": "同一版本在同一份预览上的执行结果。",
+        "id": "replay_0002_533b9ae72907:data_7765c6110064fe4d",
+        "sample": {
+          "candidate": {
+            "status": "ok",
+            "rows": [
+              [
+                11
+              ]
+            ]
+          },
+          "reference": {
+            "status": "ok",
+            "rows": [
+              [
+                11
+              ]
+            ]
+          },
+          "independent": {
+            "status": "ok",
+            "rows": [
+              [
+                11
+              ]
+            ]
+          }
+        }
+      },
+      {
+        "title": "辅助查询核对了什么",
+        "detail": "在完整合成库上运行候选 SQL，查看九月已结算明细的合计金额。",
+        "id": "q0002",
+        "sql": "SELECT COALESCE(SUM(amount),0) FROM order_lines WHERE status='settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00'",
+        "rows": [
+          [
+            669
+          ]
+        ]
+      },
+      {
+        "title": "最终交付",
+        "detail": "通过签核后在同一完整合成库重新执行。候选 SQL 另经 25 份评分数据检验。",
+        "id": "delivery_0001",
+        "sql": "SELECT COALESCE(SUM(amount),0) FROM order_lines WHERE status='settled' AND settled_at >= '2026-09-01T00:00:00' AND settled_at < '2026-10-01T00:00:00'",
+        "rows": [
+          [
+            669
+          ]
+        ]
+      }
+    ]
+  }
+}

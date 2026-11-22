@@ -1,0 +1,3 @@
+method,tasks,correct_delivery,wrong_release,non_delivery,initial_reference_accepted,reference_validation_failures,reference_plus_verification_median_seconds,reference_plus_verification_p95_seconds
+json_object,40,1,0,39,28,62,20.619999999999997,45.90079999999999
+strict_schema,40,0,2,38,28,65,22.965,43.875149999999984
